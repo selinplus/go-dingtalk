@@ -1,0 +1,14 @@
+.idea/
+.DS_Store
+.exe
+*.log
+.pem
+runtime/*
+!runtime/qrcode/bg.jpg
+!runtime/fonts
+!runtime/export/mendian.json
+!runtime/export/yodian.json
+!runtime/export/yishi.json
+!runtime/medicines.xlsx
+!runtime/medicineroute.xlsx
+!runtime/medicinetimes.xlsx
