@@ -3,11 +3,11 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/middleware/cors"
-	"github.com/selinplus/go-dingtalk/middleware/jwt"
 	"github.com/selinplus/go-dingtalk/pkg/export"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"github.com/selinplus/go-dingtalk/routers/api"
+	"github.com/selinplus/go-dingtalk/routers/api/v1/dingtalk"
 	"net/http"
 )
 
@@ -28,12 +28,12 @@ func InitRouter() *gin.Engine {
 	r.POST("/uploads/file", api.UploadFile)
 
 	apiv1 := r.Group("/api/v1")
-	apiv1.Use(jwt.JWT())
+	//apiv1.Use(jwt.JWT())
 	{
 
 		//生成海报
 		//apiv1.POST("/poster/generate", v1.GeneratePoster)
-
+		apiv1.POST("/login", dingtalk.Login)
 	}
 	return r
 }
