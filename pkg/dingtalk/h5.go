@@ -82,8 +82,7 @@ func getJsApiTicket() string {
 		Ticket string `json:"ticket"`
 	}
 	var apiTicket = ApiTicket{}
-	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/get_jsapi_ticket").
-		Param("access_token", GetAccessToken()).End()
+	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/get_jsapi_ticket?access_token=" + GetAccessToken()).End()
 	log.Printf("ticket body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("GetJsApiTicket:", errs[0])
