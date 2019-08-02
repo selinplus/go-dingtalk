@@ -41,7 +41,7 @@ func GetAccessToken() string {
 }
 func GetUserId(code string) string {
 	type UserID struct {
-		UserID string `json:"user_id"`
+		UserID string `json:"userid"`
 		Errmsg string `json:"errmsg"`
 	}
 	var userId = UserID{}
