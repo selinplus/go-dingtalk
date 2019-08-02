@@ -3,10 +3,10 @@ package dingtalk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/labstack/gommon/log"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
+	"log"
 	"strconv"
 	"time"
 )
@@ -49,6 +49,9 @@ func GetUserId(code string) string {
 	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/user/getuserinfo").
 		Query("code=" + code).
 		Query("access_token=" + GetAccessToken()).End()
+	log.Printf("access_token in getuserid is %s", GetAccessToken())
+	log.Printf("body in getuserid is %s", body)
+
 	if len(errs) > 0 {
 		util.ShowError("get userinfo", errs[0])
 		return ""
