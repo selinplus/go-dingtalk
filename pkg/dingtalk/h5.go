@@ -20,23 +20,23 @@ type UserInfo struct {
 	Avatar string `json:"avatar"`
 }
 
-var accessToken = &AccessToken{}
+var Token = &AccessToken{}
 var goReq = gorequest.New()
 
 func GetAccessToken() string {
 	t := time.Now().UnixNano()
-	if accessToken == nil || t-accessToken.ExpiresTime >= 0 {
+	if Token == nil || t-Token.ExpiresTime >= 0 {
 		_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/gettoken").
 			Param("appKey", setting.MsgAppSetting.AppKey).
 			Param("appSecret", setting.MsgAppSetting.AppSecret).End()
 		if len(errs) > 0 {
 			log.Printf("get dingtalk access token err:%v", errs[0])
 		} else {
-			err := json.Unmarshal([]byte(body), accessToken)
+			err := json.Unmarshal([]byte(body), Token)
 			util.ShowError("get token, unmarshall json", err)
 		}
 	}
-	return accessToken.AccessToken
+	return Token.AccessToken
 }
 func GetUserId(code string) string {
 	type UserID struct {
@@ -78,7 +78,7 @@ func GetUserInfo(userId string) *UserInfo {
 }
 func getJsApiTicket() string {
 	type ApiTicket struct {
-		ticket string `json:"ticket"`
+		Ticket string `json:"ticket"`
 	}
 	var apiTicket = ApiTicket{}
 	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/get_jsapi_ticket").
@@ -92,7 +92,7 @@ func getJsApiTicket() string {
 			log.Printf("unmarshall GetJsApiTicket info error:%v", err)
 			return ""
 		}
-		return apiTicket.ticket
+		return apiTicket.Ticket
 	}
 }
 func genJsApiSign(ticket string, nonceStr string, timeStamp string, url string) string {

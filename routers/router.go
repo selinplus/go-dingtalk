@@ -34,6 +34,7 @@ func InitRouter() *gin.Engine {
 		//生成海报
 		//apiv1.POST("/poster/generate", v1.GeneratePoster)
 		apiv1.POST("/login", dingtalk.Login)
+		apiv1.GET("/js_api_config", dingtalk.JsApiConfig)
 	}
 	return r
 }
