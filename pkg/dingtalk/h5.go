@@ -102,13 +102,13 @@ func genJsApiSign(ticket string, nonceStr string, timeStamp string, url string) 
 func GetJsApiConfig(url string) string {
 	var config map[string]string
 	ticket := getJsApiTicket()
-	log.Printf("ticket is :%s", ticket)
+	log.Printf("ticket is :%s\n", ticket)
 	if ticket != "" {
 		nonceStr := "dingtalk"
 		timeStamp := string(time.Now().UnixNano())
 		sign := genJsApiSign(ticket, nonceStr, timeStamp, url)
-		log.Printf("timeStamp is %s", timeStamp)
-		log.Printf("sign is %s", sign)
+		log.Printf("timeStamp is %s\n", timeStamp)
+		log.Printf("sign is %s\n", sign)
 		config = map[string]string{
 			"url":       url,
 			"nonceStr":  nonceStr,
