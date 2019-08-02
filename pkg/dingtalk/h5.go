@@ -7,6 +7,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
+	"strconv"
 	"time"
 )
 
@@ -83,6 +84,7 @@ func getJsApiTicket() string {
 	var apiTicket = ApiTicket{}
 	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/get_jsapi_ticket").
 		Param("access_token", GetAccessToken()).End()
+	log.Printf("ticket body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("GetJsApiTicket:", errs[0])
 		return ""
@@ -105,7 +107,7 @@ func GetJsApiConfig(url string) string {
 	log.Printf("ticket is :%s\n", ticket)
 	if ticket != "" {
 		nonceStr := "dingtalk"
-		timeStamp := string(time.Now().UnixNano())
+		timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
 		sign := genJsApiSign(ticket, nonceStr, timeStamp, url)
 		log.Printf("timeStamp is %s\n", timeStamp)
 		log.Printf("sign is %s\n", sign)
