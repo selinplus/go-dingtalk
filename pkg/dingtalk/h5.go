@@ -22,12 +22,11 @@ type UserInfo struct {
 }
 
 var Token = &AccessToken{}
-var goReq = gorequest.New()
 
 func GetAccessToken() string {
 	t := time.Now().UnixNano()
 	if Token == nil || t-Token.ExpiresTime >= 0 {
-		_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/gettoken").
+		_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/gettoken").
 			Query("appkey=" + setting.MsgAppSetting.AppKey).
 			Query("appsecret=" + setting.MsgAppSetting.AppSecret).End()
 		if len(errs) > 0 {
@@ -46,7 +45,7 @@ func GetUserId(code string) string {
 		Errmsg string `json:"errmsg"`
 	}
 	var userId = UserID{}
-	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/user/getuserinfo").
+	_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/user/getuserinfo").
 		Query("code=" + code).
 		Query("access_token=" + GetAccessToken()).End()
 	log.Printf("access_token in getuserid is %s", GetAccessToken())
@@ -66,7 +65,7 @@ func GetUserId(code string) string {
 }
 func GetUserInfo(userId string) *UserInfo {
 	var userInfo = UserInfo{}
-	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/user/get").
+	_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/user/get").
 		Query("userid=" + userId).
 		Query("access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
@@ -86,7 +85,7 @@ func getJsApiTicket() string {
 		Ticket string `json:"ticket"`
 	}
 	var apiTicket = ApiTicket{}
-	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/get_jsapi_ticket?access_token=" + GetAccessToken()).End()
+	_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/get_jsapi_ticket?access_token=" + GetAccessToken()).End()
 	log.Printf("ticket body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("GetJsApiTicket:", errs[0])
