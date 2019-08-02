@@ -28,11 +28,12 @@ func GetAccessToken() string {
 	t := time.Now().UnixNano()
 	if Token == nil || t-Token.ExpiresTime >= 0 {
 		_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/gettoken").
-			Query("appKey=" + setting.MsgAppSetting.AppKey).
-			Query("appSecret=" + setting.MsgAppSetting.AppSecret).End()
+			Query("appkey=" + setting.MsgAppSetting.AppKey).
+			Query("appsecret=" + setting.MsgAppSetting.AppSecret).End()
 		if len(errs) > 0 {
 			log.Printf("get dingtalk access token err:%v", errs[0])
 		} else {
+			log.Printf("Token is :%s", body)
 			err := json.Unmarshal([]byte(body), Token)
 			util.ShowError("get token, unmarshall json", err)
 		}
