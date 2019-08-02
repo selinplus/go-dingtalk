@@ -27,9 +27,9 @@ var goReq = gorequest.New()
 func GetAccessToken() string {
 	t := time.Now().UnixNano()
 	if Token == nil || t-Token.ExpiresTime >= 0 {
-		_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/gettoken").
-			Param("appKey", setting.MsgAppSetting.AppKey).
-			Param("appSecret", setting.MsgAppSetting.AppSecret).End()
+		_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/gettoken").
+			Query("appKey=" + setting.MsgAppSetting.AppKey).
+			Query("appSecret=" + setting.MsgAppSetting.AppSecret).End()
 		if len(errs) > 0 {
 			log.Printf("get dingtalk access token err:%v", errs[0])
 		} else {
@@ -45,9 +45,9 @@ func GetUserId(code string) string {
 		Errmsg string `json:"errmsg"`
 	}
 	var userId = UserID{}
-	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/user/getuserinfo").
-		Param("code", code).
-		Param("access_token", GetAccessToken()).End()
+	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/user/getuserinfo").
+		Query("code=" + code).
+		Query("access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
 		util.ShowError("get userinfo", errs[0])
 		return ""
@@ -62,9 +62,9 @@ func GetUserId(code string) string {
 }
 func GetUserInfo(userId string) *UserInfo {
 	var userInfo = UserInfo{}
-	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost+"/user/get").
-		Param("userid", userId).
-		Param("access_token", GetAccessToken()).End()
+	_, body, errs := goReq.Get(setting.DingtalkSetting.OapiHost + "/user/get").
+		Query("userid=" + userId).
+		Query("access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
 		util.ShowError("get userinfo", errs[0])
 		return nil
