@@ -9,15 +9,24 @@ import (
 	"net/http"
 )
 
+type LoginForm struct {
+	AuthCode string `json:"auth_code"`
+}
+
 func Login(c *gin.Context) {
 	appG := app.Gin{C: c}
-	authCode := c.PostForm("authCode")
-	if authCode == "" {
+	var form LoginForm
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	if form.AuthCode == "" {
 		log.Println("no auth code")
 		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
 		return
 	}
-	id := dingtalk.GetUserId(authCode)
+	id := dingtalk.GetUserId(form.AuthCode)
 	if id != "" {
 		userInfo := dingtalk.GetUserInfo(id)
 		appG.Response(http.StatusOK, e.SUCCESS, userInfo)
@@ -27,7 +36,7 @@ func Login(c *gin.Context) {
 }
 func JsApiConfig(c *gin.Context) {
 	appG := app.Gin{C: c}
-	url := c.Param("url")
+	url := c.Query("url")
 	if url == "" {
 		log.Println("no url")
 		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/icepy/go-dingtalk/src"
 	"log"
 	"net/http"
 	"os"
@@ -56,10 +55,6 @@ func main() {
 
 	server.ListenAndServe()
 
-	c := getCompanyDingTalkClient()
-	if err := c.RefreshCompanyAccessToken(); err != nil {
-		log.Printf("refresh access token err:%v", err)
-	}
 	// If you want Graceful Restart, you need a Unix system and download github.com/fvbock/endless
 	//endless.DefaultReadTimeOut = readTimeout
 	//endless.DefaultWriteTimeOut = writeTimeout
@@ -73,14 +68,4 @@ func main() {
 	//if err != nil {
 	//	log.Printf("Server err: %v", err)
 	//}
-}
-func getCompanyDingTalkClient() *dingtalk.DingTalkClient {
-	CorpID := os.Getenv("CorpId")
-	CorpSecret := os.Getenv("CorpSecret")
-	config := &dingtalk.DTConfig{
-		CorpID:     CorpID,
-		CorpSecret: CorpSecret,
-	}
-	c := dingtalk.NewDingTalkCompanyClient(config)
-	return c
 }
