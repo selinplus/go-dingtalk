@@ -10,7 +10,6 @@ import (
 
 var db *gorm.DB
 
-
 // Setup initializes the database instance
 func Setup() {
 	var err error
@@ -35,11 +34,20 @@ func Setup() {
 }
 
 func CheckTable() {
-	//if !db.HasTable("licence") {
-	//	db.CreateTable(Licence{})
-	//} else {
-	//	db.AutoMigrate(Licence{})
-	//}
+	if !db.HasTable("attachment") {
+		db.CreateTable(Attachment{})
+	} else {
+		db.AutoMigrate(Attachment{})
+	}
+	if !db.HasTable("msg") {
+		db.CreateTable(Msg{})
+	} else {
+		db.AutoMigrate(Msg{})
+	}
+	if !db.HasTable("msg_tag") {
+		db.CreateTable(MsgTag{})
+	} else {
+		db.AutoMigrate(MsgTag{})
+	}
 
 }
-
