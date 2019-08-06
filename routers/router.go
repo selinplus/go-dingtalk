@@ -1,6 +1,8 @@
 package routers
 
 import (
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/middleware/cors"
 	"github.com/selinplus/go-dingtalk/pkg/export"
@@ -15,6 +17,9 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.New()
 
+	store := cookie.NewStore([]byte("secret"))
+	r.Use(sessions.Sessions("mysession", store))
+
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Use(cors.CORSMiddleware())
@@ -24,7 +29,7 @@ func InitRouter() *gin.Engine {
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 	r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 
-	r.POST("/upload", api.UploadImage)
+	r.POST("/file/upload", api.UploadImage)
 	r.POST("/uploads/file", api.UploadFile)
 
 	apiv1 := r.Group("/api/v1")
@@ -35,6 +40,12 @@ func InitRouter() *gin.Engine {
 		//apiv1.POST("/poster/generate", v1.GeneratePoster)
 		apiv1.POST("/login", dingtalk.Login)
 		apiv1.GET("/js_api_config", dingtalk.JsApiConfig)
+		//发消息
+		apiv1.POST("/msg/send", dingtalk.MsgSend)
+		//获取消息列表
+		apiv1.GET("/msg/list", dingtalk.GetMsgs)
+		//获取消息详情
+		apiv1.GET("/msg/detail", dingtalk.GetMsgByID)
 	}
 	return r
 }

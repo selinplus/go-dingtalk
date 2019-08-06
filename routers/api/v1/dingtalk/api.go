@@ -1,6 +1,7 @@
 package dingtalk
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
@@ -15,6 +16,7 @@ type LoginForm struct {
 
 func Login(c *gin.Context) {
 	appG := app.Gin{C: c}
+	session := sessions.Default(c)
 	var form LoginForm
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
@@ -29,6 +31,8 @@ func Login(c *gin.Context) {
 	id := dingtalk.GetUserId(form.AuthCode)
 	if id != "" {
 		userInfo := dingtalk.GetUserInfo(id)
+		session.Set("userid", userInfo.Id)
+		session.Save()
 		appG.Response(http.StatusOK, e.SUCCESS, userInfo)
 		return
 	}
@@ -36,6 +40,7 @@ func Login(c *gin.Context) {
 }
 func JsApiConfig(c *gin.Context) {
 	appG := app.Gin{C: c}
+	session := sessions.Default(c)
 	url := c.Query("url")
 	if url == "" {
 		log.Println("no url")
@@ -44,6 +49,8 @@ func JsApiConfig(c *gin.Context) {
 	}
 	sign := dingtalk.GetJsApiConfig(url)
 	if sign != "" {
+		session.Set("sign", sign)
+		session.Save()
 		appG.Response(http.StatusOK, e.SUCCESS, sign)
 		return
 	}
