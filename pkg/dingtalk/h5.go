@@ -33,7 +33,7 @@ type TopCorpMessageCorpconversationAsyncsendRequest struct {
 type AsyncsendReturn struct {
 	Errcode int    `json:"errcode"`
 	Errmsg  string `json:"errmsg"`
-	Task_id string `json:"task_id"`
+	Task_id int    `json:"task_id"`
 }
 
 var Token = &AccessToken{}
