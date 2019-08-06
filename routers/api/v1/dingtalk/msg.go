@@ -15,7 +15,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -69,7 +68,6 @@ func MsgSend(c *gin.Context) {
 		Attachments: ats,
 	}
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
-	userIdList := strings.Split(msg.ToID, ",")
 	link := map[string]interface{}{
 		"messageUrl": "http://s.dingtalk.com/market/dingtalk/error_code.php",
 		"picUrl":     "@lALOACZwe2Rk",
@@ -82,7 +80,7 @@ func MsgSend(c *gin.Context) {
 	}
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
-		"userid_list": userIdList,
+		"userid_list": msg.ToID,
 		//"to_all_user":  false,
 		"msg": msgcotent,
 	}
