@@ -40,7 +40,6 @@ func Login(c *gin.Context) {
 }
 func JsApiConfig(c *gin.Context) {
 	appG := app.Gin{C: c}
-	session := sessions.Default(c)
 	url := c.Query("url")
 	if url == "" {
 		log.Println("no url")
@@ -49,8 +48,6 @@ func JsApiConfig(c *gin.Context) {
 	}
 	sign := dingtalk.GetJsApiConfig(url)
 	if sign != "" {
-		session.Set("sign", sign)
-		session.Save()
 		appG.Response(http.StatusOK, e.SUCCESS, sign)
 		return
 	}

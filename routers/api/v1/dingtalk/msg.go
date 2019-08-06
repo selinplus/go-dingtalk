@@ -1,15 +1,21 @@
 package dingtalk
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
+	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -62,6 +68,26 @@ func MsgSend(c *gin.Context) {
 		Time:        t,
 		Attachments: ats,
 	}
+	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
+	userIdList := strings.Split(msg.ToID, ",")
+	link := map[string]interface{}{
+		"messageUrl": "http://s.dingtalk.com/market/dingtalk/error_code.php",
+		"picUrl":     "@lALOACZwe2Rk",
+		"title":      msg.Title,
+		"text":       msg.Content,
+	}
+	msgcotent := map[string]interface{}{
+		"msgtype": "link",
+		"link":    link,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": userIdList,
+		//"to_all_user":  false,
+		"msg": msgcotent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
 	err := models.AddMsgSend(&msg)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
@@ -72,8 +98,13 @@ func MsgSend(c *gin.Context) {
 		return
 	}
 	if msg.ID > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
+		//appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
 		models.AddMsgTag(msg.ID, msg.ToID, msg.FromID)
+		asyncsendReturn, _ := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendReturn != nil {
+			logging.Info(fmt.Sprintf("%v", asyncsendReturn))
+			appG.Response(http.StatusOK, e.SUCCESS, asyncsendReturn)
+		}
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
 	}

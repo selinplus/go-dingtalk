@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/parnurzeal/gorequest"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -19,6 +20,20 @@ type UserInfo struct {
 	Name   string `json:"name"`
 	Id     string `json:"id"`
 	Avatar string `json:"avatar"`
+}
+
+// 企业会话消息异步发送
+type TopCorpMessageCorpconversationAsyncsendRequest struct {
+	AgentId    int
+	UserIdList []string
+	DeptIdList []int
+	ToAllUser  bool
+	Msgcontent interface{}
+}
+type AsyncsendReturn struct {
+	Errcode int    `json:"errcode"`
+	Errmsg  string `json:"errmsg"`
+	Task_id string `json:"task_id"`
 }
 
 var Token = &AccessToken{}
@@ -127,4 +142,25 @@ func GetJsApiConfig(url string) string {
 	} else {
 		return ""
 	}
+}
+
+func MessageCorpconversationAsyncsend(tcmpar string) (*AsyncsendReturn, error) {
+	var asyncsendReturn *AsyncsendReturn
+	logging.Info(fmt.Sprintf("%v", tcmpar))
+	_, body, errs := gorequest.New().
+		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetAccessToken()).
+		Type("json").Send(tcmpar).End()
+	if len(errs) > 0 {
+		util.ShowError("MessageCorpconversationAsyncsend failed:", errs[0])
+		return nil, nil
+	} else {
+		err := json.Unmarshal([]byte(body), &asyncsendReturn)
+		logging.Info(fmt.Sprintf("%v", asyncsendReturn))
+		if err != nil {
+			log.Printf("unmarshall asyncsendReturn info error:%v", err)
+			return nil, nil
+		}
+		return asyncsendReturn, nil
+	}
+	return nil, nil
 }
