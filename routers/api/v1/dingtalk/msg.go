@@ -3,8 +3,6 @@ package dingtalk
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Unknwon/com"
-	"github.com/astaxie/beego/validation"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
@@ -111,18 +109,12 @@ func MsgSend(c *gin.Context) {
 //获取消息列表
 func GetMsgs(c *gin.Context) {
 	appG := app.Gin{C: c}
-	valid := validation.Validation{}
-	tag := com.StrTo(c.Param("tag")).MustInt()
-	pageNum := com.StrTo(c.Param("start")).MustInt()
-	pageSize := com.StrTo(c.Param("size")).MustInt()
+	tag, _ := strconv.Atoi(c.Query("tag"))
+	pageNum, _ := strconv.Atoi(c.Query("start"))
+	pageSize, _ := strconv.Atoi(c.Query("size"))
 	session := sessions.Default(c)
 	v := session.Get("userid")
 	userID := fmt.Sprintf("%v", v)
-	if valid.HasErrors() {
-		app.MarkErrors(valid.Errors)
-		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
-		return
-	}
 	cnt, err := models.GetMsgCount(userID, uint(tag))
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
@@ -151,8 +143,8 @@ func GetMsgs(c *gin.Context) {
 //获取消息详情
 func GetMsgByID(c *gin.Context) {
 	var appG = app.Gin{C: c}
-	id, _ := strconv.Atoi(c.Param("id"))
-	tag, _ := strconv.Atoi(c.Param("tag"))
+	id, _ := strconv.Atoi(c.Query("id"))
+	tag, _ := strconv.Atoi(c.Query("tag"))
 	session := sessions.Default(c)
 	v := session.Get("userid")
 	userID := fmt.Sprintf("%v", v)

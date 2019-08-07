@@ -26,37 +26,33 @@ func AddMsgSend(data interface{}) error {
 }
 
 func GetMsgs(userID string, tag uint, pageNum, pageSize int) ([]*Msg, error) {
-	var mgs []*Msg
-	err := db.Table("msg").
-		Select("msg.*, msg_tag.tag").
-		Joins("msg_tag ON msg.id = msg_tag.msg_id ").
-		Where("msg_tag.owner_id=? and msg_tag.tag=?", userID, tag).
-		Order("msg.time").
-		Offset(pageNum).Limit(pageSize).Find(mgs).Error
+	var msg []*Msg
+	err := db.Raw("SELECT msg.* FROM msg LEFT JOIN msg_tag ON msg.id = msg_tag.msg_id WHERE msg_tag.owner_id = ? AND msg_tag.tag = ? ORDER BY msg.time DESC LIMIT ?,?", userID, tag, pageNum, pageSize).
+		Scan(&msg).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
-	return mgs, nil
+	return msg, nil
 }
 func GetMsgCount(userID string, tag uint) (int, error) {
-	var cnt int
-	err := db.Table("msg").
-		Select("msg.*, msg_tag.tag").
-		Joins("msg_tag ON msg.id = msg_tag.msg_id ").
-		Where("msg_tag.owner_id=? and msg_tag.tag=?", userID, tag).Count(&cnt).Error
+	cnt := 0
+	rows, err := db.
+		Raw("SELECT msg.*, msg_tag.tag FROM msg LEFT JOIN msg_tag ON msg.id = msg_tag.msg_id WHERE msg_tag.owner_id = ? AND msg_tag.tag = ?", userID, tag).
+		Rows()
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return 0, err
+		return cnt, err
+	}
+	for rows.Next() {
+		cnt++
 	}
 	return cnt, nil
 }
 func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	var msg Msg
-	if err := db.Preload("Attachments").
-		Table("msg").
-		Select("msg.*, msg_tag.tag").
+	if err := db.Preload("Attachments").Find(&msg).
 		Joins("msg_tag ON msg.id = msg_tag.msg_id ").
 		Where("msg.id = ? and msg_tag.owner_id=? and msg_tag.tag=?", id, userID, tag).
-		Find(&msg).Error; err != nil {
+		Error; err != nil {
 		return nil, err
 	}
 	if msg.ID > 0 {
