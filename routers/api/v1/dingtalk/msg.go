@@ -117,7 +117,7 @@ func GetMsgs(c *gin.Context) {
 	pageSize := com.StrTo(c.Param("size")).MustInt()
 	session := sessions.Default(c)
 	v := session.Get("userid")
-	userID := v.(uint)
+	userID := fmt.Sprintf("%v", v)
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)
 		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
@@ -155,8 +155,8 @@ func GetMsgByID(c *gin.Context) {
 	tag, _ := strconv.Atoi(c.Param("tag"))
 	session := sessions.Default(c)
 	v := session.Get("userid")
-	userID := v.(uint)
-	msg, err := models.GetMsgByID(uint(id), userID, uint(tag))
+	userID := fmt.Sprintf("%v", v)
+	msg, err := models.GetMsgByID(uint(id), uint(tag), userID)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 		return

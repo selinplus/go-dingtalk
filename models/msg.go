@@ -25,7 +25,7 @@ func AddMsgSend(data interface{}) error {
 	return nil
 }
 
-func GetMsgs(userID, tag uint, pageNum, pageSize int) ([]*Msg, error) {
+func GetMsgs(userID string, tag uint, pageNum, pageSize int) ([]*Msg, error) {
 	var mgs []*Msg
 	err := db.Table("msg").
 		Select("msg.*, msg_tag.tag").
@@ -38,7 +38,7 @@ func GetMsgs(userID, tag uint, pageNum, pageSize int) ([]*Msg, error) {
 	}
 	return mgs, nil
 }
-func GetMsgCount(userID, tag uint) (int, error) {
+func GetMsgCount(userID string, tag uint) (int, error) {
 	var cnt int
 	err := db.Table("msg").
 		Select("msg.*, msg_tag.tag").
@@ -49,7 +49,7 @@ func GetMsgCount(userID, tag uint) (int, error) {
 	}
 	return cnt, nil
 }
-func GetMsgByID(id, userID, tag uint) (*Msg, error) {
+func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	var msg Msg
 	if err := db.Preload("Attachments").
 		Table("msg").
