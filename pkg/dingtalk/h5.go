@@ -17,11 +17,11 @@ type AccessToken struct {
 	ExpiresTime int64  `json:"expires_time"`
 }
 type UserInfo struct {
-	UserID     string   `json:"userid"`
-	Name       string   `json:"name"`
-	Avatar     string   `json:"avatar"`
-	Department []string `json:"department"`
-	Mobile     string   `json:"mobile"`
+	UserID     string `json:"userid"`
+	Name       string `json:"name"`
+	Avatar     string `json:"avatar"`
+	Department []int  `json:"department"`
+	Mobile     string `json:"mobile"`
 }
 
 // 企业会话消息异步发送
