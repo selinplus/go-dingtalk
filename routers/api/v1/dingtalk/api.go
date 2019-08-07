@@ -31,7 +31,7 @@ func Login(c *gin.Context) {
 	id := dingtalk.GetUserId(form.AuthCode)
 	if id != "" {
 		userInfo := dingtalk.GetUserInfo(id)
-		session.Set("userid", userInfo.Id)
+		session.Set("userid", userInfo.UserID)
 		session.Save()
 		appG.Response(http.StatusOK, e.SUCCESS, userInfo)
 		return
