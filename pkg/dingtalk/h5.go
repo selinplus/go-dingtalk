@@ -281,3 +281,66 @@ func DepartmentUserDetail(id int) []*models.User {
 	}
 	return usersList
 }
+
+//获取部门用户userid列表
+func DepartmentUserIdsDetail(id int) []string {
+	var useridslist = map[string]interface{}{}
+	depId := strconv.Itoa(id)
+	_, body, errs := gorequest.New().
+		Get(setting.DingtalkSetting.OapiHost + "/user/getDeptMember").
+		Query("access_token=" + GetAccessToken()).Query("deptId=" + depId).
+		End()
+	if len(errs) > 0 {
+		util.ShowError("get userids failed:", errs[0])
+		return nil
+	} else {
+		err := json.Unmarshal([]byte(body), &useridslist)
+		if err != nil {
+			log.Printf("unmarshall userlist info error:%v", err)
+		}
+		userids := useridslist["userIds"].([]interface{})
+		var useridslice []string
+		for _, param := range userids {
+			useridslice = append(useridslice, param.(string))
+		}
+		return useridslice
+	}
+}
+
+//获取用户详情
+func UserDetail(userid string) *models.User {
+	var user *models.User
+	var userlist = map[string]interface{}{}
+	_, body, errs := gorequest.New().
+		Get(setting.DingtalkSetting.OapiHost + "/user/get").
+		Query("access_token=" + GetAccessToken()).Query("userid=" + userid).
+		End()
+	if len(errs) > 0 {
+		util.ShowError("get user failed:", errs[0])
+		return nil
+	} else {
+		err := json.Unmarshal([]byte(body), &userlist)
+		if err != nil {
+			log.Printf("unmarshall userlist info error:%v", err)
+		}
+		errs := json.Unmarshal([]byte(body), &user)
+		if errs != nil {
+			log.Printf("convert struct error:%v", err)
+		}
+		var depIds string
+		for k, val := range userlist {
+			if k == "department" {
+				var paramSlice []string
+				for _, d := range val.([]interface{}) {
+					paramSlice = append(paramSlice, d.(string))
+				}
+				depIds = strings.Join(paramSlice, ",")
+				break
+			}
+		}
+		user.Department = depIds
+		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+		log.Printf("users is:%v", user)
+	}
+	return user
+}

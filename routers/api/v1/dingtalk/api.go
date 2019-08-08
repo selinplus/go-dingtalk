@@ -3,6 +3,7 @@ package dingtalk
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
@@ -108,15 +109,13 @@ func DepartmentUserSync(c *gin.Context) {
 			}()*/
 
 		//======================================test=======================//
-		//for depId := range depIds {
-		//department := dingtalk.DepartmentDetail(depId)
-		//department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-		//log.Printf("departmen is %v", department)
-		//models.DepartmentSync(department)
 		depId := 29489119
-		users := dingtalk.DepartmentUserDetail(depId)
-		log.Printf("user is %v", users)
-		//models.UserSync(users)
+		userids := dingtalk.DepartmentUserIdsDetail(depId)
+		log.Printf("user is %v", userids)
+		for _, userid := range userids {
+			user := dingtalk.UserDetail(userid)
+			models.UserSync(user)
+		}
 		//======================================test=======================//
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 		return
