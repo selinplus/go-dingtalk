@@ -25,6 +25,7 @@ var MsgFlags = map[int]string{
 	ERROR_ADD_MSG_FAIL:     "发送信息失败",
 	ERROR_GET_MSGLIST_FAIL: "获取消息列表失败",
 	ERROR_GET_MSG_FAIL:     "获取消息失败",
+	ERROR_DELETE_MSG_FAIL:  "删除消息失败",
 }
 
 // GetMsg get error information based on Code

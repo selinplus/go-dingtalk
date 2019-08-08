@@ -146,12 +146,35 @@ func GetJsApiConfig(url string) string {
 	}
 }
 
-func MessageCorpconversationAsyncsend(tcmpar string) (*AsyncsendReturn, error) {
+//发送工作通知start
+func MseesageToDingding(title, text, userid_list string) string {
+	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
+	link := map[string]interface{}{
+		"messageUrl": "http://s.dingtalk.com/market/dingtalk/error_code.php",
+		"picUrl":     "@lALOACZwe2Rk",
+		"title":      title,
+		"text":       text,
+	}
+	msgcotent := map[string]interface{}{
+		"msgtype": "link",
+		"link":    link,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": userid_list,
+		"to_all_user": false,
+		"msg":         msgcotent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	return tcmprJson
+}
+func MessageCorpconversationAsyncsend(mpar string) (*AsyncsendReturn, error) {
 	var asyncsendReturn *AsyncsendReturn
-	logging.Info(fmt.Sprintf("%v", tcmpar))
+	logging.Info(fmt.Sprintf("%v", mpar))
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetAccessToken()).
-		Type("json").Send(tcmpar).End()
+		Type("json").Send(mpar).End()
 	if len(errs) > 0 {
 		util.ShowError("MessageCorpconversationAsyncsend failed:", errs[0])
 		return nil, nil
@@ -166,3 +189,5 @@ func MessageCorpconversationAsyncsend(tcmpar string) (*AsyncsendReturn, error) {
 	}
 	return nil, nil
 }
+
+//发送工作通知end

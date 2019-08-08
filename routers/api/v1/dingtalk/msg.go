@@ -1,7 +1,6 @@
 package dingtalk
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -10,7 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
-	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,7 +31,7 @@ type MsgSendForm struct {
 }
 
 //发信息
-func MsgSend(c *gin.Context) {
+func SendMsg(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
 		form MsgSendForm
@@ -65,26 +63,7 @@ func MsgSend(c *gin.Context) {
 		Time:        t,
 		Attachments: ats,
 	}
-	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
-	link := map[string]interface{}{
-		"messageUrl": "http://s.dingtalk.com/market/dingtalk/error_code.php",
-		"picUrl":     "@lALOACZwe2Rk",
-		"title":      msg.Title,
-		"text":       msg.Content,
-	}
-	msgcotent := map[string]interface{}{
-		"msgtype": "link",
-		"link":    link,
-	}
-	tcmpr := map[string]interface{}{
-		"agent_id":    agentID,
-		"userid_list": msg.ToID,
-		//"to_all_user":  false,
-		"msg": msgcotent,
-	}
-	tcmprBytes, _ := json.Marshal(&tcmpr)
-	tcmprJson := string(tcmprBytes)
-	err := models.AddMsgSend(&msg)
+	err := models.AddSendMsg(&msg)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
 		return
@@ -94,11 +73,16 @@ func MsgSend(c *gin.Context) {
 		return
 	}
 	if msg.ID > 0 {
-		//appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
-		models.AddMsgTag(msg.ID, msg.ToID, msg.FromID)
+		err := models.AddMsgTag(msg.ID, msg.ToID, msg.FromID)
+		if err != nil {
+			logging.Info(fmt.Sprintf("%v", err))
+		}
+		tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
 		asyncsendReturn, _ := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil {
-			logging.Info(fmt.Sprintf("%v", asyncsendReturn))
+			if asyncsendReturn.Errcode == 0 {
+				models.UpdateMsgFlag(msg.ID)
+			}
 			appG.Response(http.StatusOK, e.SUCCESS, asyncsendReturn)
 		}
 	} else {
@@ -143,4 +127,20 @@ func GetMsgByID(c *gin.Context) {
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 	}
+}
+
+//删除消息
+func DeleteMsg(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	id, _ := strconv.Atoi(c.Query("id"))
+	tag, _ := strconv.Atoi(c.Query("tag"))
+	session := sessions.Default(c)
+	v := session.Get("userid")
+	userID := fmt.Sprintf("%v", v)
+	err := models.DeleteMsg(userID, uint(id), uint(tag))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_MSG_FAIL, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

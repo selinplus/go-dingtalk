@@ -18,8 +18,16 @@ type Msg struct {
 	Attachments []Attachment
 }
 
-func AddMsgSend(data interface{}) error {
+func AddSendMsg(data interface{}) error {
 	if err := db.Create(data).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateMsgFlag(msgID uint) error {
+	if err := db.Table("msg").
+		Where("id = ? and flag_notice = 0", msgID).Update("flag_notice", 1).Error; err != nil {
 		return err
 	}
 	return nil
@@ -36,9 +44,9 @@ func GetMsgs(userID string, tag uint, pageNum, pageSize int) ([]*Msg, error) {
 }
 func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	var msg Msg
-	if err := db.Preload("Attachments").Find(&msg).
+	if err := db.Preload("Attachments").Find(&msg, "id=?", id).
 		Joins("msg_tag ON msg.id = msg_tag.msg_id ").
-		Where("msg.id = ? and msg_tag.owner_id=? and msg_tag.tag=?", id, userID, tag).
+		Where("msg_tag.owner_id=? and msg_tag.tag=?", userID, tag).
 		Error; err != nil {
 		return nil, err
 	}

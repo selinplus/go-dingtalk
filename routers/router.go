@@ -42,11 +42,13 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/login", dingtalk.Login)
 		apiv1.GET("/js_api_config", dingtalk.JsApiConfig)
 		//发消息
-		apiv1.POST("/msg/send", dingtalk.MsgSend)
+		apiv1.POST("/msg/send", dingtalk.SendMsg)
 		//获取消息列表
 		apiv1.GET("/msg/list", dingtalk.GetMsgs)
 		//获取消息详情
 		apiv1.GET("/msg/detail", dingtalk.GetMsgByID)
+		//删除消息
+		apiv1.GET("/msg/delete", dingtalk.DeleteMsg)
 	}
 	return r
 }

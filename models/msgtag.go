@@ -15,18 +15,26 @@ type MsgTag struct {
 
 func AddMsgTag(msgID uint, ToID, FromID string) error {
 	ToIDs := strings.Split(ToID, ",")
-	for _, v := range ToIDs {
-		msgtag := MsgTag{OwnerID: string(v), MsgID: msgID, Tag: 1}
+	for _, owner_id := range ToIDs {
+		msgtag := MsgTag{OwnerID: owner_id, MsgID: msgID, Tag: 1}
 		if err := db.Create(&msgtag).Error; err != nil {
 			return err
 		}
 	}
 	FromIDs := strings.Split(FromID, ",")
-	for _, v := range FromIDs {
-		msgtag := MsgTag{OwnerID: string(v), MsgID: msgID, Tag: 2}
+	for _, owner_id := range FromIDs {
+		msgtag := MsgTag{OwnerID: owner_id, MsgID: msgID, Tag: 2}
 		if err := db.Create(&msgtag).Error; err != nil {
 			return err
 		}
+	}
+	return nil
+}
+func DeleteMsg(userid string, msg_id, tag uint) error {
+	if err := db.Table("msg_tag").
+		Where("owner_id = ? and msg_id = ? and tag=?", userid, msg_id, tag).
+		Update("tag", 0).Error; err != nil {
+		return err
 	}
 	return nil
 }
