@@ -10,7 +10,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -258,13 +257,13 @@ func DepartmentUserDetail(id int) *[]models.User {
 			vv := v.(map[string]interface{})
 			for k, val := range vv {
 				if k == "department" {
-					depIds := ""
+					//depIds := ""
 					for _, d := range val.([]interface{}) {
 						log.Printf("department is:%v", string(int(d.(float64))))
-						depIds += string(int(d.(float64))) + ","
+						//depIds += string(int(d.(float64))) + ","
 					}
-					log.Printf("deptid is %s", strings.Trim(depIds, ","))
-					user.Department = strings.Trim(depIds, ",")
+					//log.Printf("deptid is %s", strings.Trim(depIds, ","))
+					//user.Department = strings.Trim(depIds, ",")
 					break
 				}
 				if k == "userid" {
