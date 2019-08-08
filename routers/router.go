@@ -41,6 +41,8 @@ func InitRouter() *gin.Engine {
 		//apiv1.POST("/poster/generate", v1.GeneratePoster)
 		apiv1.POST("/login", dingtalk.Login)
 		apiv1.GET("/js_api_config", dingtalk.JsApiConfig)
+		//部门同步
+		apiv1.GET("/syncinfo", dingtalk.DepartmentUserSync)
 		//发消息
 		apiv1.POST("/msg/send", dingtalk.SendMsg)
 		//获取消息列表

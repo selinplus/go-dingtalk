@@ -49,5 +49,14 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(MsgTag{})
 	}
-
+	if !db.HasTable("department") {
+		db.CreateTable(Department{})
+	} else {
+		db.AutoMigrate(Department{})
+	}
+	if !db.HasTable("user") {
+		db.CreateTable(User{})
+	} else {
+		db.AutoMigrate(User{})
+	}
 }

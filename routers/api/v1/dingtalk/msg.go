@@ -78,7 +78,7 @@ func SendMsg(c *gin.Context) {
 			logging.Info(fmt.Sprintf("%v", err))
 		}
 		tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
-		asyncsendReturn, _ := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil {
 			if asyncsendReturn.Errcode == 0 {
 				models.UpdateMsgFlag(msg.ID)
