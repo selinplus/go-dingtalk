@@ -332,7 +332,8 @@ func UserDetail(userid string) *models.User {
 			if k == "department" {
 				var paramSlice []string
 				for _, d := range val.([]interface{}) {
-					paramSlice = append(paramSlice, d.(string))
+					v := strconv.Itoa(int(d.(float64)))
+					paramSlice = append(paramSlice, v)
 				}
 				depIds = strings.Join(paramSlice, ",")
 				break
