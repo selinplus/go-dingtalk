@@ -10,6 +10,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -234,9 +235,11 @@ func DepartmentDetail(id int) *models.Department {
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id int) *[]models.User {
-	var users *[]models.User
+func DepartmentUserDetail(id int) []models.User {
+	var users []models.User
 	var user models.User
+	var paramSlice []string
+	var depIds string
 	var userlist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -255,19 +258,23 @@ func DepartmentUserDetail(id int) *[]models.User {
 		users := userlist["userlist"].([]interface{})
 		for _, v := range users {
 			vv := v.(map[string]interface{})
-			for k, val := range vv {
-				if k == "department" {
-					for _, d := range val.([]interface{}) {
-						log.Printf("department is:%v", string(int(d.(float64))))
-					}
-					break
-				}
-			}
 			data, _ := json.Marshal(vv)
 			err := json.Unmarshal(data, &user)
 			if err != nil {
 				log.Printf("convert struct error:%v", err)
 			}
+			for k, val := range vv {
+				if k == "department" {
+					for _, d := range val.([]interface{}) {
+						v := strconv.Itoa(d.(int))
+						paramSlice = append(paramSlice, v)
+						log.Printf("department is: %v\n", int(d.(float64)))
+					}
+					depIds = strings.Join(paramSlice, ",") // Join 方法第2个参数是 string 而不是 rune
+					break
+				}
+			}
+			user.Department = depIds
 			log.Printf("user is:%v", user)
 		}
 	}
