@@ -236,7 +236,7 @@ func DepartmentDetail(id int) *models.Department {
 
 // 获取部门用户详情
 func DepartmentUserDetail(id int) []*models.User {
-	var users []*models.User
+	var usersList []*models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
@@ -277,7 +277,7 @@ func DepartmentUserDetail(id int) []*models.User {
 			user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 			log.Printf("users is:%v", user)
 		}
-		users = append(users, user)
+		usersList = append(usersList, &user)
 	}
-	return users
+	return usersList
 }
