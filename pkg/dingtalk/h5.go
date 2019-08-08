@@ -266,7 +266,7 @@ func DepartmentUserDetail(id int) []models.User {
 			for k, val := range vv {
 				if k == "department" {
 					for _, d := range val.([]interface{}) {
-						v := strconv.Itoa(d.(int))
+						v := strconv.Itoa(int(d.(float64)))
 						paramSlice = append(paramSlice, v)
 						log.Printf("department is: %v\n", int(d.(float64)))
 					}
