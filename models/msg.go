@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-)
+import "github.com/jinzhu/gorm"
 
 /*消息*/
 type Msg struct {

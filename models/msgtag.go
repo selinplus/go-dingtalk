@@ -31,10 +31,18 @@ func AddMsgTag(msgID uint, ToID, FromID string) error {
 	return nil
 }
 func DeleteMsg(userid string, msg_id, tag uint) error {
-	if err := db.Table("msg_tag").
-		Where("owner_id = ? and msg_id = ? and tag=?", userid, msg_id, tag).
-		Update("tag", 0).Error; err != nil {
-		return err
+	if tag == 0 {
+		if err := db.Table("msg_tag").
+			Where("owner_id = ? and msg_id = ? and tag=?", userid, msg_id, tag).
+			Update("tag", 4).Error; err != nil {
+			return err
+		}
+	} else {
+		if err := db.Table("msg_tag").
+			Where("owner_id = ? and msg_id = ? and tag=?", userid, msg_id, tag).
+			Update("tag", 0).Error; err != nil {
+			return err
+		}
 	}
 	return nil
 }

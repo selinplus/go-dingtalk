@@ -3,7 +3,6 @@ package dingtalk
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
@@ -58,41 +57,70 @@ func JsApiConfig(c *gin.Context) {
 //部门用户信息同步
 func DepartmentUserSync(c *gin.Context) {
 	appG := app.Gin{C: c}
+	//t := time.Now().Format("2006-01-02 15:04:05")
 	depIds, err := dingtalk.SubDepartmentList()
 	if err != nil {
 		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
 		return
 	}
 	if depIds != nil {
-		depIdChan := make(chan int, 100) //部门id
-		exitChan := make(chan bool, 8)   //退出标志
-		//开启线程，存入部门id
-		go func() {
-			for _, depId := range depIds {
-				depIdChan <- depId
-			}
-			close(depIdChan)
-		}()
-		//开启8个线程，同时获取部门详情
-		for i := 0; i < 8; i++ {
+		/*
+			//depIdChan := make(chan int)    //部门id
+			depIdChan := make(chan int, 120) //部门id
+			exitChan := make(chan bool, 8)   //退出标志
+			//var seg int
+			//if len(depIds)%8 == 0 {
+			//	seg = len(depIds) / 8
+			//} else {
+			//	seg = (len(depIds) / 8) + 1
+			//}
+			//for j := 0; j < 8; j++ {
+			//	segIds := depIds[j*seg : (j+1)*seg]
+			//开启线程，存入部门id
 			go func() {
-				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId)
-					models.DepartmentSync(department)
-					user := dingtalk.DepartmentUserDetail(depId)
-					models.UserSync(user)
-					exitChan <- true
+				for _, depId := range depIds {
+					depIdChan <- depId
 				}
+				close(depIdChan)
 			}()
-		}
-		//开启一个线程，等待所有goroute全部退出
-		go func() {
+			//}
+			//开启8个线程，同时获取部门详情
 			for i := 0; i < 8; i++ {
-				<-exitChan //不需要读值，仅计数
-				log.Println("wait goroute", i, "exit")
+				go func() {
+					for depId := range depIdChan {
+						//department := dingtalk.DepartmentDetail(depId)
+						//department.SyncTime = t
+						//log.Printf("departmen is %v", department)
+						//models.DepartmentSync(department)
+						user := dingtalk.DepartmentUserDetail(depId)
+						user.SyncTime = t
+						//log.Printf("departmen is %v", user)
+						//models.UserSync(user)
+					}
+				}()
+				exitChan <- true
 			}
-			appG.Response(http.StatusOK, e.SUCCESS, nil)
-			return
-		}()
+			//开启一个线程，等待所有goroute全部退出
+			go func() {
+				for i := 0; i < 8; i++ {
+					<-exitChan //不需要读值，仅计数
+					log.Println("wait goroute", i, "exit")
+				}
+			}()*/
+
+		//======================================test=======================//
+		//for depId := range depIds {
+		//department := dingtalk.DepartmentDetail(depId)
+		//department.SyncTime = t
+		//log.Printf("departmen is %v", department)
+		//models.DepartmentSync(department)
+		depId := 29489119
+		user := dingtalk.DepartmentUserDetail(depId)
+		//user.SyncTime = t
+		log.Printf("user is %v", user)
+		//models.UserSync(user)
+		//======================================test=======================//
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		return
 	}
 }

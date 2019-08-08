@@ -36,7 +36,7 @@ func GetAccessToken() string {
 		if len(errs) > 0 {
 			log.Printf("get dingtalk access token err:%v", errs[0])
 		} else {
-			log.Printf("Token is :%s", body)
+			//log.Printf("Token is :%s", body)
 			err := json.Unmarshal([]byte(body), Token)
 			util.ShowError("get token, unmarshall json", err)
 		}
@@ -188,15 +188,9 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 // 获取子部门Id列表
 func SubDepartmentList() ([]int, error) {
 	var depIds []int
-	type SubDeptIdList struct {
-		Errcode    int    `json:"errcode"`
-		Errmsg     string `json:"errmsg"`
-		department []models.Department
-	}
-	var subDeptIdList = SubDeptIdList{}
+	var subDeptIdList = map[string]interface{}{}
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/department/list?access_token=" + GetAccessToken()).End()
-	log.Printf("the body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("get department list_ids failed:", errs[0])
 		return nil, errs[0]
@@ -207,11 +201,17 @@ func SubDepartmentList() ([]int, error) {
 			return nil, err
 		}
 	}
-	for _, v := range subDeptIdList.department {
-		logging.Info(fmt.Sprintf("%v", v))
-		depIds = append(depIds, v.ID)
+	depts := subDeptIdList["department"].([]interface{})
+	for _, v := range depts {
+		vv := v.(map[string]interface{})
+		for k, val := range vv {
+			if k == "id" {
+				depIds = append(depIds, int(val.(float64)))
+				break
+			}
+		}
 	}
-	logging.Info(fmt.Sprintf("%v", depIds))
+	log.Printf("depIds length is %d", len(depIds))
 	return depIds, nil
 }
 
@@ -221,7 +221,6 @@ func DepartmentDetail(id int) *models.Department {
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/department/get?access_token=" + GetAccessToken() + "&id=" + depId).End()
-	log.Printf("the body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("get department failed:", errs[0])
 		return nil
@@ -235,20 +234,49 @@ func DepartmentDetail(id int) *models.Department {
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id int) *models.User {
-	var user *models.User
+func DepartmentUserDetail(id int) []models.User {
+	var user models.User
+	var userlist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
-		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage?access_token=" + GetAccessToken() + "&department_id=" + depId).End()
-	log.Printf("the body is %s\n", body)
+		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").
+		Query("access_token=" + GetAccessToken()).Query("department_id=" + depId).
+		Query("offset=0").Query("size=100").
+		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
 		return nil
 	} else {
-		err := json.Unmarshal([]byte(body), &user)
+		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
-			log.Printf("unmarshall user info error:%v", err)
+			log.Printf("unmarshall userlist info error:%v", err)
+		}
+		users := userlist["userlist"].([]interface{})
+		for _, v := range users {
+			vv := v.(map[string]interface{})
+			var depIds string
+			for k, val := range vv {
+				if k == "department" {
+					ds := val.([]interface{})
+					//for _, d := range val.([]interface{}) {
+					//	log.Printf("department is:%v", string(int(d.(float64))))
+					//	depIds += string(int(d.(float64))) + ","
+					//}
+					for i := 0; i < len(ds)-1; i++ {
+						depIds += string(int(ds[i].(float64))) + ","
+					}
+					depIds += string(int(ds[len(ds)].(float64)))
+					break
+				}
+			}
+			vv["department"] = depIds
+			data, _ := json.Marshal(vv)
+			err := json.Unmarshal(data, &user)
+			if err != nil {
+				log.Printf("convert struct error:%v", err)
+			}
+			log.Printf("user is:%v", user)
 		}
 	}
-	return user
+	return nil
 }
