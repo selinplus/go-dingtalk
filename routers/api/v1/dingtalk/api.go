@@ -57,7 +57,6 @@ func JsApiConfig(c *gin.Context) {
 //部门用户信息同步
 func DepartmentUserSync(c *gin.Context) {
 	appG := app.Gin{C: c}
-	//t := time.Now().Format("2006-01-02 15:04:05")
 	depIds, err := dingtalk.SubDepartmentList()
 	if err != nil {
 		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
@@ -111,12 +110,11 @@ func DepartmentUserSync(c *gin.Context) {
 		//======================================test=======================//
 		//for depId := range depIds {
 		//department := dingtalk.DepartmentDetail(depId)
-		//department.SyncTime = t
+		//department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 		//log.Printf("departmen is %v", department)
 		//models.DepartmentSync(department)
 		depId := 29489119
 		users := dingtalk.DepartmentUserDetail(depId)
-		//user.SyncTime = t
 		log.Printf("user is %v", users)
 		//models.UserSync(users)
 		//======================================test=======================//

@@ -13,9 +13,11 @@ type User struct {
 	SyncTime   string `json:"sync_time" gorm:"COMMENT:'同步时间'"`
 }
 
-func UserSync(data interface{}) error {
-	if err := db.Model(&User{}).Save(data).Error; err != nil {
-		return err
+func UserSync(users []*User) error {
+	for _, user := range users {
+		if err := db.Model(&User{}).Save(user).Error; err != nil {
+			return err
+		}
 	}
 	return nil
 }

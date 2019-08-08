@@ -235,11 +235,9 @@ func DepartmentDetail(id int) *models.Department {
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id int) []models.User {
-	var users []models.User
+func DepartmentUserDetail(id int) []*models.User {
+	var users []*models.User
 	var user models.User
-	var paramSlice []string
-	var depIds string
 	var userlist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -263,20 +261,23 @@ func DepartmentUserDetail(id int) []models.User {
 			if err != nil {
 				log.Printf("convert struct error:%v", err)
 			}
+			var depIds string
 			for k, val := range vv {
 				if k == "department" {
+					var paramSlice []string
 					for _, d := range val.([]interface{}) {
 						v := strconv.Itoa(int(d.(float64)))
 						paramSlice = append(paramSlice, v)
-						log.Printf("department is: %v\n", int(d.(float64)))
 					}
-					depIds = strings.Join(paramSlice, ",") // Join 方法第2个参数是 string 而不是 rune
+					depIds = strings.Join(paramSlice, ",")
 					break
 				}
 			}
 			user.Department = depIds
-			log.Printf("user is:%v", user)
+			user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+			log.Printf("users is:%v", user)
 		}
+		users = append(users, user)
 	}
 	return users
 }
