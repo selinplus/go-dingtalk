@@ -257,44 +257,16 @@ func DepartmentUserDetail(id int) *[]models.User {
 			vv := v.(map[string]interface{})
 			for k, val := range vv {
 				if k == "department" {
-					//depIds := ""
 					for _, d := range val.([]interface{}) {
 						log.Printf("department is:%v", string(int(d.(float64))))
-						//depIds += string(int(d.(float64))) + ","
 					}
-					//log.Printf("deptid is %s", strings.Trim(depIds, ","))
-					//user.Department = strings.Trim(depIds, ",")
 					break
 				}
-				if k == "userid" {
-					user.UserID = val.(string)
-					break
-				}
-				if k == "name" {
-					user.Name = val.(string)
-					break
-				}
-				if k == "mobile" {
-					user.Mobile = val.(string)
-					break
-				}
-				if k == "isAdmin" {
-					user.IsAdmin = val.(bool)
-					break
-				}
-				if k == "active" {
-					user.Active = val.(bool)
-					break
-				}
-				if k == "avatar" {
-					user.Avatar = val.(string)
-					break
-				}
-				if k == "remark" {
-					user.Remark = val.(string)
-					break
-				}
-				users = append(users, user)
+			}
+			data, _ := json.Marshal(vv)
+			err := json.Unmarshal(data, &user)
+			if err != nil {
+				log.Printf("convert struct error:%v", err)
 			}
 			log.Printf("user is:%v", user)
 		}
