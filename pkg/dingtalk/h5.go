@@ -265,7 +265,8 @@ func DepartmentUserDetail(id int) []models.User {
 					for i := 0; i < len(ds)-1; i++ {
 						depIds += string(int(ds[i].(float64))) + ","
 					}
-					depIds += string(int(ds[len(ds)].(float64)))
+					depIds += string(int(ds[len(ds)-1].(float64)))
+					log.Printf("deptid is %s", depIds)
 					break
 				}
 			}
