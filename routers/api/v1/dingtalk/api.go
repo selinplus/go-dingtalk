@@ -115,10 +115,10 @@ func DepartmentUserSync(c *gin.Context) {
 		//log.Printf("departmen is %v", department)
 		//models.DepartmentSync(department)
 		depId := 29489119
-		user := dingtalk.DepartmentUserDetail(depId)
+		users := dingtalk.DepartmentUserDetail(depId)
 		//user.SyncTime = t
-		log.Printf("user is %v", user)
-		//models.UserSync(user)
+		log.Printf("user is %v", users)
+		//models.UserSync(users)
 		//======================================test=======================//
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 		return

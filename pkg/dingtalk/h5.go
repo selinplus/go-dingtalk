@@ -10,6 +10,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -234,7 +235,8 @@ func DepartmentDetail(id int) *models.Department {
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id int) []models.User {
+func DepartmentUserDetail(id int) *[]models.User {
+	var users *[]models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
@@ -254,30 +256,49 @@ func DepartmentUserDetail(id int) []models.User {
 		users := userlist["userlist"].([]interface{})
 		for _, v := range users {
 			vv := v.(map[string]interface{})
-			var depIds string
 			for k, val := range vv {
 				if k == "department" {
-					ds := val.([]interface{})
-					//for _, d := range val.([]interface{}) {
-					//	log.Printf("department is:%v", string(int(d.(float64))))
-					//	depIds += string(int(d.(float64))) + ","
-					//}
-					for i := 0; i < len(ds)-1; i++ {
-						depIds += string(int(ds[i].(float64))) + ","
+					depIds := ""
+					for _, d := range val.([]interface{}) {
+						log.Printf("department is:%v", string(int(d.(float64))))
+						depIds += string(int(d.(float64))) + ","
 					}
-					depIds += string(int(ds[len(ds)-1].(float64)))
-					log.Printf("deptid is %s", depIds)
+					log.Printf("deptid is %s", strings.Trim(depIds, ","))
+					user.Department = strings.Trim(depIds, ",")
 					break
 				}
-			}
-			vv["department"] = depIds
-			data, _ := json.Marshal(vv)
-			err := json.Unmarshal(data, &user)
-			if err != nil {
-				log.Printf("convert struct error:%v", err)
+				if k == "userid" {
+					user.UserID = val.(string)
+					break
+				}
+				if k == "name" {
+					user.Name = val.(string)
+					break
+				}
+				if k == "mobile" {
+					user.Mobile = val.(string)
+					break
+				}
+				if k == "isAdmin" {
+					user.IsAdmin = val.(bool)
+					break
+				}
+				if k == "active" {
+					user.Active = val.(bool)
+					break
+				}
+				if k == "avatar" {
+					user.Avatar = val.(string)
+					break
+				}
+				if k == "remark" {
+					user.Remark = val.(string)
+					break
+				}
+				users = append(users, user)
 			}
 			log.Printf("user is:%v", user)
 		}
 	}
-	return nil
+	return users
 }
