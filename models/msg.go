@@ -34,19 +34,6 @@ func GetMsgs(userID string, tag uint, pageNum, pageSize int) ([]*Msg, error) {
 	}
 	return msg, nil
 }
-func GetMsgCount(userID string, tag uint) (int, error) {
-	cnt := 0
-	rows, err := db.
-		Raw("SELECT msg.*, msg_tag.tag FROM msg LEFT JOIN msg_tag ON msg.id = msg_tag.msg_id WHERE msg_tag.owner_id = ? AND msg_tag.tag = ?", userID, tag).
-		Rows()
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return cnt, err
-	}
-	for rows.Next() {
-		cnt++
-	}
-	return cnt, nil
-}
 func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	var msg Msg
 	if err := db.Preload("Attachments").Find(&msg).

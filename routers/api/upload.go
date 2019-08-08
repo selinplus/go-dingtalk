@@ -58,13 +58,55 @@ func UploadImage(c *gin.Context) {
 		"url":  savePath + imageName,
 	})
 }
+func UploadFile(c *gin.Context) {
+	appG := app.Gin{C: c}
+	file, image, err := c.Request.FormFile("file")
+	if err != nil {
+		logging.Warn(err)
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+
+	if image == nil {
+		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
+		return
+	}
+
+	imageName := upload.GetImageName(image.Filename)
+	fullPath := upload.GetImageFullPath()
+	savePath := upload.GetImagePath()
+	src := fullPath + imageName
+
+	if !upload.CheckImageExt(imageName) || !upload.CheckImageSize(file) {
+		appG.Response(http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
+		return
+	}
+
+	err = upload.CheckImage(fullPath)
+	if err != nil {
+		logging.Warn(err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_IMAGE_FAIL, nil)
+		return
+	}
+
+	if err := c.SaveUploadedFile(image, src); err != nil {
+		logging.Warn(err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
+		"name": upload.GetImageFullUrl(imageName),
+		"url":  savePath + imageName,
+	})
+}
 
 type Ids struct {
 	YaodianID string
 	MendianID string
 }
 
-func UploadFile(c *gin.Context) {
+func UploadImageByID(c *gin.Context) {
 	appG := app.Gin{C: c}
 	yaodianID, _ := c.GetPostForm("yaodian_id")
 	mendianID, _ := c.GetPostForm("mendian_id")

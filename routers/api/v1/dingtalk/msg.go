@@ -115,20 +115,6 @@ func GetMsgs(c *gin.Context) {
 	session := sessions.Default(c)
 	v := session.Get("userid")
 	userID := fmt.Sprintf("%v", v)
-	cnt, err := models.GetMsgCount(userID, uint(tag))
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
-		return
-	}
-	pages := 0
-	if cnt%pageSize == 0 {
-		pages = cnt / pageSize
-	} else {
-		pages = cnt/pageSize + 1
-	}
-	if pageNum > pages {
-		pageNum = pages
-	}
 	msgs, err := models.GetMsgs(userID, uint(tag), pageNum, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
@@ -136,7 +122,6 @@ func GetMsgs(c *gin.Context) {
 	}
 	data := make(map[string]interface{})
 	data["lists"] = msgs
-	data["total"] = cnt
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 

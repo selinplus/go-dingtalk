@@ -30,13 +30,13 @@ func InitRouter() *gin.Engine {
 	r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 
 	//r.POST("/file/upload", api.UploadImage)
-	r.POST("/uploads/file", api.UploadFile)
+	r.POST("/uploads/file", api.UploadImageByID)
 
 	apiv1 := r.Group("/api/v1")
 	//apiv1.Use(jwt.JWT())
 	{
 		//上传文件
-		apiv1.POST("/file/upload", api.UploadImage)
+		apiv1.POST("/file/upload", api.UploadFile)
 		//生成海报
 		//apiv1.POST("/poster/generate", v1.GeneratePoster)
 		apiv1.POST("/login", dingtalk.Login)
