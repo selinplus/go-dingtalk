@@ -235,15 +235,16 @@ func DepartmentDetail(id int) *models.Department {
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id int) []*models.User {
+func DepartmentUserDetail(id, pageNum int) []*models.User {
 	var usersList []*models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
+	offset := strconv.Itoa(pageNum)
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").
 		Query("access_token=" + GetAccessToken()).Query("department_id=" + depId).
-		Query("offset=0").Query("size=100").
+		Query("offset=" + offset).Query("size=100").
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
@@ -253,29 +254,32 @@ func DepartmentUserDetail(id int) []*models.User {
 		if err != nil {
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		users := userlist["userlist"].([]interface{})
-		for _, v := range users {
-			vv := v.(map[string]interface{})
-			data, _ := json.Marshal(vv)
-			err := json.Unmarshal(data, &user)
-			if err != nil {
-				log.Printf("convert struct error:%v", err)
-			}
-			var depIds string
-			for k, val := range vv {
-				if k == "department" {
-					var paramSlice []string
-					for _, d := range val.([]interface{}) {
-						v := strconv.Itoa(int(d.(float64)))
-						paramSlice = append(paramSlice, v)
-					}
-					depIds = strings.Join(paramSlice, ",")
-					break
+		ui := userlist["userlist"].(interface{})
+		if ui != nil {
+			users := userlist["userlist"].([]interface{})
+			for _, v := range users {
+				vv := v.(map[string]interface{})
+				data, _ := json.Marshal(vv)
+				err := json.Unmarshal(data, &user)
+				if err != nil {
+					log.Printf("convert struct error:%v", err)
 				}
+				var depIds string
+				for k, val := range vv {
+					if k == "department" {
+						var paramSlice []string
+						for _, d := range val.([]interface{}) {
+							v := strconv.Itoa(int(d.(float64)))
+							paramSlice = append(paramSlice, v)
+						}
+						depIds = strings.Join(paramSlice, ",")
+						break
+					}
+				}
+				user.Department = depIds
+				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+				log.Printf("user is:%v", user)
 			}
-			user.Department = depIds
-			user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-			log.Printf("users is:%v", user)
 		}
 		usersList = append(usersList, &user)
 	}
@@ -298,13 +302,17 @@ func DepartmentUserIdsDetail(id int) []string {
 		if err != nil {
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		userids := useridslist["userIds"].([]interface{})
-		var useridslice []string
-		for _, param := range userids {
-			useridslice = append(useridslice, param.(string))
+		ui := useridslist["userIds"].(interface{})
+		if ui != nil {
+			userids := useridslist["userIds"].([]interface{})
+			var useridslice []string
+			for _, param := range userids {
+				useridslice = append(useridslice, param.(string))
+			}
+			return useridslice
 		}
-		return useridslice
 	}
+	return nil
 }
 
 //获取用户详情
@@ -328,20 +336,22 @@ func UserDetail(userid string) *models.User {
 			log.Printf("convert struct error:%v", err)
 		}
 		var depIds string
-		for k, val := range userlist {
-			if k == "department" {
-				var paramSlice []string
-				for _, d := range val.([]interface{}) {
-					v := strconv.Itoa(int(d.(float64)))
-					paramSlice = append(paramSlice, v)
+		if len(userlist) > 0 {
+			for k, val := range userlist {
+				if k == "department" {
+					var paramSlice []string
+					for _, d := range val.([]interface{}) {
+						v := strconv.Itoa(int(d.(float64)))
+						paramSlice = append(paramSlice, v)
+					}
+					depIds = strings.Join(paramSlice, ",")
+					break
 				}
-				depIds = strings.Join(paramSlice, ",")
-				break
 			}
+			user.Department = depIds
 		}
-		user.Department = depIds
 		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-		log.Printf("users is:%v", user)
+		//log.Printf("users is:%v", user)
 	}
 	return user
 }

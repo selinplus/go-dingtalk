@@ -8,7 +8,10 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"log"
+	"math"
 	"net/http"
+	"sync"
+	"time"
 )
 
 type LoginForm struct {
@@ -64,59 +67,51 @@ func DepartmentUserSync(c *gin.Context) {
 		return
 	}
 	if depIds != nil {
-		/*
-			//depIdChan := make(chan int)    //部门id
-			depIdChan := make(chan int, 120) //部门id
-			exitChan := make(chan bool, 8)   //退出标志
-			//var seg int
-			//if len(depIds)%8 == 0 {
-			//	seg = len(depIds) / 8
-			//} else {
-			//	seg = (len(depIds) / 8) + 1
-			//}
-			//for j := 0; j < 8; j++ {
-			//	segIds := depIds[j*seg : (j+1)*seg]
-			//开启线程，存入部门id
-			go func() {
-				for _, depId := range depIds {
-					depIdChan <- depId
-				}
-				close(depIdChan)
-			}()
-			//}
-			//开启8个线程，同时获取部门详情
-			for i := 0; i < 8; i++ {
-				go func() {
-					for depId := range depIdChan {
-						//department := dingtalk.DepartmentDetail(depId)
-						//department.SyncTime = t
-						//log.Printf("departmen is %v", department)
-						//models.DepartmentSync(department)
-						user := dingtalk.DepartmentUserDetail(depId)
-						user.SyncTime = t
-						//log.Printf("departmen is %v", user)
-						//models.UserSync(user)
-					}
-				}()
-				exitChan <- true
-			}
-			//开启一个线程，等待所有goroute全部退出
-			go func() {
-				for i := 0; i < 8; i++ {
-					<-exitChan //不需要读值，仅计数
-					log.Println("wait goroute", i, "exit")
-				}
-			}()*/
-
-		//======================================test=======================//
-		depId := 29489119
-		userids := dingtalk.DepartmentUserIdsDetail(depId)
-		log.Printf("user is %v", userids)
-		for _, userid := range userids {
-			user := dingtalk.UserDetail(userid)
-			models.UserSync(user)
+		var seg int
+		depidsLen := len(depIds)
+		if depidsLen%8 == 0 {
+			seg = depidsLen / 8
+		} else {
+			seg = (depidsLen / 8) + 1
 		}
-		//======================================test=======================//
+		depIdChan := make(chan int, 100) //部门id
+		for j := 0; j < 8; j++ {
+			segIds := depIds[j*seg : (j+1)*seg]
+			var num int
+			go func() {
+				for _, depId := range segIds {
+					depIdChan <- depId
+					num++
+				}
+			}()
+			if num == depidsLen {
+				close(depIdChan)
+			}
+		}
+		syncNum := 30
+		wg := &sync.WaitGroup{}
+		wg.Add(syncNum)
+		for k := 0; k < syncNum; k++ {
+			wg.Done()
+			go func() {
+				for depId := range depIdChan {
+					department := dingtalk.DepartmentDetail(depId)
+					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+					log.Printf("departmen is %v", department)
+					if department.ID != 0 {
+						models.DepartmentSync(department)
+					}
+					userids := dingtalk.DepartmentUserIdsDetail(depId)
+					log.Printf("userids is %v", userids)
+					len := math.Ceil(float64(len(userids) % 100))
+					for l := 0; l < int(len); l++ {
+						userlist := dingtalk.DepartmentUserDetail(depId, l)
+						models.UserSync(userlist)
+					}
+				}
+			}()
+		}
+		wg.Wait()
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 		return
 	}
