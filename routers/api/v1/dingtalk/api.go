@@ -10,7 +10,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -90,30 +89,22 @@ func DepartmentUserSync(c *gin.Context) {
 				close(depIdChan)
 			}
 		}
-		syncNum := 8
-		wg := &sync.WaitGroup{}
-		wg.Add(syncNum)
-		for k := 0; k < syncNum; k++ {
-			wg.Done()
-			go func() {
-				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId)
-					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-					if department.ID != 0 {
-						if err := models.DepartmentSync(department); err != nil {
-							log.Println("DepartmentSync err:%v", err)
-						}
-					}
-					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					cnt := int(math.Ceil(float64(len(userids) % 100)))
-					for l := 0; l < cnt; l++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, l)
-						if err := models.UserSync(userlist); err != nil {
-							log.Println("UserSync err:%v", err)
-						}
-					}
+		for depId := range depIdChan {
+			department := dingtalk.DepartmentDetail(depId)
+			department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+			if department.ID != 0 {
+				if err := models.DepartmentSync(department); err != nil {
+					log.Println("DepartmentSync err:%v", err)
 				}
-			}()
+			}
+			userids := dingtalk.DepartmentUserIdsDetail(depId)
+			cnt := int(math.Ceil(float64(len(userids) % 100)))
+			for l := 0; l < cnt; l++ {
+				userlist := dingtalk.DepartmentUserDetail(depId, l)
+				if err := models.UserSync(userlist); err != nil {
+					log.Println("UserSync err:%v", err)
+				}
+			}
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		return
