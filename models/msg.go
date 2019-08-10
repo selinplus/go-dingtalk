@@ -53,15 +53,3 @@ func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	}
 	return nil, nil
 }
-
-func GetMsgFlag() ([]*Msg, error) {
-	var msg []*Msg
-	err := db.Table("msg").Where("FlagNotice=0").Scan(&msg).Error
-	if err != nil {
-		return nil, err
-	}
-	if err == gorm.ErrRecordNotFound {
-		return nil, nil
-	}
-	return msg, nil
-}
