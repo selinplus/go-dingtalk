@@ -198,7 +198,6 @@ func SubDepartmentList() ([]int, error) {
 	} else {
 		err := json.Unmarshal([]byte(body), &subDeptIdList)
 		if err != nil {
-			log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
 			log.Printf("unmarshall SubDeptIdList info error:%v", err)
 			return nil, err
 		}
@@ -229,7 +228,6 @@ func DepartmentDetail(id int) *models.Department {
 	} else {
 		err := json.Unmarshal([]byte(body), &department)
 		if err != nil {
-			log.Printf("unmarshall department info error_body is:%v", body)
 			log.Printf("unmarshall department info error:%v", err)
 		}
 	}
@@ -254,10 +252,10 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 	} else {
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
-			log.Printf("unmarshall userlist info error_body is:%v", body)
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		if userlist["userlist"] != nil {
+		ui := userlist["userlist"]
+		if ui != nil {
 			users := userlist["userlist"].([]interface{})
 			for _, v := range users {
 				vv := v.(map[string]interface{})
@@ -280,7 +278,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 				}
 				user.Department = depIds
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-				//log.Printf("user is:%v", user)
+				log.Printf("user is:%v", user)
 			}
 		}
 		usersList = append(usersList, &user)
@@ -302,10 +300,10 @@ func DepartmentUserIdsDetail(id int) []string {
 	} else {
 		err := json.Unmarshal([]byte(body), &useridslist)
 		if err != nil {
-			log.Printf("unmarshall useridslist info error_body is:%v", body)
-			log.Printf("unmarshall useridslist info error:%v", err)
+			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		if useridslist["userIds"] != nil {
+		ui := useridslist["userIds"]
+		if ui != nil {
 			userids := useridslist["userIds"].([]interface{})
 			var useridslice []string
 			for _, param := range userids {
@@ -331,8 +329,7 @@ func UserDetail(userid string) *models.User {
 	} else {
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
-			log.Printf("unmarshall user info error_body is:%v", body)
-			log.Printf("unmarshall user info error:%v", err)
+			log.Printf("unmarshall userlist info error:%v", err)
 		}
 		errs := json.Unmarshal([]byte(body), &user)
 		if errs != nil {
