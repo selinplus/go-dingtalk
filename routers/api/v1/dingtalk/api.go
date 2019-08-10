@@ -1,12 +1,14 @@
 package dingtalk
 
 import (
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"log"
 	"math"
 	"net/http"
@@ -62,11 +64,13 @@ func JsApiConfig(c *gin.Context) {
 func DepartmentUserSync(c *gin.Context) {
 	appG := app.Gin{C: c}
 	depIds, err := dingtalk.SubDepartmentList()
+	logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
 	if err != nil {
 		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
 		return
 	}
 	if depIds != nil {
+		var useridNum int
 		var seg int
 		depidsLen := len(depIds)
 		if depidsLen%8 == 0 {
@@ -88,7 +92,7 @@ func DepartmentUserSync(c *gin.Context) {
 				close(depIdChan)
 			}
 		}
-		syncNum := 15
+		syncNum := 20
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -102,6 +106,7 @@ func DepartmentUserSync(c *gin.Context) {
 						models.DepartmentSync(department)
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
+					useridNum += int(float64(len(userids)))
 					log.Printf("userids is %v", userids)
 					len := math.Ceil(float64(len(userids) % 100))
 					for l := 0; l < int(len); l++ {
@@ -112,6 +117,7 @@ func DepartmentUserSync(c *gin.Context) {
 			}()
 		}
 		wg.Wait()
+		logging.Info(fmt.Sprintf("userids length is %d", useridNum))
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 		return
 	}
