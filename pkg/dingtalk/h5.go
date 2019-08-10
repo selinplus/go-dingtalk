@@ -254,8 +254,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 		if err != nil {
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		ui := userlist["userlist"]
-		if ui != nil {
+		if userlist["userlist"] != nil {
 			users := userlist["userlist"].([]interface{})
 			for _, v := range users {
 				vv := v.(map[string]interface{})
@@ -278,7 +277,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 				}
 				user.Department = depIds
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-				log.Printf("user is:%v", user)
+				//log.Printf("user is:%v", user)
 			}
 		}
 		usersList = append(usersList, &user)
@@ -298,12 +297,14 @@ func DepartmentUserIdsDetail(id int) []string {
 		util.ShowError("get userids failed:", errs[0])
 		return nil
 	} else {
-		err := json.Unmarshal([]byte(body), &useridslist)
-		if err != nil {
-			log.Printf("unmarshall userlist info error:%v", err)
+		if body != "" {
+			err := json.Unmarshal([]byte(body), &useridslist)
+			if err != nil {
+				log.Printf("unmarshall useridslist info error_body is:%s", body)
+				log.Printf("unmarshall useridslist info error:%v", err)
+			}
 		}
-		ui := useridslist["userIds"]
-		if ui != nil {
+		if useridslist["userIds"] != nil {
 			userids := useridslist["userIds"].([]interface{})
 			var useridslice []string
 			for _, param := range userids {
@@ -329,7 +330,7 @@ func UserDetail(userid string) *models.User {
 	} else {
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
-			log.Printf("unmarshall userlist info error:%v", err)
+			log.Printf("unmarshall user info error:%v", err)
 		}
 		errs := json.Unmarshal([]byte(body), &user)
 		if errs != nil {
