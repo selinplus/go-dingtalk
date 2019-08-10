@@ -27,10 +27,8 @@ func UserSync(users []*User) error {
 	return nil
 }
 func AddUser(user *User) error {
-	if user.UserID != "" {
-		if err := db.Create(&User{}).Error; err != nil {
-			return err
-		}
+	if err := db.Create(user).Error; err != nil {
+		return err
 	}
 	return nil
 }

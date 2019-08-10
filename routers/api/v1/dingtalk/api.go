@@ -69,11 +69,19 @@ func DepartmentUserSync(c *gin.Context) {
 		return
 	}
 	if depIds != nil {
+		var seg int
+		depidsLen := len(depIds)
+		if depidsLen%8 == 0 {
+			seg = depidsLen / 8
+		} else {
+			seg = (depidsLen / 8) + 1
+		}
 		depIdChan := make(chan int, 100) //部门id
 		for j := 0; j < 8; j++ {
+			segIds := depIds[j*seg : (j+1)*seg]
 			var num int
 			go func() {
-				for _, depId := range depIds {
+				for _, depId := range segIds {
 					depIdChan <- depId
 					num++
 				}
@@ -102,12 +110,16 @@ func DepartmentUserSync(c *gin.Context) {
 						userlist := dingtalk.DepartmentUserDetail(depId, l)
 						//models.UserSync(userlist)
 						for _, user := range userlist {
-							if models.IsUseridExist(user.UserID) {
-								ue := models.EditUser(user)
-								log.Printf("update user err %v", ue)
+							if user.UserID != "" {
+								if models.IsUseridExist(user.UserID) {
+									if ue := models.EditUser(user); ue != nil {
+										log.Printf("update user err %v", ue)
+									}
+								}
+								if er := models.AddUser(user); er != nil {
+									log.Printf("add user err %v", er)
+								}
 							}
-							er := models.AddUser(user)
-							log.Printf("add user err %v", er)
 						}
 					}
 				}
