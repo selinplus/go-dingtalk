@@ -106,12 +106,7 @@ func DepartmentUserSync(c *gin.Context) {
 					len := math.Ceil(float64(len(userids) % 100))
 					for l := 0; l < int(len); l++ {
 						userlist := dingtalk.DepartmentUserDetail(depId, l)
-						for _, user := range userlist {
-							if models.IsUseridExist(user.UserID) {
-								models.EditUser(user)
-							}
-							models.AddUser(user)
-						}
+						models.UserSync(userlist)
 					}
 				}
 			}()

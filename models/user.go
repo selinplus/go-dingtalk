@@ -4,7 +4,7 @@ import "github.com/jinzhu/gorm"
 
 /*用户*/
 type User struct {
-	UserID     string `json:"userid" gorm:"column:userid;primary_key;COMMENT:'用户标识'`
+	UserID     string `json:"userid" gorm:"primary_key;column:userid;COMMENT:'用户标识'"`
 	Name       string `json:"name" gorm:"COMMENT:'名称'"`
 	Department string `json:"deptId" gorm:"column:deptId;COMMENT:'部门id'"`
 	Mobile     string `json:"mobile" gorm:"COMMENT:'手机号'"`
@@ -15,6 +15,16 @@ type User struct {
 	SyncTime   string `json:"sync_time" gorm:"COMMENT:'同步时间'"`
 }
 
+func UserSync(users []*User) error {
+	for _, user := range users {
+		if user.UserID != "" {
+			if err := db.Model(&User{}).Save(user).Error; err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
 func AddUser(user *User) error {
 	if user.UserID != "" {
 		if err := db.Create(&User{}).Error; err != nil {
