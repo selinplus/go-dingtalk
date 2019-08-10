@@ -68,6 +68,7 @@ func DepartmentUserSync(c *gin.Context) {
 		return
 	}
 	if depIds != nil {
+		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		var seg int
 		depidsLen := len(depIds)
 		if depidsLen%8 == 0 {
@@ -106,7 +107,6 @@ func DepartmentUserSync(c *gin.Context) {
 				}
 			}
 		}
-		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		return
 	}
 }

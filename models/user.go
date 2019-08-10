@@ -4,8 +4,8 @@ import "github.com/jinzhu/gorm"
 
 /*用户*/
 type User struct {
-	ID         uint   `gorm:"primary_key"`
-	UserID     string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
+	//ID         uint   `gorm:"primary_key"`
+	UserID     string `json:"userid" gorm:"primary_key;column:userid;COMMENT:'用户标识'"`
 	Name       string `json:"name" gorm:"COMMENT:'名称'"`
 	Department string `json:"deptId" gorm:"column:deptId;COMMENT:'部门id'"`
 	Mobile     string `json:"mobile" gorm:"COMMENT:'手机号'"`
@@ -18,7 +18,7 @@ type User struct {
 
 func UserSync(users []*User) error {
 	for _, user := range users {
-		if user.UserID != "" && !IsUseridExist(user.UserID) {
+		if user.UserID != "" {
 			if err := db.Model(&User{}).Save(user).Error; err != nil {
 				return err
 			}
