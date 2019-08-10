@@ -18,7 +18,7 @@ type User struct {
 
 func UserSync(users []*User) error {
 	for _, user := range users {
-		if user.UserID != "" {
+		if user.UserID != "" && !IsUseridExist(user.UserID) {
 			if err := db.Model(&User{}).Save(user).Error; err != nil {
 				return err
 			}
@@ -40,7 +40,7 @@ func EditUser(user *User) error {
 }
 func IsUseridExist(userid string) bool {
 	var user User
-	err := db.Where("userid = ? ", userid).First(&user).Error
+	err := db.Select("userid").Where("userid = ? ", userid).First(&user).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false
 	}
