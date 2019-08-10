@@ -1,5 +1,7 @@
 package models
 
+import "github.com/jinzhu/gorm"
+
 /*用户*/
 type User struct {
 	UserID     string `json:"userid" gorm:"column:userid;primary_key;COMMENT:'用户标识'`
@@ -13,13 +15,28 @@ type User struct {
 	SyncTime   string `json:"sync_time" gorm:"COMMENT:'同步时间'"`
 }
 
-func UserSync(users []*User) error {
-	for _, user := range users {
-		if user.UserID != "" {
-			if err := db.Model(&User{}).Save(user).Error; err != nil {
-				return err
-			}
+func AddUser(user *User) error {
+	if user.UserID != "" {
+		if err := db.Create(&User{}).Error; err != nil {
+			return err
 		}
 	}
 	return nil
+}
+func EditUser(user *User) error {
+	if err := db.Model(&User{}).Updates(user).Error; err != nil {
+		return err
+	}
+	return nil
+}
+func IsUseridExist(userid string) bool {
+	var user User
+	err := db.Where("userid = ? ", userid).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false
+	}
+	if len(user.UserID) > 0 {
+		return true
+	}
+	return false
 }
