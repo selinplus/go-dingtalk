@@ -229,6 +229,7 @@ func DepartmentDetail(id int) *models.Department {
 		err := json.Unmarshal([]byte(body), &department)
 		if err != nil {
 			log.Printf("unmarshall department info error:%v", err)
+			log.Printf("unmarshall department info error_body is:%v", err)
 		}
 	}
 	return department
