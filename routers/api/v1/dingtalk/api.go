@@ -36,7 +36,9 @@ func Login(c *gin.Context) {
 	if id != "" {
 		userInfo := dingtalk.GetUserInfo(id)
 		session.Set("userid", userInfo.UserID)
-		session.Save()
+		if err := session.Save(); err != nil {
+			log.Println("session.Save() err:%v", err)
+		}
 		appG.Response(http.StatusOK, e.SUCCESS, userInfo)
 		return
 	}
@@ -91,14 +93,22 @@ func DepartmentUserSync(c *gin.Context) {
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 					log.Printf("departmen is %v", department)
 					if department.ID != 0 {
-						models.DepartmentSync(department)
+						_ = models.DepartmentSync(department)
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
 					log.Printf("userids is %v", userids)
-					len := math.Ceil(float64(len(userids) % 100))
-					for l := 0; l < int(len); l++ {
+					pageNum := int(math.Ceil(float64(len(userids) % 100)))
+					for l := 0; l < pageNum; l++ {
 						userlist := dingtalk.DepartmentUserDetail(depId, l)
-						models.UserSync(userlist)
+						//models.UserSync(userlist)
+						for _, user := range userlist {
+							if models.IsUseridExist(user.UserID) {
+								ue := models.EditUser(user)
+								log.Printf("update user err %v", ue)
+							}
+							er := models.AddUser(user)
+							log.Printf("add user err %v", er)
+						}
 					}
 				}
 			}()
