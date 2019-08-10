@@ -254,7 +254,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 		if err != nil {
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		ui := userlist["userlist"].(interface{})
+		ui := userlist["userlist"]
 		if ui != nil {
 			users := userlist["userlist"].([]interface{})
 			for _, v := range users {
@@ -302,7 +302,7 @@ func DepartmentUserIdsDetail(id int) []string {
 		if err != nil {
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
-		ui := useridslist["userIds"].(interface{})
+		ui := useridslist["userIds"]
 		if ui != nil {
 			userids := useridslist["userIds"].([]interface{})
 			var useridslice []string
