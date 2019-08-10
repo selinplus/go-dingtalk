@@ -252,6 +252,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 	} else {
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
+			log.Printf("unmarshall userlist info error_body is:%v", body)
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
 		if userlist["userlist"] != nil {
