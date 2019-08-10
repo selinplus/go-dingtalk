@@ -86,11 +86,11 @@ func DepartmentUserSync(c *gin.Context) {
 					num++
 				}
 			}()
-			if num == len(depIds) {
+			if num == depidsLen {
 				close(depIdChan)
 			}
 		}
-		syncNum := 15
+		syncNum := 8
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -99,33 +99,22 @@ func DepartmentUserSync(c *gin.Context) {
 				for depId := range depIdChan {
 					department := dingtalk.DepartmentDetail(depId)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-					log.Printf("departmen is %v", department)
 					if department.ID != 0 {
-						_ = models.DepartmentSync(department)
+						if err := models.DepartmentSync(department); err != nil {
+							log.Println("DepartmentSync err:%v", err)
+						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					log.Printf("userids is %v", userids)
-					pageNum := int(math.Ceil(float64(len(userids) % 100)))
-					for l := 0; l < pageNum; l++ {
+					cnt := int(math.Ceil(float64(len(userids) % 100)))
+					for l := 0; l < cnt; l++ {
 						userlist := dingtalk.DepartmentUserDetail(depId, l)
-						//models.UserSync(userlist)
-						for _, user := range userlist {
-							if user.UserID != "" {
-								if models.IsUseridExist(user.UserID) {
-									if ue := models.EditUser(user); ue != nil {
-										log.Printf("update user err %v", ue)
-									}
-								}
-								if er := models.AddUser(user); er != nil {
-									log.Printf("add user err %v", er)
-								}
-							}
+						if err := models.UserSync(userlist); err != nil {
+							log.Println("UserSync err:%v", err)
 						}
 					}
 				}
 			}()
 		}
-		wg.Wait()
 		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		return
 	}
