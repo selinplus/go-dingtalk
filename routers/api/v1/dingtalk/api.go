@@ -96,7 +96,6 @@ func DepartmentUserSync(c *gin.Context) {
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
-			wg.Done()
 			go func() {
 				for depId := range depIdChan {
 					department := dingtalk.DepartmentDetail(depId)
@@ -114,6 +113,7 @@ func DepartmentUserSync(c *gin.Context) {
 						models.UserSync(userlist)
 					}
 				}
+				wg.Done()
 			}()
 		}
 		wg.Wait()
