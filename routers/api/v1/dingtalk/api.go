@@ -69,6 +69,7 @@ func DepartmentUserSync(c *gin.Context) {
 		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
 		return
 	}
+	appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，请等待...")
 	if depIds != nil {
 		var useridNum int
 		var seg int
@@ -92,7 +93,7 @@ func DepartmentUserSync(c *gin.Context) {
 				close(depIdChan)
 			}
 		}
-		syncNum := 20
+		syncNum := 8
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -118,7 +119,6 @@ func DepartmentUserSync(c *gin.Context) {
 		}
 		wg.Wait()
 		logging.Info(fmt.Sprintf("userids length is %d", useridNum))
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
 		return
 	}
 }
