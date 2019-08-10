@@ -198,6 +198,7 @@ func SubDepartmentList() ([]int, error) {
 	} else {
 		err := json.Unmarshal([]byte(body), &subDeptIdList)
 		if err != nil {
+			log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
 			log.Printf("unmarshall SubDeptIdList info error:%v", err)
 			return nil, err
 		}
@@ -228,8 +229,8 @@ func DepartmentDetail(id int) *models.Department {
 	} else {
 		err := json.Unmarshal([]byte(body), &department)
 		if err != nil {
+			log.Printf("unmarshall department info error_body is:%v", body)
 			log.Printf("unmarshall department info error:%v", err)
-			log.Printf("unmarshall department info error_body is:%v", err)
 		}
 	}
 	return department
@@ -302,7 +303,7 @@ func DepartmentUserIdsDetail(id int) []string {
 		if body != "" {
 			err := json.Unmarshal([]byte(body), &useridslist)
 			if err != nil {
-				log.Printf("unmarshall useridslist info error_body is:%s", body)
+				log.Printf("unmarshall useridslist info error_body is:%v", body)
 				log.Printf("unmarshall useridslist info error:%v", err)
 			}
 		}
@@ -332,6 +333,7 @@ func UserDetail(userid string) *models.User {
 	} else {
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
+			log.Printf("unmarshall user info error_body is:%v", body)
 			log.Printf("unmarshall user info error:%v", err)
 		}
 		errs := json.Unmarshal([]byte(body), &user)
