@@ -227,6 +227,7 @@ func DepartmentDetail(id int) *models.Department {
 		util.ShowError("get department failed:", errs[0])
 		return nil
 	} else {
+		log.Printf("get departmen body is:%v", body)
 		err := json.Unmarshal([]byte(body), &department)
 		if err != nil {
 			log.Printf("unmarshall department info error_body is:%v", body)
@@ -252,6 +253,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 		util.ShowError("get user failed:", errs[0])
 		return nil
 	} else {
+		log.Printf("get departmen_user body is:%v", body)
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
 			log.Printf("unmarshall userlist info error_body is:%v", body)
@@ -301,6 +303,7 @@ func DepartmentUserIdsDetail(id int) []string {
 		return nil
 	} else {
 		if body != "" {
+			log.Printf("get userid body is:%v", body)
 			err := json.Unmarshal([]byte(body), &useridslist)
 			if err != nil {
 				log.Printf("unmarshall useridslist info error_body is:%v", body)
