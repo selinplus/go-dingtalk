@@ -63,32 +63,24 @@ func DepartmentUserSync(c *gin.Context) {
 	appG := app.Gin{C: c}
 	depIds, err := dingtalk.SubDepartmentList()
 	if err != nil {
-		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
+		appG.Response(http.StatusBadRequest, e.SUCCESS, err)
 		return
 	}
 	if depIds != nil {
-		var seg int
-		depidsLen := len(depIds)
-		if depidsLen%8 == 0 {
-			seg = depidsLen / 8
-		} else {
-			seg = (depidsLen / 8) + 1
-		}
 		depIdChan := make(chan int, 100) //部门id
 		for j := 0; j < 8; j++ {
-			segIds := depIds[j*seg : (j+1)*seg]
 			var num int
 			go func() {
-				for _, depId := range segIds {
+				for _, depId := range depIds {
 					depIdChan <- depId
 					num++
 				}
 			}()
-			if num == depidsLen {
+			if num == len(depIds) {
 				close(depIdChan)
 			}
 		}
-		syncNum := 10
+		syncNum := 15
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -112,7 +104,7 @@ func DepartmentUserSync(c *gin.Context) {
 			}()
 		}
 		wg.Wait()
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		return
 	}
 }
