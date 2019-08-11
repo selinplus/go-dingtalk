@@ -9,8 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"log"
 	"net/http"
-	"sync"
-	"time"
 )
 
 type LoginForm struct {
@@ -68,64 +66,65 @@ func DepartmentUserSync(c *gin.Context) {
 		return
 	}
 	if depIds != nil {
-		var seg int
-		depidsLen := len(depIds)
-		if depidsLen%8 == 0 {
-			seg = depidsLen / 8
-		} else {
-			seg = (depidsLen / 8) + 1
+		//var seg int
+		//depidsLen := len(depIds)
+		//if depidsLen%8 == 0 {
+		//	seg = depidsLen / 8
+		//} else {
+		//	seg = (depidsLen / 8) + 1
+		//}
+		//depIdChan := make(chan int, 100) //部门id
+		//for j := 0; j < 8; j++ {
+		//	segIds := depIds[j*seg : (j+1)*seg]
+		//	var num int
+		//	go func() {
+		//		for _, depId := range segIds {
+		//			depIdChan <- depId
+		//			num++
+		//		}
+		//	}()
+		//	if num == depidsLen {
+		//		close(depIdChan)
+		//	}
+		//}
+		//syncNum := 10
+		//wg := &sync.WaitGroup{}
+		//wg.Add(syncNum)
+		//for k := 0; k < syncNum; k++ {
+		//	wg.Done()
+		//	go func() {
+		//		for depId := range depIdChan {
+		//			department := dingtalk.DepartmentDetail(depId)
+		//			department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+		//			if department.ID != 0 {
+		//				if err := models.DepartmentSync(department); err != nil {
+		//					log.Println("DepartmentSync err:%v", err)
+		//				}
+		//			}
+		//			userids := dingtalk.DepartmentUserIdsDetail(depId)
+		//			log.Println("userids is:%v", userids)
+		//			cnt := len(userids)
+		//			log.Println("userids lenth is:%v", cnt)
+		//			var pageNumTotal int
+		//			if cnt%100 == 0 {
+		//				pageNumTotal = cnt / 100
+		//			} else {
+		//				pageNumTotal = cnt/100 + 1
+		//			}
+		//			log.Println("pageNumTotal is %d", pageNumTotal)
+		//			for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+		//				log.Println("pageNum is %d", pageNum)
+		//				userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
+		userlist := dingtalk.DepartmentUserDetail(29489119, 1)
+		if err := models.UserSync(userlist); err != nil {
+			log.Println("UserSync err:%v", err)
 		}
-		depIdChan := make(chan int, 100) //部门id
-		for j := 0; j < 8; j++ {
-			segIds := depIds[j*seg : (j+1)*seg]
-			var num int
-			go func() {
-				for _, depId := range segIds {
-					depIdChan <- depId
-					num++
-				}
-			}()
-			if num == depidsLen {
-				close(depIdChan)
-			}
-		}
-		syncNum := 10
-		wg := &sync.WaitGroup{}
-		wg.Add(syncNum)
-		for k := 0; k < syncNum; k++ {
-			wg.Done()
-			go func() {
-				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId)
-					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-					if department.ID != 0 {
-						if err := models.DepartmentSync(department); err != nil {
-							log.Println("DepartmentSync err:%v", err)
-						}
-					}
-					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					log.Println("userids is:%v", userids)
-					cnt := len(userids)
-					log.Println("userids lenth is:%v", cnt)
-					var pageNumTotal int
-					if cnt%100 == 0 {
-						pageNumTotal = cnt / 100
-					} else {
-						pageNumTotal = cnt/100 + 1
-					}
-					log.Println("pageNumTotal is %d", pageNumTotal)
-					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-						log.Println("pageNum is %d", pageNum)
-						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
-						if err := models.UserSync(userlist); err != nil {
-							log.Println("UserSync err:%v", err)
-						}
-					}
-				}
-			}()
-		}
+		//			}
+		//		}
+		//	}()
+		//}
 		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
-		wg.Wait()
+		//wg.Wait()
 		return
 	}
 }

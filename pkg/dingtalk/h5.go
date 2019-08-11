@@ -280,7 +280,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 				}
 				user.Department = depIds
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-				log.Printf("user is:%v", user)
+				//log.Printf("user is:%v", user)
 			}
 		}
 		usersList = append(usersList, &user)
