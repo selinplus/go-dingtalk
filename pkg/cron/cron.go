@@ -67,7 +67,7 @@ func DepartmentUserSync() {
 				close(depIdChan)
 			}
 		}
-		syncNum := 10
+		syncNum := 30
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -82,16 +82,13 @@ func DepartmentUserSync() {
 						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					log.Println("userids is:%v", userids)
 					cnt := len(userids)
-					log.Println("userids lenth is:%v", cnt)
 					var pageNumTotal int
 					if cnt%100 == 0 {
 						pageNumTotal = cnt / 100
 					} else {
 						pageNumTotal = cnt/100 + 1
 					}
-					log.Println("pageNumTotal is %d", pageNumTotal)
 					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
 						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
 						if err := models.UserSync(userlist); err != nil {

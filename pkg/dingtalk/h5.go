@@ -253,7 +253,6 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 		util.ShowError("get user failed:", errs[0])
 		return nil
 	} else {
-		log.Println("body is %v", body)
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
 			log.Printf("unmarshall userlist info error_body is:%v", body)
@@ -277,7 +276,6 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 						user.Department = depIds
 					}
 				}
-				//log.Printf("user is:%v", user)
 				usersList = append(usersList, user)
 			}
 		}
@@ -331,7 +329,7 @@ func UserDetail(userid string) *models.User {
 			log.Printf("unmarshall user info error_body is:%v", body)
 			log.Printf("unmarshall user info error:%v", err)
 		}
-		errs := json.Unmarshal([]byte(body), &user)
+		errs := json.Unmarshal([]byte(body), user)
 		if errs != nil {
 			log.Printf("convert struct error:%v", err)
 		}
@@ -351,7 +349,6 @@ func UserDetail(userid string) *models.User {
 			user.Department = depIds
 		}
 		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-		//log.Printf("users is:%v", user)
 	}
 	return user
 }
