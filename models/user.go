@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
-	"log"
 )
 
 /*用户*/
@@ -21,7 +20,6 @@ type User struct {
 
 func UserSync(users *[]User) error {
 	for _, user := range *users {
-		log.Println("model usersync is %v", user)
 		if user.UserID != "" {
 			if err := db.Model(&User{}).Save(user).Error; err != nil {
 				return err

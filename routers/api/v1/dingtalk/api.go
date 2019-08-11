@@ -89,7 +89,7 @@ func DepartmentUserSync(c *gin.Context) {
 				close(depIdChan)
 			}
 		}
-		syncNum := 10
+		syncNum := 30
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -104,7 +104,6 @@ func DepartmentUserSync(c *gin.Context) {
 						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					log.Println("userids is:%v", userids)
 					cnt := len(userids)
 					log.Println("userids lenth is:%v", cnt)
 					var pageNumTotal int
@@ -113,7 +112,6 @@ func DepartmentUserSync(c *gin.Context) {
 					} else {
 						pageNumTotal = cnt/100 + 1
 					}
-					log.Println("pageNumTotal is %d", pageNumTotal)
 					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
 						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
 						if err := models.UserSync(userlist); err != nil {
@@ -123,17 +121,6 @@ func DepartmentUserSync(c *gin.Context) {
 				}
 			}()
 		}
-		//======================================test=======================//
-		//depId := 29489119
-		//userids := dingtalk.DepartmentUserIdsDetail(depId)
-		//log.Printf("userids is %v", userids)
-		//userlist := dingtalk.DepartmentUserDetail(depId, 1)
-		//models.UserSync(userlist)
-		//for _, userid := range userids {
-		//	user := dingtalk.UserDetail(userid)
-		//	models.UserDetailSync(user)
-		//}
-		//======================================test=======================//
 		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		wg.Wait()
 		return
