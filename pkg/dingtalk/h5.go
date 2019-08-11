@@ -278,9 +278,9 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 					}
 				}
 				log.Printf("user is:%v", user)
+				usersList = append(usersList, &user)
 			}
 		}
-		usersList = append(usersList, &user)
 	}
 	return usersList
 }
