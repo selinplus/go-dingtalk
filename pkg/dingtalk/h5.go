@@ -262,7 +262,6 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 			users := userlist["userlist"].([]interface{})
 			for _, v := range users {
 				vv := v.(map[string]interface{})
-				log.Println("vv is %v", vv)
 				mapstructure.Decode(vv, &user)
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				for k, val := range vv {

@@ -53,7 +53,7 @@ func DepartmentUserSync() {
 		} else {
 			seg = (depidsLen / 8) + 1
 		}
-		depIdChan := make(chan int, 100) //部门id
+		depIdChan := make(chan int, 1000) //部门id
 		for j := 0; j < 8; j++ {
 			segIds := depIds[j*seg : (j+1)*seg]
 			var num int
@@ -67,7 +67,7 @@ func DepartmentUserSync() {
 				close(depIdChan)
 			}
 		}
-		syncNum := 30
+		syncNum := 25
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
