@@ -240,7 +240,7 @@ func DepartmentDetail(id int) *models.Department {
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum int) []*models.User {
 	var usersList []*models.User
-	var user *models.User
+	var user models.User
 	var userlist = map[string]interface{}{}
 	//offset := strconv.Itoa(pageNum * 100)
 	depId := strconv.Itoa(id)
@@ -264,7 +264,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 			for _, v := range users {
 				vv := v.(map[string]interface{})
 				log.Println("vv is %v", vv)
-				if err := mapstructure.Decode(vv, user); err != nil {
+				if err := mapstructure.Decode(vv, &user); err != nil {
 					log.Printf("convert struct error:%v", err)
 				}
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
@@ -282,7 +282,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 				log.Printf("user is:%v", user)
 			}
 		}
-		usersList = append(usersList, user)
+		usersList = append(usersList, &user)
 	}
 	return usersList
 }

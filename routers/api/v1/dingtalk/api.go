@@ -126,7 +126,8 @@ func DepartmentUserSync(c *gin.Context) {
 		depId := 29489119
 		userids := dingtalk.DepartmentUserIdsDetail(depId)
 		log.Printf("userids is %v", userids)
-		dingtalk.DepartmentUserDetail(depId, 1)
+		userlist := dingtalk.DepartmentUserDetail(depId, 1)
+		log.Println("userlist lenth is %d", len(userlist))
 		//models.UserSync(userlist)
 		for _, userid := range userids {
 			user := dingtalk.UserDetail(userid)
