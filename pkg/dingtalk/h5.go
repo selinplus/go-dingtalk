@@ -238,8 +238,8 @@ func DepartmentDetail(id int) *models.Department {
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id, pageNum int) []*models.User {
-	var usersList []*models.User
+func DepartmentUserDetail(id, pageNum int) *[]models.User {
+	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
 	//offset := strconv.Itoa(pageNum * 100)
@@ -278,11 +278,11 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 					}
 				}
 				log.Printf("user is:%v", user)
-				usersList = append(usersList, &user)
+				usersList = append(usersList, user)
 			}
 		}
 	}
-	return usersList
+	return &usersList
 }
 
 //获取部门用户userid列表

@@ -19,8 +19,8 @@ type User struct {
 	SyncTime   string `json:"sync_time" gorm:"COMMENT:'同步时间'"`
 }
 
-func UserSync(users []*User) error {
-	for _, user := range users {
+func UserSync(users *[]User) error {
+	for _, user := range *users {
 		log.Println("model usersync is %v", user)
 		if user.UserID != "" {
 			if err := db.Model(&User{}).Save(user).Error; err != nil {
