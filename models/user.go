@@ -33,7 +33,7 @@ func AddUser(user *User) error {
 	return nil
 }
 func EditUser(user *User) error {
-	if err := db.Model(&User{}).Updates(user).Error; err != nil {
+	if err := db.Model(&User{}).Where("userid=?", user.UserID).Updates(user).Error; err != nil {
 		return err
 	}
 	return nil
