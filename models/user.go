@@ -30,6 +30,12 @@ func UserSync(users []*User) error {
 	}
 	return nil
 }
+func UserDetailSync(data interface{}) error {
+	if err := db.Model(&User{}).Save(data).Error; err != nil {
+		return err
+	}
+	return nil
+}
 func AddUser(user *User) error {
 	if err := db.Create(user).Error; err != nil {
 		return err

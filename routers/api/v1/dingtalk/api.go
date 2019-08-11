@@ -125,13 +125,13 @@ func DepartmentUserSync(c *gin.Context) {
 		//======================================test=======================//
 		depId := 29489119
 		userids := dingtalk.DepartmentUserIdsDetail(depId)
-		log.Printf("user is %v", userids)
-		userlist := dingtalk.DepartmentUserDetail(depId, 1)
-		models.UserSync(userlist)
-		//for _, userid := range userids {
-		//user := dingtalk.UserDetail(userid)
-		//models.UserSync(user)
-		//}
+		log.Printf("userids is %v", userids)
+		//userlist := dingtalk.DepartmentUserDetail(depId, 1)
+		//models.UserSync(userlist)
+		for _, userid := range userids {
+			user := dingtalk.UserDetail(userid)
+			models.UserDetailSync(user)
+		}
 		//======================================test=======================//
 
 		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
