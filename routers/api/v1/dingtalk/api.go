@@ -115,14 +115,25 @@ func DepartmentUserSync(c *gin.Context) {
 		//			for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
 		//				log.Println("pageNum is %d", pageNum)
 		//				userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
-		userlist := dingtalk.DepartmentUserDetail(29489119, 1)
-		if err := models.UserSync(userlist); err != nil {
-			log.Println("UserSync err:%v", err)
-		}
+		//				if err := models.UserSync(userlist); err != nil {
+		//				log.Println("UserSync err:%v", err)
+		//				}
 		//			}
 		//		}
 		//	}()
 		//}
+		//======================================test=======================//
+		depId := 29489119
+		userids := dingtalk.DepartmentUserIdsDetail(depId)
+		log.Printf("user is %v", userids)
+		userlist := dingtalk.DepartmentUserDetail(depId, 1)
+		models.UserSync(userlist)
+		//for _, userid := range userids {
+		//user := dingtalk.UserDetail(userid)
+		//models.UserSync(user)
+		//}
+		//======================================test=======================//
+
 		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		//wg.Wait()
 		return

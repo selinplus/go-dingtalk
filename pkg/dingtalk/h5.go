@@ -239,15 +239,13 @@ func DepartmentDetail(id int) *models.Department {
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum int) []*models.User {
 	var usersList []*models.User
-	var user models.User
+	var user *models.User
 	var userlist = map[string]interface{}{}
 	offset := strconv.Itoa(pageNum * 100)
-	//depId := strconv.Itoa(id)
+	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").
-		Query("access_token=" + GetAccessToken()).
-		Query("department_id=29489119").
-		//Query("department_id=" + depId).
+		Query("access_token=" + GetAccessToken()).Query("department_id=" + depId).
 		Query("offset=" + offset).Query("size=100").
 		End()
 	if len(errs) > 0 {
@@ -265,7 +263,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 			for _, v := range users {
 				vv := v.(map[string]interface{})
 				data, _ := json.Marshal(vv)
-				err := json.Unmarshal(data, &user)
+				err := json.Unmarshal(data, user)
 				if err != nil {
 					log.Printf("convert struct error:%v", err)
 				}
@@ -286,7 +284,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 				log.Printf("user is:%v", user)
 			}
 		}
-		usersList = append(usersList, &user)
+		usersList = append(usersList, user)
 	}
 	return usersList
 }
