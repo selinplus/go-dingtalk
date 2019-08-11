@@ -259,12 +259,16 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 			log.Printf("unmarshall userlist info error:%v", err)
 		}
 		if userlist["userlist"] != nil {
+			log.Println("userlist[\"userlist\"] is %v", userlist["userlist"])
 			users := userlist["userlist"].([]interface{})
+			log.Println("userlist[\"userlist\"].([]interface{}) is %v", users)
 			for _, v := range users {
 				vv := v.(map[string]interface{})
+				log.Println("vv is %v", vv)
 				for k, val := range vv {
 					switch k {
 					case "department":
+						log.Println("val is %v", val)
 						var paramSlice []string
 						for _, d := range val.([]interface{}) {
 							v := strconv.Itoa(int(d.(float64)))
