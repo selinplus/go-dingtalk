@@ -67,7 +67,7 @@ func DepartmentUserSync() {
 				close(depIdChan)
 			}
 		}
-		syncNum := 10
+		syncNum := 30
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {

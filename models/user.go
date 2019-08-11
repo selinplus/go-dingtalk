@@ -21,7 +21,7 @@ type User struct {
 func UserSync(users *[]User) error {
 	for _, user := range *users {
 		if user.UserID != "" {
-			if err := db.Model(&User{}).Save(user).Error; err != nil {
+			if err := db.Model(&User{}).Save(&user).Error; err != nil {
 				return err
 			}
 		}
@@ -29,7 +29,7 @@ func UserSync(users *[]User) error {
 	return nil
 }
 func UserDetailSync(data interface{}) error {
-	if err := db.Model(&User{}).Save(data).Error; err != nil {
+	if err := db.Model(&User{}).Save(&data).Error; err != nil {
 		return err
 	}
 	return nil
