@@ -104,7 +104,9 @@ func DepartmentUserSync(c *gin.Context) {
 						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
+					log.Println("userids is:%v", userids)
 					cnt := len(userids)
+					log.Println("userids lenth is:%v", cnt)
 					var pageNumTotal int
 					if cnt%100 == 0 {
 						pageNumTotal = cnt / 100

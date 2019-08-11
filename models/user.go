@@ -21,11 +21,9 @@ type User struct {
 
 func UserSync(users []*User) error {
 	for _, user := range users {
-		if user.UserID != "" {
-			log.Println("user is %v", user)
-			if err := db.Model(&User{}).Save(user).Error; err != nil {
-				return err
-			}
+		log.Println("user is %v", user)
+		if err := db.Save(user).Error; err != nil {
+			return err
 		}
 	}
 	return nil
