@@ -6,7 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
-	"math"
+	"log"
 	"sync"
 	"time"
 )
@@ -67,7 +67,7 @@ func DepartmentUserSync() {
 				close(depIdChan)
 			}
 		}
-		syncNum := 8
+		syncNum := 10
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
@@ -77,13 +77,26 @@ func DepartmentUserSync() {
 					department := dingtalk.DepartmentDetail(depId)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 					if department.ID != 0 {
-						models.DepartmentSync(department)
+						if err := models.DepartmentSync(department); err != nil {
+							log.Println("DepartmentSync err:%v", err)
+						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					len := math.Ceil(float64(len(userids) % 100))
-					for l := 0; l < int(len); l++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, l)
-						models.UserSync(userlist)
+					log.Println("userids is:%v", userids)
+					cnt := len(userids)
+					log.Println("userids lenth is:%v", cnt)
+					var pageNumTotal int
+					if cnt%100 == 0 {
+						pageNumTotal = cnt / 100
+					} else {
+						pageNumTotal = cnt/100 + 1
+					}
+					log.Println("pageNumTotal is %d", pageNumTotal)
+					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
+						if err := models.UserSync(userlist); err != nil {
+							log.Println("UserSync err:%v", err)
+						}
 					}
 				}
 			}()

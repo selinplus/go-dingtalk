@@ -242,12 +242,12 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
-	//offset := strconv.Itoa(pageNum * 100)
+	offset := strconv.Itoa(pageNum * 100)
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").
 		Query("access_token=" + GetAccessToken()).Query("department_id=" + depId).
-		Query("offset=0").Query("size=100").
+		Query("offset=" + offset).Query("size=100").
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
@@ -277,7 +277,7 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 						user.Department = depIds
 					}
 				}
-				log.Printf("user is:%v", user)
+				//log.Printf("user is:%v", user)
 				usersList = append(usersList, user)
 			}
 		}
