@@ -64,7 +64,7 @@ func DepartmentUserSync(c *gin.Context) {
 	appG := app.Gin{C: c}
 	depIds, err := dingtalk.SubDepartmentList()
 	if err != nil {
-		appG.Response(http.StatusBadRequest, e.SUCCESS, err)
+		appG.Response(http.StatusBadRequest, e.SUCCESS, "获取部门id失败")
 		return
 	}
 	if depIds != nil {
