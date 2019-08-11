@@ -242,16 +242,19 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 	var user models.User
 	var userlist = map[string]interface{}{}
 	offset := strconv.Itoa(pageNum * 100)
-	depId := strconv.Itoa(id)
+	//depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").
-		Query("access_token=" + GetAccessToken()).Query("department_id=" + depId).
+		Query("access_token=" + GetAccessToken()).
+		Query("department_id=29489119").
+		//Query("department_id=" + depId).
 		Query("offset=" + offset).Query("size=100").
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
 		return nil
 	} else {
+		log.Println("body is %v", body)
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
 			log.Printf("unmarshall userlist info error_body is:%v", body)
