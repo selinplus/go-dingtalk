@@ -111,7 +111,9 @@ func DepartmentUserSync(c *gin.Context) {
 					} else {
 						pageNumTotal = cnt/100 + 1
 					}
+					log.Println("pageNumTotal is %d", pageNumTotal)
 					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+						log.Println("pageNum is %d", pageNum)
 						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
 						if err := models.UserSync(userlist); err != nil {
 							log.Println("UserSync err:%v", err)
