@@ -241,7 +241,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 	var usersList []*models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
-	offset := strconv.Itoa(pageNum)
+	offset := strconv.Itoa(pageNum * 100)
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").

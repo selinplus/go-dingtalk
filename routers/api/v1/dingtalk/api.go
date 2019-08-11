@@ -8,7 +8,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"log"
-	"math"
 	"net/http"
 	"sync"
 	"time"
@@ -105,10 +104,15 @@ func DepartmentUserSync(c *gin.Context) {
 						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					cnt := int(math.Ceil(float64(len(userids) / 100)))
-					log.Println("pageNum is %d", cnt)
-					for l := 0; l < cnt; l++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, l)
+					cnt := len(userids)
+					var pageNumTotal int
+					if cnt%100 == 0 {
+						pageNumTotal = cnt / 100
+					} else {
+						pageNumTotal = cnt/100 + 1
+					}
+					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
 						if err := models.UserSync(userlist); err != nil {
 							log.Println("UserSync err:%v", err)
 						}
