@@ -264,9 +264,7 @@ func DepartmentUserDetail(id, pageNum int) []*models.User {
 			for _, v := range users {
 				vv := v.(map[string]interface{})
 				log.Println("vv is %v", vv)
-				if err := mapstructure.Decode(vv, &user); err != nil {
-					log.Printf("convert struct error:%v", err)
-				}
+				mapstructure.Decode(vv, &user)
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				for k, val := range vv {
 					if k == "department" {
