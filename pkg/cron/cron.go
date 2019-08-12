@@ -16,9 +16,23 @@ func Setup() {
 	// 定义一个cron运行器
 	c := cron.New()
 	// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
-	c.AddFunc("*/30 * * * * *", MessageDingding)
+	if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
+		logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
+	}
 	// 每天同步一次部门和人员信息
-	c.AddFunc("@midnight", DepartmentUserSync)
+	if err := c.AddFunc("@midnight", func() {
+		flag := true
+		for {
+			if flag {
+				time.Sleep(time.Second * 60)
+				flag = DepartmentUserSync(flag)
+			}
+			break
+		}
+
+	}); err != nil {
+		logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
+	}
 
 	// 开始
 	c.Start()
@@ -40,67 +54,75 @@ func MessageDingding() {
 }
 
 //同步一次部门和人员信息
-func DepartmentUserSync() {
-	depIds, err := dingtalk.SubDepartmentList()
-	if err != nil {
-		logging.Info(fmt.Sprintf("%v", err))
-		return
-	}
-	if depIds != nil {
-		var seg int
-		depidsLen := len(depIds)
-		if depidsLen%8 == 0 {
-			seg = depidsLen / 8
-		} else {
-			seg = (depidsLen / 8) + 1
+func DepartmentUserSync(flag bool) bool {
+	defer func() bool {
+		flag = recovery.Recovery()
+		return flag
+	}()
+	if flag {
+		depIds, err := dingtalk.SubDepartmentList()
+		if err != nil {
+			logging.Info(fmt.Sprintf("%v", err))
+			return flag
 		}
-		depIdChan := make(chan int, 100) //部门id
-		for j := 0; j < 8; j++ {
-			segIds := depIds[j*seg : (j+1)*seg]
-			var num int
-			go func() {
-				for _, depId := range segIds {
-					depIdChan <- depId
-					num++
-				}
-			}()
-			if num == depidsLen {
-				close(depIdChan)
+		if depIds != nil {
+			var seg int
+			depidsLen := len(depIds)
+			if depidsLen%8 == 0 {
+				seg = depidsLen / 8
+			} else {
+				seg = (depidsLen / 8) + 1
 			}
-		}
-		syncNum := 30
-		wg := &sync.WaitGroup{}
-		wg.Add(syncNum)
-		for k := 0; k < syncNum; k++ {
-			wg.Done()
-			go func() {
-				defer recovery.Recovery()
-				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId)
-					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-					if department.ID != 0 {
-						if err := models.DepartmentSync(department); err != nil {
-							log.Println("DepartmentSync err:%v", err)
-						}
+			depIdChan := make(chan int, 100) //部门id
+			for j := 0; j < 8; j++ {
+				segIds := depIds[j*seg : (j+1)*seg]
+				var num int
+				go func() {
+					for _, depId := range segIds {
+						depIdChan <- depId
+						num++
 					}
-					userids := dingtalk.DepartmentUserIdsDetail(depId)
-					cnt := len(userids)
-					var pageNumTotal int
-					if cnt%100 == 0 {
-						pageNumTotal = cnt / 100
-					} else {
-						pageNumTotal = cnt/100 + 1
-					}
-					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
-						if err := models.UserSync(userlist); err != nil {
-							log.Println("UserSync err:%v", err)
-						}
-					}
+				}()
+				if num == depidsLen {
+					close(depIdChan)
 				}
-			}()
+			}
+			syncNum := 30
+			wg := &sync.WaitGroup{}
+			wg.Add(syncNum)
+			for k := 0; k < syncNum; k++ {
+				wg.Done()
+				go func() {
+					defer recovery.Recovery()
+					for depId := range depIdChan {
+						department := dingtalk.DepartmentDetail(depId)
+						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+						if department.ID != 0 {
+							if err := models.DepartmentSync(department); err != nil {
+								log.Println("DepartmentSync err:%v", err)
+							}
+						}
+						userids := dingtalk.DepartmentUserIdsDetail(depId)
+						cnt := len(userids)
+						var pageNumTotal int
+						if cnt%100 == 0 {
+							pageNumTotal = cnt / 100
+						} else {
+							pageNumTotal = cnt/100 + 1
+						}
+						for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+							userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
+							if err := models.UserSync(userlist); err != nil {
+								log.Println("UserSync err:%v", err)
+							}
+						}
+					}
+				}()
+			}
+			wg.Wait()
+			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
+			flag = false
 		}
-		wg.Wait()
-		logging.Info(fmt.Sprintf("DepartmentUserSync success"))
 	}
+	return flag
 }

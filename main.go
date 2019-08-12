@@ -23,6 +23,7 @@ func init() {
 	logging.Setup()
 	gredis.Setup()
 	util.Setup()
+	//cron.Setup()
 }
 
 // @title Golang Gin API
