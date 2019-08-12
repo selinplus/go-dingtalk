@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/recovery"
 	"log"
 	"net/http"
 	"sync"
@@ -95,6 +96,7 @@ func DepartmentUserSync(c *gin.Context) {
 		for k := 0; k < syncNum; k++ {
 			wg.Done()
 			go func() {
+				defer recovery.Recovery()
 				for depId := range depIdChan {
 					department := dingtalk.DepartmentDetail(depId)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")

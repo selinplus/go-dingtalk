@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/recovery"
 	"log"
 	"sync"
 	"time"
@@ -73,6 +74,7 @@ func DepartmentUserSync() {
 		for k := 0; k < syncNum; k++ {
 			wg.Done()
 			go func() {
+				defer recovery.Recovery()
 				for depId := range depIdChan {
 					department := dingtalk.DepartmentDetail(depId)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
