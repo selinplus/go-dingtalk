@@ -7,6 +7,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/recovery"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -189,6 +190,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 
 // 获取子部门Id列表
 func SubDepartmentList() ([]int, error) {
+	defer recovery.Recovery()
 	var depIds []int
 	var subDeptIdList = map[string]interface{}{}
 	_, body, errs := gorequest.New().
@@ -220,6 +222,7 @@ func SubDepartmentList() ([]int, error) {
 
 // 获取部门详情
 func DepartmentDetail(id int) *models.Department {
+	defer recovery.Recovery()
 	var department *models.Department
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -239,6 +242,7 @@ func DepartmentDetail(id int) *models.Department {
 
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum int) *[]models.User {
+	defer recovery.Recovery()
 	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
@@ -284,6 +288,7 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 
 //获取部门用户userid列表
 func DepartmentUserIdsDetail(id int) []string {
+	defer recovery.Recovery()
 	var useridslist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -313,7 +318,8 @@ func DepartmentUserIdsDetail(id int) []string {
 
 //获取用户详情
 func UserDetail(userid string) *models.User {
-	var user *models.User
+	defer recovery.Recovery()
+	var user models.User
 	var userlist = map[string]interface{}{}
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/get").
@@ -323,14 +329,15 @@ func UserDetail(userid string) *models.User {
 		util.ShowError("get user failed:", errs[0])
 		return nil
 	} else {
+		errs := json.Unmarshal([]byte(body), &user)
+		if errs != nil {
+			log.Printf("convert struct error:%v", errs)
+		}
+		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
 			log.Printf("unmarshall user info error_body is:%v", body)
 			log.Printf("unmarshall user info error:%v", err)
-		}
-		errs := json.Unmarshal([]byte(body), user)
-		if errs != nil {
-			log.Printf("convert struct error:%v", err)
 		}
 		var depIds string
 		if len(userlist) > 0 {
@@ -347,7 +354,6 @@ func UserDetail(userid string) *models.User {
 			}
 			user.Department = depIds
 		}
-		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 	}
-	return user
+	return &user
 }
