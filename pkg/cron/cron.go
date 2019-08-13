@@ -26,7 +26,7 @@ func Setup() {
 		DepartmentUserSync()
 		for {
 			if flag {
-				time.Sleep(time.Second * 60)
+				time.Sleep(time.Second * 90)
 				DepartmentUserSync()
 				depNum, _ := models.CountDepartmentSyncNum()
 				if depidsNum == depNum {
@@ -68,7 +68,8 @@ func DepartmentUserSync() {
 			flag = true
 		}
 	}()
-	depIds, err := dingtalk.SubDepartmentList()
+	var wt = 10 //发生网页劫持后，发送递归请求的次数
+	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
 		return
@@ -108,14 +109,14 @@ func DepartmentUserSync() {
 					}
 				}()
 				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId)
+					department := dingtalk.DepartmentDetail(depId, wt)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 					if department.ID != 0 {
 						if err := models.DepartmentSync(department); err != nil {
 							log.Printf("DepartmentSync err:%v", err)
 						}
 					}
-					userids := dingtalk.DepartmentUserIdsDetail(depId)
+					userids := dingtalk.DepartmentUserIdsDetail(depId, wt)
 					cnt := len(userids)
 					var pageNumTotal int
 					if cnt%100 == 0 {
@@ -124,7 +125,7 @@ func DepartmentUserSync() {
 						pageNumTotal = cnt/100 + 1
 					}
 					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
+						userlist := dingtalk.DepartmentUserDetail(depId, pageNum, wt)
 						if err := models.UserSync(userlist); err != nil {
 							log.Printf("UserSync err:%v", err)
 						}

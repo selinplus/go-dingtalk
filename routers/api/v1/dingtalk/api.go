@@ -63,13 +63,14 @@ func JsApiConfig(c *gin.Context) {
 
 //部门用户信息同步
 func DepartmentUserSync(c *gin.Context) {
-	appG := app.Gin{C: c}
 	defer func() {
 		if r := recover(); r != nil {
 			logging.Info(fmt.Sprintf("recover panic in SubDepartmentList:%v", r))
 		}
 	}()
-	depIds, err := dingtalk.SubDepartmentList()
+	appG := app.Gin{C: c}
+	var wt = 10 //发生网页劫持后，发送递归请求的次数
+	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		appG.Response(http.StatusBadRequest, e.SUCCESS, "获取部门id失败，请稍候重试")
 		return
@@ -108,14 +109,14 @@ func DepartmentUserSync(c *gin.Context) {
 					}
 				}()
 				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId)
+					department := dingtalk.DepartmentDetail(depId, wt)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 					if department.ID != 0 {
 						if err := models.DepartmentSync(department); err != nil {
 							log.Printf("DepartmentSync err:%v", err)
 						}
 					}
-					userids := dingtalk.DepartmentUserIdsDetail(depId)
+					userids := dingtalk.DepartmentUserIdsDetail(depId, wt)
 					cnt := len(userids)
 					//log.Printf("userids lenth is:%v", cnt)
 					var pageNumTotal int
@@ -125,7 +126,7 @@ func DepartmentUserSync(c *gin.Context) {
 						pageNumTotal = cnt/100 + 1
 					}
 					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
+						userlist := dingtalk.DepartmentUserDetail(depId, pageNum, wt)
 						if err := models.UserSync(userlist); err != nil {
 							log.Printf("UserSync err:%v", err)
 						}

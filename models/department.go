@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"github.com/jinzhu/gorm"
+	"time"
+)
 
 /*部门*/
 type Department struct {
@@ -24,4 +27,12 @@ func CountDepartmentSyncNum() (int, error) {
 		return 0, err
 	}
 	return depidsNum, nil
+}
+func GetDepartmentByParentID(ParentID int) ([]*Department, error) {
+	var departments []*Department
+	err := db.Table("department").Where("parentid=?", ParentID).Find(&departments).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return departments, nil
 }

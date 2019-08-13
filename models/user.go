@@ -37,6 +37,14 @@ func CountUserSyncNum() (int, error) {
 	}
 	return userNum, nil
 }
+func GetUserByDepartmentID(deptId string) ([]*User, error) {
+	var users []*User
+	err := db.Table("user").Where("deptId=?", deptId).Find(&users).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return users, nil
+}
 func UserDetailSync(data interface{}) error {
 	if err := db.Model(&User{}).Save(&data).Error; err != nil {
 		return err

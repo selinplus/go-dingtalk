@@ -188,38 +188,50 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 }
 
 // 获取子部门Id列表
-func SubDepartmentList() ([]int, error) {
+func SubDepartmentList(wt int) ([]int, error) {
 	var depIds []int
 	var subDeptIdList = map[string]interface{}{}
+	var err error
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/department/list?access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
 		util.ShowError("get department list_ids failed:", errs[0])
 		return nil, errs[0]
 	} else {
-		err := json.Unmarshal([]byte(body), &subDeptIdList)
+		if strings.Contains(body, "<") {
+			wt = wt - 1
+			if wt >= 0 {
+				time.Sleep(time.Second * 5)
+				depIds, err = SubDepartmentList(wt)
+				return depIds, err
+			} else {
+				panic("Recursion times has run out!")
+				return nil, err
+			}
+		}
+		err = json.Unmarshal([]byte(body), &subDeptIdList)
 		if err != nil {
-			log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
+			//log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
 			log.Printf("unmarshall SubDeptIdList info error:%v", err)
 			return nil, err
 		}
-	}
-	depts := subDeptIdList["department"].([]interface{})
-	for _, v := range depts {
-		vv := v.(map[string]interface{})
-		for k, val := range vv {
-			if k == "id" {
-				depIds = append(depIds, int(val.(float64)))
-				break
+		depts := subDeptIdList["department"].([]interface{})
+		for _, v := range depts {
+			vv := v.(map[string]interface{})
+			for k, val := range vv {
+				if k == "id" {
+					depIds = append(depIds, int(val.(float64)))
+					break
+				}
 			}
 		}
+		log.Printf("depIds length is %d", len(depIds))
+		return depIds, nil
 	}
-	log.Printf("depIds length is %d", len(depIds))
-	return depIds, nil
 }
 
 // 获取部门详情
-func DepartmentDetail(id int) *models.Department {
+func DepartmentDetail(id, wt int) *models.Department {
 	var department models.Department
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -230,14 +242,25 @@ func DepartmentDetail(id int) *models.Department {
 	}
 	err := json.Unmarshal([]byte(body), &department)
 	if err != nil {
-		log.Printf("unmarshall department info error_body is:%v", body)
+		if strings.Contains(body, "<") {
+			wt = wt - 1
+			if wt >= 0 {
+				time.Sleep(time.Second * 5)
+				dt := DepartmentDetail(id, wt)
+				return dt
+			} else {
+				panic("Recursion times has run out!")
+				return nil
+			}
+		}
+		//log.Printf("unmarshall department info error_body is:%v", body)
 		log.Printf("unmarshall department info error:%v", err)
 	}
 	return &department
 }
 
 // 获取部门用户详情
-func DepartmentUserDetail(id, pageNum int) *[]models.User {
+func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
@@ -254,7 +277,18 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 	} else {
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
-			log.Printf("unmarshall userlist info error_body is:%v", body)
+			if strings.Contains(body, "<") {
+				wt = wt - 1
+				if wt >= 0 {
+					time.Sleep(time.Second * 5)
+					dt := DepartmentUserDetail(id, pageNum, wt)
+					return dt
+				} else {
+					panic("Recursion times has run out!")
+					return nil
+				}
+			}
+			//log.Printf("unmarshall userlist info error_body is:%v", body)
 			log.Printf("unmarshall userlist info error:%v", err)
 			return nil
 		}
@@ -283,7 +317,7 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 }
 
 //获取部门用户userid列表
-func DepartmentUserIdsDetail(id int) []string {
+func DepartmentUserIdsDetail(id, wt int) []string {
 	var useridslice []string
 	var useridslist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
@@ -297,7 +331,18 @@ func DepartmentUserIdsDetail(id int) []string {
 	} else {
 		err := json.Unmarshal([]byte(body), &useridslist)
 		if err != nil {
-			log.Printf("unmarshall useridslist info error_body is:%v", body)
+			if strings.Contains(body, "<") {
+				wt = wt - 1
+				if wt >= 0 {
+					time.Sleep(time.Second * 5)
+					dt := DepartmentUserIdsDetail(id, wt)
+					return dt
+				} else {
+					panic("Recursion times has run out!")
+					return nil
+				}
+			}
+			//log.Printf("unmarshall useridslist info error_body is:%v", body)
 			log.Printf("unmarshall useridslist info error:%v", err)
 			return nil
 		}
@@ -312,7 +357,7 @@ func DepartmentUserIdsDetail(id int) []string {
 }
 
 //获取用户详情
-func UserDetail(userid string) *models.User {
+func UserDetail(userid string, wt int) *models.User {
 	var user models.User
 	var userlist = map[string]interface{}{}
 	_, body, errs := gorequest.New().
@@ -325,6 +370,17 @@ func UserDetail(userid string) *models.User {
 	} else {
 		errs := json.Unmarshal([]byte(body), &user)
 		if errs != nil {
+			if strings.Contains(body, "<") {
+				wt = wt - 1
+				if wt >= 0 {
+					time.Sleep(time.Second * 5)
+					u := UserDetail(userid, wt)
+					return u
+				} else {
+					panic("Recursion times has run out!")
+					return nil
+				}
+			}
 			log.Printf("convert struct error:%v", errs)
 			return nil
 		}

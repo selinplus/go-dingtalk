@@ -29,6 +29,8 @@ var MsgFlags = map[int]string{
 
 	ERROR_GET_DEPARTMENT_NUMBER_FAIL: "获取部门同步条数失败",
 	ERROR_GET_USER_NUMBER_FAIL:       "获取用户同步条数失败",
+	ERROR_GET_DEPARTMENT_FAIL:        "获取部门列表失败",
+	ERROR_GET_USER_FAIL:              "获取部门用户列表失败",
 }
 
 // GetMsg get error information based on Code
