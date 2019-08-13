@@ -153,6 +153,7 @@ func DepartmentUserSyncNum(c *gin.Context) {
 		return
 	}
 	data := make(map[string]interface{})
+	data["syncTime"] = time.Now().Format("2006-01-02")
 	data["depNum"] = depNum
 	data["userNum"] = userNum
 	appG.Response(http.StatusOK, e.SUCCESS, data)

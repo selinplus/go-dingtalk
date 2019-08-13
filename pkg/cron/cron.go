@@ -21,7 +21,7 @@ func Setup() {
 	if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
 		logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 	}
-	// 每天同步一次部门和人员信息
+	// 每天半夜同步一次部门和人员信息
 	if err := c.AddFunc("@midnight", func() {
 		DepartmentUserSync()
 		for {
