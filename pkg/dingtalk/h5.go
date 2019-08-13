@@ -220,21 +220,20 @@ func SubDepartmentList() ([]int, error) {
 
 // 获取部门详情
 func DepartmentDetail(id int) *models.Department {
-	var department *models.Department
+	var department models.Department
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/department/get?access_token=" + GetAccessToken() + "&id=" + depId).End()
 	if len(errs) > 0 {
 		util.ShowError("get department failed:", errs[0])
 		return nil
-	} else {
-		err := json.Unmarshal([]byte(body), &department)
-		if err != nil {
-			log.Printf("unmarshall department info error_body is:%v", body)
-			log.Printf("unmarshall department info error:%v", err)
-		}
 	}
-	return department
+	err := json.Unmarshal([]byte(body), &department)
+	if err != nil {
+		log.Printf("unmarshall department info error_body is:%v", body)
+		log.Printf("unmarshall department info error:%v", err)
+	}
+	return &department
 }
 
 // 获取部门用户详情
@@ -257,6 +256,7 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 		if err != nil {
 			log.Printf("unmarshall userlist info error_body is:%v", body)
 			log.Printf("unmarshall userlist info error:%v", err)
+			return nil
 		}
 		if userlist["userlist"] != nil {
 			users := userlist["userlist"].([]interface{})
@@ -278,12 +278,13 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 				usersList = append(usersList, user)
 			}
 		}
+		return &usersList
 	}
-	return &usersList
 }
 
 //获取部门用户userid列表
 func DepartmentUserIdsDetail(id int) []string {
+	var useridslice []string
 	var useridslist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -298,17 +299,16 @@ func DepartmentUserIdsDetail(id int) []string {
 		if err != nil {
 			log.Printf("unmarshall useridslist info error_body is:%v", body)
 			log.Printf("unmarshall useridslist info error:%v", err)
+			return nil
 		}
 		if useridslist["userIds"] != nil {
 			userids := useridslist["userIds"].([]interface{})
-			var useridslice []string
 			for _, param := range userids {
 				useridslice = append(useridslice, param.(string))
 			}
-			return useridslice
 		}
+		return useridslice
 	}
-	return nil
 }
 
 //获取用户详情
@@ -326,12 +326,14 @@ func UserDetail(userid string) *models.User {
 		errs := json.Unmarshal([]byte(body), &user)
 		if errs != nil {
 			log.Printf("convert struct error:%v", errs)
+			return nil
 		}
 		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 		err := json.Unmarshal([]byte(body), &userlist)
 		if err != nil {
 			log.Printf("unmarshall user info error_body is:%v", body)
 			log.Printf("unmarshall user info error:%v", err)
+			return nil
 		}
 		var depIds string
 		if len(userlist) > 0 {
@@ -348,6 +350,6 @@ func UserDetail(userid string) *models.User {
 			}
 			user.Department = depIds
 		}
+		return &user
 	}
-	return &user
 }

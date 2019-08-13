@@ -35,6 +35,7 @@ func Setup() {
 			}
 			break
 		}
+		logging.Info(fmt.Sprintf("DepartmentUserSync success"))
 	}); err != nil {
 		logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
 	}
@@ -53,7 +54,7 @@ func MessageDingding() {
 		if asyncsendReturn != nil {
 			if asyncsendReturn.Errcode == 0 {
 				if err := models.UpdateMsgFlag(msg.ID); err != nil {
-					log.Printf("UpdateMsgFlag err:%v", err)
+					logging.Info(fmt.Sprintf("UpdateMsgFlag err:%v", err))
 				}
 			}
 		}
@@ -65,77 +66,72 @@ func DepartmentUserSync() {
 	defer func() {
 		if r := recover(); r != nil {
 			flag = true
-			fmt.Printf("Recovered in h,recover panic:%v", r)
 		}
 	}()
-	if flag {
-		depIds, err := dingtalk.SubDepartmentList()
-		if err != nil {
-			logging.Info(fmt.Sprintf("%v", err))
-			return
+	depIds, err := dingtalk.SubDepartmentList()
+	if err != nil {
+		logging.Info(fmt.Sprintf("%v", err))
+		return
+	}
+	if depIds != nil {
+		var seg int
+		depidsLen := len(depIds)
+		depidsNum = depidsLen //用于判断信息同步是否完成
+		if depidsLen%8 == 0 {
+			seg = depidsLen / 8
+		} else {
+			seg = (depidsLen / 8) + 1
 		}
-		if depIds != nil {
-			var seg int
-			depidsLen := len(depIds)
-			depidsNum = depidsLen //用于判断信息同步是否完成
-			if depidsLen%8 == 0 {
-				seg = depidsLen / 8
-			} else {
-				seg = (depidsLen / 8) + 1
-			}
-			depIdChan := make(chan int, 100) //部门id
-			for j := 0; j < 8; j++ {
-				segIds := depIds[j*seg : (j+1)*seg]
-				var num int
-				go func() {
-					for _, depId := range segIds {
-						depIdChan <- depId
-						num++
-					}
-				}()
-				if num == depidsLen {
-					close(depIdChan)
+		depIdChan := make(chan int, 100) //部门id
+		for j := 0; j < 8; j++ {
+			segIds := depIds[j*seg : (j+1)*seg]
+			var num int
+			go func() {
+				for _, depId := range segIds {
+					depIdChan <- depId
+					num++
 				}
+			}()
+			if num == depidsLen {
+				close(depIdChan)
 			}
-			syncNum := 30
-			wg := &sync.WaitGroup{}
-			wg.Add(syncNum)
-			for k := 0; k < syncNum; k++ {
-				wg.Done()
-				go func() {
-					defer func() {
-						if r := recover(); r != nil {
-							flag = true
-							fmt.Printf("Recovered in h,recover panic:%v", r)
-						}
-					}()
-					for depId := range depIdChan {
-						department := dingtalk.DepartmentDetail(depId)
-						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-						if department.ID != 0 {
-							if err := models.DepartmentSync(department); err != nil {
-								log.Printf("DepartmentSync err:%v", err)
-							}
-						}
-						userids := dingtalk.DepartmentUserIdsDetail(depId)
-						cnt := len(userids)
-						var pageNumTotal int
-						if cnt%100 == 0 {
-							pageNumTotal = cnt / 100
-						} else {
-							pageNumTotal = cnt/100 + 1
-						}
-						for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-							userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
-							if err := models.UserSync(userlist); err != nil {
-								log.Printf("UserSync err:%v", err)
-							}
-						}
+		}
+		syncNum := 30
+		wg := &sync.WaitGroup{}
+		wg.Add(syncNum)
+		for k := 0; k < syncNum; k++ {
+			wg.Done()
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						flag = true
 					}
 				}()
-			}
-			wg.Wait()
-			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
+				for depId := range depIdChan {
+					department := dingtalk.DepartmentDetail(depId)
+					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+					if department.ID != 0 {
+						if err := models.DepartmentSync(department); err != nil {
+							log.Printf("DepartmentSync err:%v", err)
+						}
+					}
+					userids := dingtalk.DepartmentUserIdsDetail(depId)
+					cnt := len(userids)
+					var pageNumTotal int
+					if cnt%100 == 0 {
+						pageNumTotal = cnt / 100
+					} else {
+						pageNumTotal = cnt/100 + 1
+					}
+					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
+						if err := models.UserSync(userlist); err != nil {
+							log.Printf("UserSync err:%v", err)
+						}
+					}
+				}
+			}()
 		}
+		wg.Wait()
 	}
 }

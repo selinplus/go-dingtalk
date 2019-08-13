@@ -19,7 +19,7 @@ func DepartmentSync(data interface{}) error {
 }
 func CountDepartmentSyncNum() (int, error) {
 	var depidsNum int
-	t := time.Now().Format("2006-01-02")
+	t := time.Now().Format("2006-01-02") + " 00:00:00"
 	if err := db.Where("sync_time>?", t).Count(&depidsNum).Error; err != nil {
 		return 0, err
 	}
