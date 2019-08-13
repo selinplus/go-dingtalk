@@ -26,6 +26,9 @@ var MsgFlags = map[int]string{
 	ERROR_GET_MSGLIST_FAIL: "获取消息列表失败",
 	ERROR_GET_MSG_FAIL:     "获取消息失败",
 	ERROR_DELETE_MSG_FAIL:  "删除消息失败",
+
+	ERROR_GET_DEPARTMENT_NUMBER_FAIL: "获取部门同步条数失败",
+	ERROR_GET_USER_NUMBER_FAIL:       "获取用户同步条数失败",
 }
 
 // GetMsg get error information based on Code

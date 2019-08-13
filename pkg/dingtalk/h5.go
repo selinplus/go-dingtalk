@@ -7,7 +7,6 @@ import (
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
-	"github.com/selinplus/go-dingtalk/pkg/recovery"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -190,7 +189,6 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 
 // 获取子部门Id列表
 func SubDepartmentList() ([]int, error) {
-	defer recovery.Recovery()
 	var depIds []int
 	var subDeptIdList = map[string]interface{}{}
 	_, body, errs := gorequest.New().
@@ -222,7 +220,6 @@ func SubDepartmentList() ([]int, error) {
 
 // 获取部门详情
 func DepartmentDetail(id int) *models.Department {
-	defer recovery.Recovery()
 	var department *models.Department
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -242,7 +239,6 @@ func DepartmentDetail(id int) *models.Department {
 
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum int) *[]models.User {
-	defer recovery.Recovery()
 	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
@@ -266,7 +262,7 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 			users := userlist["userlist"].([]interface{})
 			for _, v := range users {
 				vv := v.(map[string]interface{})
-				mapstructure.Decode(vv, &user)
+				_ = mapstructure.Decode(vv, &user)
 				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				for k, val := range vv {
 					if k == "department" {
@@ -288,7 +284,6 @@ func DepartmentUserDetail(id, pageNum int) *[]models.User {
 
 //获取部门用户userid列表
 func DepartmentUserIdsDetail(id int) []string {
-	defer recovery.Recovery()
 	var useridslist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -318,7 +313,6 @@ func DepartmentUserIdsDetail(id int) []string {
 
 //获取用户详情
 func UserDetail(userid string) *models.User {
-	defer recovery.Recovery()
 	var user models.User
 	var userlist = map[string]interface{}{}
 	_, body, errs := gorequest.New().

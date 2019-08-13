@@ -1,13 +1,14 @@
 package dingtalk
 
 import (
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
-	"github.com/selinplus/go-dingtalk/pkg/recovery"
+	"github.com/selinplus/go-gin-web/pkg/logging"
 	"log"
 	"net/http"
 	"sync"
@@ -37,7 +38,7 @@ func Login(c *gin.Context) {
 		userInfo := dingtalk.GetUserInfo(id)
 		session.Set("userid", userInfo.UserID)
 		if err := session.Save(); err != nil {
-			log.Println("session.Save() err:%v", err)
+			log.Printf("session.Save() err:%v", err)
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, userInfo)
 		return
@@ -63,6 +64,11 @@ func JsApiConfig(c *gin.Context) {
 //部门用户信息同步
 func DepartmentUserSync(c *gin.Context) {
 	appG := app.Gin{C: c}
+	defer func() {
+		if r := recover(); r != nil {
+			logging.Info(fmt.Sprintf("recover panic in SubDepartmentList:%v", r))
+		}
+	}()
 	depIds, err := dingtalk.SubDepartmentList()
 	if err != nil {
 		appG.Response(http.StatusBadRequest, e.SUCCESS, "获取部门id失败，请稍候重试")
@@ -96,18 +102,22 @@ func DepartmentUserSync(c *gin.Context) {
 		for k := 0; k < syncNum; k++ {
 			wg.Done()
 			go func() {
-				defer recovery.Recovery()
+				defer func() {
+					if r := recover(); r != nil {
+						logging.Info(fmt.Sprintf("recover panic in DepartmentUserSync:%v", r))
+					}
+				}()
 				for depId := range depIdChan {
 					department := dingtalk.DepartmentDetail(depId)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 					if department.ID != 0 {
 						if err := models.DepartmentSync(department); err != nil {
-							log.Println("DepartmentSync err:%v", err)
+							log.Printf("DepartmentSync err:%v", err)
 						}
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId)
 					cnt := len(userids)
-					log.Println("userids lenth is:%v", cnt)
+					//log.Printf("userids lenth is:%v", cnt)
 					var pageNumTotal int
 					if cnt%100 == 0 {
 						pageNumTotal = cnt / 100
@@ -117,7 +127,7 @@ func DepartmentUserSync(c *gin.Context) {
 					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
 						userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
 						if err := models.UserSync(userlist); err != nil {
-							log.Println("UserSync err:%v", err)
+							log.Printf("UserSync err:%v", err)
 						}
 					}
 				}
@@ -127,4 +137,23 @@ func DepartmentUserSync(c *gin.Context) {
 		wg.Wait()
 		return
 	}
+}
+
+//获取部门用户信息同步条数
+func DepartmentUserSyncNum(c *gin.Context) {
+	appG := app.Gin{C: c}
+	depNum, deperr := models.CountDepartmentSyncNum()
+	if deperr != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_NUMBER_FAIL, nil)
+		return
+	}
+	userNum, usererr := models.CountUserSyncNum()
+	if usererr != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_NUMBER_FAIL, nil)
+		return
+	}
+	data := make(map[string]interface{})
+	data["depNum"] = depNum
+	data["userNum"] = userNum
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }

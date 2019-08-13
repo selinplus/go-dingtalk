@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 /*用户*/
@@ -27,6 +28,14 @@ func UserSync(users *[]User) error {
 		}
 	}
 	return nil
+}
+func CountUserSyncNum() (int, error) {
+	var userNum int
+	t := time.Now().Format("2006-01-02")
+	if err := db.Where("sync_time>?", t).Count(&userNum).Error; err != nil {
+		return 0, err
+	}
+	return userNum, nil
 }
 func UserDetailSync(data interface{}) error {
 	if err := db.Model(&User{}).Save(&data).Error; err != nil {

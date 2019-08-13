@@ -6,11 +6,13 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
-	"github.com/selinplus/go-dingtalk/pkg/recovery"
 	"log"
 	"sync"
 	"time"
 )
+
+var flag bool
+var depidsNum int
 
 func Setup() {
 	// 定义一个cron运行器
@@ -21,15 +23,18 @@ func Setup() {
 	}
 	// 每天同步一次部门和人员信息
 	if err := c.AddFunc("@midnight", func() {
-		flag := true
+		DepartmentUserSync()
 		for {
 			if flag {
 				time.Sleep(time.Second * 60)
-				flag = DepartmentUserSync(flag)
+				DepartmentUserSync()
+				depNum, _ := models.CountDepartmentSyncNum()
+				if depidsNum == depNum {
+					flag = false
+				}
 			}
 			break
 		}
-
 	}); err != nil {
 		logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
 	}
@@ -47,27 +52,32 @@ func MessageDingding() {
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil {
 			if asyncsendReturn.Errcode == 0 {
-				models.UpdateMsgFlag(msg.ID)
+				if err := models.UpdateMsgFlag(msg.ID); err != nil {
+					log.Printf("UpdateMsgFlag err:%v", err)
+				}
 			}
 		}
 	}
 }
 
 //同步一次部门和人员信息
-func DepartmentUserSync(flag bool) bool {
-	defer func() bool {
-		flag = recovery.Recovery()
-		return flag
+func DepartmentUserSync() {
+	defer func() {
+		if r := recover(); r != nil {
+			flag = true
+			fmt.Printf("Recovered in h,recover panic:%v", r)
+		}
 	}()
 	if flag {
 		depIds, err := dingtalk.SubDepartmentList()
 		if err != nil {
 			logging.Info(fmt.Sprintf("%v", err))
-			return flag
+			return
 		}
 		if depIds != nil {
 			var seg int
 			depidsLen := len(depIds)
+			depidsNum = depidsLen //用于判断信息同步是否完成
 			if depidsLen%8 == 0 {
 				seg = depidsLen / 8
 			} else {
@@ -93,13 +103,18 @@ func DepartmentUserSync(flag bool) bool {
 			for k := 0; k < syncNum; k++ {
 				wg.Done()
 				go func() {
-					defer recovery.Recovery()
+					defer func() {
+						if r := recover(); r != nil {
+							flag = true
+							fmt.Printf("Recovered in h,recover panic:%v", r)
+						}
+					}()
 					for depId := range depIdChan {
 						department := dingtalk.DepartmentDetail(depId)
 						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 						if department.ID != 0 {
 							if err := models.DepartmentSync(department); err != nil {
-								log.Println("DepartmentSync err:%v", err)
+								log.Printf("DepartmentSync err:%v", err)
 							}
 						}
 						userids := dingtalk.DepartmentUserIdsDetail(depId)
@@ -113,7 +128,7 @@ func DepartmentUserSync(flag bool) bool {
 						for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
 							userlist := dingtalk.DepartmentUserDetail(depId, pageNum)
 							if err := models.UserSync(userlist); err != nil {
-								log.Println("UserSync err:%v", err)
+								log.Printf("UserSync err:%v", err)
 							}
 						}
 					}
@@ -121,8 +136,6 @@ func DepartmentUserSync(flag bool) bool {
 			}
 			wg.Wait()
 			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
-			flag = false
 		}
 	}
-	return flag
 }
