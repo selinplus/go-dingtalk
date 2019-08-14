@@ -48,7 +48,10 @@ func Setup() {
 
 //遍历一遍发送标志为0的信息，通知钉钉发送工作通知
 func MessageDingding() {
-	msgs, _ := models.GetMsgFlag()
+	msgs, err := models.GetMsgFlag()
+	if err != nil {
+		return
+	}
 	for _, msg := range msgs {
 		tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
