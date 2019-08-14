@@ -43,6 +43,7 @@ func Setup() {
 	// 开始
 	c.Start()
 	defer c.Stop()
+	select {}
 }
 
 //遍历一遍发送标志为0的信息，通知钉钉发送工作通知
