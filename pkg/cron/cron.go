@@ -15,35 +15,36 @@ var flag bool
 var depidsNum int
 
 func Setup() {
-	// 定义一个cron运行器
-	c := cron.New()
-	// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
-	if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
-		logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
-	}
-	// 每天半夜同步一次部门和人员信息
-	if err := c.AddFunc("@midnight", func() {
-		DepartmentUserSync()
-		for {
-			if flag {
-				time.Sleep(time.Second * 90)
-				DepartmentUserSync()
-				depNum, _ := models.CountDepartmentSyncNum()
-				if depidsNum == depNum {
-					flag = false
-				}
-			}
-			break
+	go func() {
+		logging.Info(fmt.Sprintf("Cron starting..."))
+		defer logging.Info(fmt.Sprintf("Cron stopped..."))
+		// 定义一个cron运行器
+		c := cron.New()
+		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
+		if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
+			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
-		logging.Info(fmt.Sprintf("DepartmentUserSync success"))
-	}); err != nil {
-		logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
-	}
-
-	// 开始
-	c.Start()
-	defer c.Stop()
-	select {}
+		// 每天半夜同步一次部门和人员信息
+		if err := c.AddFunc("@midnight", func() {
+			DepartmentUserSync()
+			for {
+				if flag {
+					time.Sleep(time.Second * 90)
+					DepartmentUserSync()
+					depNum, _ := models.CountDepartmentSyncNum()
+					if depidsNum == depNum {
+						flag = false
+					}
+				}
+				break
+			}
+			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
+		}); err != nil {
+			logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
+		}
+		// 开始
+		c.Run()
+	}()
 }
 
 //遍历一遍发送标志为0的信息，通知钉钉发送工作通知
