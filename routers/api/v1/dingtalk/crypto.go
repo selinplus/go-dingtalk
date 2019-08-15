@@ -15,10 +15,10 @@ func GetCallbacks(c *gin.Context) {
 	timestamp := c.Query("timestamp")
 	nonce := c.Query("nonce")
 	secretMsg := c.PostForm("encrypt")
-	tokens := dingtalk.RandomString(6)
+	token := "ytsw3706"
 	aeskey := dingtalk.RandomString(43)
 	corpid := setting.DingtalkSetting.CorpID
-	dc := dingtalk.NewDingTalkCrypto(tokens, aeskey, corpid)
+	dc := dingtalk.NewDingTalkCrypto(token, aeskey, corpid)
 	replyMsg, err := dc.GetDecryptMsg(signature, timestamp, nonce, secretMsg)
 	if err != nil {
 		logging.Info(fmt.Sprintf("GetDecryptMsg failed:%v", err))

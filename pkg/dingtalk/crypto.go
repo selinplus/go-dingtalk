@@ -32,7 +32,7 @@ const aesEncodeKeyLen = 43
 
 func NewDingTalkCrypto(token, encodingAESKey, suiteKey string) *DingTalkCrypto {
 	if len(encodingAESKey) != aesEncodeKeyLen {
-		panic("不合法的EncodingAESKey")
+		panic("不合法的EncodingAESKey/Illegal EncodingAESKey")
 	}
 	bkey, err := base64.StdEncoding.DecodeString(encodingAESKey + "=")
 	if err != nil {
@@ -62,14 +62,14 @@ func NewDingTalkCrypto(token, encodingAESKey, suiteKey string) *DingTalkCrypto {
 
 func (c *DingTalkCrypto) GetDecryptMsg(signature, timestamp, nonce, secretMsg string) (string, error) {
 	if !c.VerificationSignature(c.Token, timestamp, nonce, secretMsg, signature) {
-		return "", errors.New("ERROR: 签名不匹配")
+		return "", errors.New("ERROR: 签名不匹配/Signature mismatch")
 	}
 	decode, err := base64.StdEncoding.DecodeString(secretMsg)
 	if err != nil {
 		return "", err
 	}
 	if len(decode) < aes.BlockSize {
-		return "", errors.New("ERROR: 密文太短")
+		return "", errors.New("ERROR: 密文太短/Decode is too short")
 	}
 	blockMode := cipher.NewCBCDecrypter(c.Block, c.BKey[:c.Block.BlockSize()])
 	plantText := make([]byte, len(decode))
@@ -79,7 +79,7 @@ func (c *DingTalkCrypto) GetDecryptMsg(signature, timestamp, nonce, secretMsg st
 	plantText = plantText[20:]
 	corpID := plantText[size:]
 	if string(corpID) != c.SuiteKey {
-		return "", errors.New("ERROR: CorpID匹配不正确")
+		return "", errors.New("ERROR: CorpID不匹配/CorpID mismatch")
 	}
 	return string(plantText[:size]), nil
 }
@@ -97,7 +97,7 @@ func (c *DingTalkCrypto) GetEncryptMsg(replyMsg, timestamp, nonce string) (strin
 	replyMsg = RandomString(16) + string(size) + replyMsg + c.SuiteKey
 	plantText := pkCS7Padding([]byte(replyMsg), c.Block.BlockSize())
 	if len(plantText)%aes.BlockSize != 0 {
-		return "", "", errors.New("ERROR: 消息体size不为16的倍数")
+		return "", "", errors.New("ERROR: 消息体size不为16的倍数/Text size is not a multiple of 16")
 	}
 	blockMode := cipher.NewCBCEncrypter(c.Block, c.BKey[:c.Block.BlockSize()])
 	chipherText := make([]byte, len(plantText))

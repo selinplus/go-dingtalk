@@ -42,7 +42,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/js_api_config", dingtalk.JsApiConfig)
 
 		//注册事件回调
-		apiv1.POST("/callback/reg", dingtalk.RegisterCallback)
+		apiv1.GET("/callback/reg", dingtalk.RegisterCallback)
 		// 查询事件回调
 		apiv1.GET("/callback/query", dingtalk.QueryCallback)
 		// 更新事件回调
