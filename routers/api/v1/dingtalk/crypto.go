@@ -26,9 +26,12 @@ func GetCallbacks(c *gin.Context) {
 	} else {
 		log.Println(cbd)
 	}
+	//token := "123456"
+	//aeskey := "4g5j64qlyl3zvetqxz5jiocdr586fn2zvjpa8zls3ij"
+	//corpid := "suite4xxxxxxxxxxxxxxx"
 	secretMsg := cbd.Encrypt
 	token := "ytsw3706"
-	aeskey := dingtalk.RandomString(43)
+	aeskey := "35KWSX7PyqS3RRvjyMf17SpSD0m03StbqWR3x6wmY8y"
 	corpid := setting.DingtalkSetting.CorpID
 	dc := dingtalk.NewDingTalkCrypto(token, aeskey, corpid)
 	replyMsg, err := dc.GetDecryptMsg(signature, timestamp, nonce, secretMsg)
@@ -38,12 +41,12 @@ func GetCallbacks(c *gin.Context) {
 		logging.Info(fmt.Sprintf("replyMsg is:%v", replyMsg))
 	}
 	res := "success"
-	sucess, sign, _ := dc.GetEncryptMsg(res, timestamp, nonce)
+	crypt, sign, _ := dc.GetEncryptMsg(res, timestamp, nonce)
 	data := map[string]interface{}{
 		"msg_signature": sign,
 		"timeStamp":     timestamp,
 		"nonce":         nonce,
-		"encrypt":       sucess,
+		"encrypt":       crypt,
 	}
 	c.JSON(http.StatusOK, data)
 }

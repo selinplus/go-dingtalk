@@ -18,7 +18,7 @@ func RegisterCallback(c *gin.Context) {
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
 		"token":         "ytsw3706",
-		"aes_key":       dingtalk.RandomString(43),
+		"aes_key":       "35KWSX7PyqS3RRvjyMf17SpSD0m03StbqWR3x6wmY8y",
 		"url":           callbackURL,
 	}
 	response, err := dingtalk.RegisterCallback(request)
@@ -54,7 +54,7 @@ func UpdateCallback(c *gin.Context) {
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
 		"token":         "ytsw3706",
-		"aes_key":       dingtalk.RandomString(43),
+		"aes_key":       "35KWSX7PyqS3RRvjyMf17SpSD0m03StbqWR3x6wmY8y",
 		"url":           callbackURL,
 	}
 	response, err := dingtalk.UpdateCallback(request)
