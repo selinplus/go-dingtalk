@@ -27,7 +27,7 @@ func GetCallbacks(c *gin.Context) {
 		log.Println(cbd)
 	}
 	secretMsg := cbd.Encrypt
-	token := dingtalk.RandomString(8)
+	token := "ytsw3706"
 	aeskey := dingtalk.RandomString(43)
 	corpid := setting.DingtalkSetting.CorpID
 	dc := dingtalk.NewDingTalkCrypto(token, aeskey, corpid)

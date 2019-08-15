@@ -142,7 +142,7 @@ func RegCallbackInit() {
 	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v1/callback/detail"
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
-		"token":         RandomString(8),
+		"token":         "ytsw3706",
 		"aes_key":       RandomString(43),
 		"url":           callbackURL,
 	}
