@@ -46,11 +46,12 @@ func GetUserByDepartmentID(deptId string) ([]*User, error) {
 	return users, nil
 }
 func GetUseridByMobile(mobile string) (string, error) {
-	var userid string
-	if err := db.Table("user").Select("userid").Where("mobile=?", mobile).Scan(&userid).Error; err != nil {
+	var userid []string
+	if err := db.Table("user").Pluck("userid", &userid).
+		Where("mobile=?", mobile).Error; err != nil {
 		return "", err
 	}
-	return userid, nil
+	return userid[0], nil
 }
 func UserDetailSync(data interface{}) error {
 	if err := db.Model(&User{}).Save(&data).Error; err != nil {
