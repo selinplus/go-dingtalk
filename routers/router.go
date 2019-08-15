@@ -53,6 +53,8 @@ func InitRouter() *gin.Engine {
 
 		//发消息
 		apiv1.POST("/msg/send", dingtalk.SendMsg)
+		//发消息(内网)
+		apiv1.POST("/msg/sendmobile", dingtalk.SendMsgMobile)
 		//获取消息列表
 		apiv1.GET("/msg/list", dingtalk.GetMsgs)
 		//获取消息详情

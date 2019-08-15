@@ -12,15 +12,40 @@ import (
 //获取部门列表
 func GetDepartmentByParentID(c *gin.Context) {
 	var appG = app.Gin{C: c}
-	ParentID, _ := strconv.Atoi(c.Query("id"))
-	departments, err := models.GetDepartmentByParentID(ParentID)
+	id, errc := strconv.Atoi(c.Query("id"))
+	if errc != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	parentDt, errd := models.GetDepartmentByID(id)
+	if errd != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	var dts []interface{}
+	data := map[string]interface{}{
+		"key":      parentDt.ID,
+		"value":    parentDt.ID,
+		"title":    parentDt.Name,
+		"children": dts,
+	}
+	departments, err := models.GetDepartmentByParentID(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
 		return
 	}
 	if len(departments) > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, departments)
+		for _, department := range departments {
+			dt := map[string]interface{}{
+				"key":   department.ID,
+				"value": department.ID,
+				"title": department.Name,
+			}
+			dts = append(dts, dt)
+		}
+		data["children"] = dts
+		appG.Response(http.StatusOK, e.SUCCESS, data)
 	} else {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		appG.Response(http.StatusOK, e.SUCCESS, data)
 	}
 }

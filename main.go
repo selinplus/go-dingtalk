@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"log"
 	"net/http"
 	"os"
@@ -24,7 +23,7 @@ func init() {
 	logging.Setup()
 	gredis.Setup()
 	util.Setup()
-	cron.Setup()
+	//cron.Setup()
 }
 
 // @title Golang Gin API

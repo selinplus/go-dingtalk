@@ -90,6 +90,64 @@ func SendMsg(c *gin.Context) {
 	}
 }
 
+//发信息(内网)
+func SendMsgMobile(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form MsgSendForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	t := time.Now().Format("2006-01-02 15:04:05")
+	var ats = make([]models.Attachment, 0)
+	for _, at := range form.Attachments {
+		a := models.Attachment{
+			FileName: at.FileName,
+			FileUrl:  at.FileUrl,
+			FileSize: at.FileSize,
+			FileType: at.FileType,
+			Time:     t,
+		}
+		ats = append(ats, a)
+	}
+	Mobile := form.FromID
+	userid, errm := models.GetUseridByMobile(Mobile)
+	if errm != nil {
+		logging.Info(fmt.Sprintf("%v", errm))
+	}
+	msg := models.Msg{
+		ToID:        form.ToID,
+		ToName:      form.ToName,
+		FromID:      userid,
+		FromName:    form.FromName,
+		Title:       form.Title,
+		Content:     form.Content,
+		Time:        t,
+		Attachments: ats,
+	}
+	err := models.AddSendMsg(&msg)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		return
+	}
+	if msg.ID == 0 {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		return
+	}
+	if msg.ID > 0 {
+		err := models.AddMsgTag(msg.ID, msg.ToID, msg.FromID)
+		if err != nil {
+			logging.Info(fmt.Sprintf("%v", err))
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
+	} else {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+	}
+}
+
 //获取消息列表
 func GetMsgs(c *gin.Context) {
 	appG := app.Gin{C: c}

@@ -36,3 +36,14 @@ func GetDepartmentByParentID(ParentID int) ([]*Department, error) {
 	}
 	return departments, nil
 }
+func GetDepartmentByID(id int) (*Department, error) {
+	var dt Department
+	if err := db.Table("department").Where("id=?", id).First(&dt).
+		Error; err != nil {
+		return nil, err
+	}
+	if dt.ID > 0 {
+		return &dt, nil
+	}
+	return nil, nil
+}
