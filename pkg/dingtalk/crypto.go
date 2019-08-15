@@ -5,16 +5,20 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha1"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
-	"fmt"
+	"github.com/selinplus/go-dingtalk/pkg/util"
 	r "math/rand"
 	"sort"
-	"strings"
 	"time"
 )
+
+const (
+	AES_ENCODE_KEY_LENGTH = 43
+)
+
+var DefaultDingtalkCrypto *DingTalkCrypto
 
 type DingTalkCrypto struct {
 	Token          string
@@ -25,13 +29,13 @@ type DingTalkCrypto struct {
 }
 
 /*
-token、aesKey	随机串
-suiteKey 一般使用corpID
+	token		数据签名需要用到的token，ISV(服务提供商)推荐使用注册套件时填写的token，普通企业可以随机填写
+	aesKey  	数据加密密钥。用于回调数据的加密，长度固定为43个字符，从a-z, A-Z, 0-9共62个字符中选取,您可以随机生成，ISV(服务提供商)推荐使用注册套件时填写的EncodingAESKey
+	suiteKey	一般使用corpID
 */
-const aesEncodeKeyLen = 43
 
 func NewDingTalkCrypto(token, encodingAESKey, suiteKey string) *DingTalkCrypto {
-	if len(encodingAESKey) != aesEncodeKeyLen {
+	if len(encodingAESKey) != AES_ENCODE_KEY_LENGTH {
 		panic("不合法的EncodingAESKey/Illegal EncodingAESKey")
 	}
 	bkey, err := base64.StdEncoding.DecodeString(encodingAESKey + "=")
@@ -108,18 +112,18 @@ func (c *DingTalkCrypto) GetEncryptMsg(replyMsg, timestamp, nonce string) (strin
 }
 
 // 数据签名
-func (c *DingTalkCrypto) CreateSignature(token, timestamp, nonce, msg string) string {
+func (c *DingTalkCrypto) CreateSignature(token, timeStamp, nonce, secretStr string) string {
 	// 先将参数值进行排序
 	params := make([]string, 0)
 	params = append(params, token)
-	params = append(params, timestamp)
+	params = append(params, secretStr)
+	params = append(params, timeStamp)
 	params = append(params, nonce)
-	params = append(params, msg)
 	sort.Strings(params)
-	return sha1Sign(strings.Join(params, ""))
+	return util.Sha1Sign(params[0] + params[1] + params[2] + params[3])
 }
 
-// 验证数据签名
+// 校验数据签名
 func (c *DingTalkCrypto) VerificationSignature(token, timestamp, nonce, msg, sigture string) bool {
 	return c.CreateSignature(token, timestamp, nonce, msg) == sigture
 }
@@ -163,25 +167,4 @@ func RandomString(n int, alphabets ...byte) string {
 		}
 	}
 	return string(bytes)
-}
-
-func sha1Sign(s string) string {
-	// The pattern for generating a hash is `sha1.New()`,
-	// `sha1.Write(bytes)`, then `sha1.Sum([]byte{})`.
-	// Here we start with a new hash.
-	h := sha1.New()
-
-	// `Write` expects bytes. If you have a string `s`,
-	// use `[]byte(s)` to coerce it to bytes.
-	h.Write([]byte(s))
-
-	// This gets the finalized hash result as a byte
-	// slice. The argument to `Sum` can be used to append
-	// to an existing byte slice: it usually isn't needed.
-	bs := h.Sum(nil)
-
-	// SHA1 values are often printed in hex, for example
-	// in git commits. Use the `%x` format verb to convert
-	// a hash results to a hex string.
-	return fmt.Sprintf("%x", bs)
 }
