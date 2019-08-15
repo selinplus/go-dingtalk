@@ -41,6 +41,19 @@ func InitRouter() *gin.Engine {
 		//鉴权
 		apiv1.GET("/js_api_config", dingtalk.JsApiConfig)
 
+		//注册事件回调
+		apiv1.POST("/callback/reg", dingtalk.RegisterCallback)
+		// 查询事件回调
+		apiv1.GET("/callback/query", dingtalk.QueryCallback)
+		// 更新事件回调
+		apiv1.POST("/callback/update", dingtalk.UpdateCallback)
+		// 删除事件回调
+		apiv1.GET("/callback/delete", dingtalk.DeleteCallback)
+		// 获取回调失败的结果
+		apiv1.GET("/callback/failed", dingtalk.GetFailedCallbacks)
+		//获取回调的结果
+		apiv1.POST("/callback/detail", dingtalk.GetCallbacks)
+
 		//部门用户信息同步
 		apiv1.GET("/sync", dingtalk.DepartmentUserSync)
 		//获取部门用户信息同步条数

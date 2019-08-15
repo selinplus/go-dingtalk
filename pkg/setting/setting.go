@@ -61,8 +61,9 @@ type Redis struct {
 var RedisSetting = &Redis{}
 
 type Dingtalk struct {
-	CorpID   string
-	OapiHost string
+	CorpID       string
+	OapiHost     string
+	CallBackHost string
 }
 
 var DingtalkSetting = &Dingtalk{}

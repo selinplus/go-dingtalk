@@ -6,7 +6,6 @@ import (
 	"github.com/goinggo/mapstructure"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
-	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -168,8 +167,8 @@ type AsyncsendReturn struct {
 
 // 企业会话消息异步发送
 func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
-	var asyncsendReturn *AsyncsendReturn
-	logging.Info(fmt.Sprintf("%v", mpar))
+	var asyncsendReturn AsyncsendReturn
+	//logging.Info(fmt.Sprintf("%v", mpar))
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetAccessToken()).
 		Type("json").Send(mpar).End()
@@ -178,13 +177,13 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 		return nil
 	} else {
 		err := json.Unmarshal([]byte(body), &asyncsendReturn)
-		logging.Info(fmt.Sprintf("%v", asyncsendReturn))
+		//logging.Info(fmt.Sprintf("%v", asyncsendReturn))
 		if err != nil {
 			log.Printf("unmarshall asyncsendReturn info error:%v", err)
 			return nil
 		}
 	}
-	return asyncsendReturn
+	return &asyncsendReturn
 }
 
 // 获取子部门Id列表

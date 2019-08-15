@@ -85,6 +85,7 @@ func SendMsg(c *gin.Context) {
 			}
 			appG.Response(http.StatusOK, e.SUCCESS, asyncsendReturn)
 		}
+		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
 	}
