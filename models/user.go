@@ -2,12 +2,11 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
+	"strings"
 	"time"
 )
 
-/*用户*/
 type User struct {
-	//ID         uint   `gorm:"primary_key"`
 	UserID     string `json:"userid" gorm:"primary_key;column:userid;COMMENT:'用户标识'"`
 	Name       string `json:"name" gorm:"COMMENT:'名称'"`
 	Department string `json:"deptId" gorm:"column:deptId;COMMENT:'部门id'"`
@@ -38,10 +37,25 @@ func CountUserSyncNum() (int, error) {
 	return userNum, nil
 }
 func GetUserByDepartmentID(deptId string) ([]*User, error) {
-	var users []*User
-	err := db.Table("user").Where("deptId=?", deptId).Find(&users).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	var (
+		users    []*User
+		usersAll []*User
+	)
+	dp := "%" + deptId + "%"
+	if err := db.Table("user").Where("deptId like ?", dp).Find(&usersAll).Error; err != nil {
 		return nil, err
+	}
+	for _, user := range usersAll {
+		if strings.Contains(user.Department, ",") {
+			deptIds := strings.Split(user.Department, ",")
+			for _, DepartmentId := range deptIds {
+				if DepartmentId == deptId {
+					users = append(users, user)
+				}
+			}
+		} else {
+			users = append(users, user)
+		}
 	}
 	return users, nil
 }
@@ -59,26 +73,23 @@ func UserDetailSync(data interface{}) error {
 	}
 	return nil
 }
-func AddUser(user *User) error {
-	if err := db.Create(user).Error; err != nil {
-		return err
-	}
-	return nil
-}
-func EditUser(user *User) error {
-	if err := db.Model(&User{}).Where("userid=?", user.UserID).Updates(user).Error; err != nil {
-		return err
-	}
-	return nil
-}
-func IsUseridExist(userid string) bool {
+func IsUseridExist(userid string) (bool, error) {
 	var user User
 	err := db.Select("userid").Where("userid = ? ", userid).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return false
+		return false, err
 	}
 	if len(user.UserID) > 0 {
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
+}
+func DeleteUser(userid string) error {
+	if err := db.Where("userid=?", userid).Delete(User{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

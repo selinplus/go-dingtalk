@@ -17,8 +17,8 @@ func RegisterCallback(c *gin.Context) {
 	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v1/callback/detail"
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
-		"token":         "ytsw3706",
-		"aes_key":       "35KWSX7PyqS3RRvjyMf17SpSD0m03StbqWR3x6wmY8y",
+		"token":         setting.DingtalkSetting.Token,
+		"aes_key":       setting.DingtalkSetting.AesKey,
 		"url":           callbackURL,
 	}
 	response, err := dingtalk.RegisterCallback(request)
@@ -29,6 +29,7 @@ func RegisterCallback(c *gin.Context) {
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
 	}
+	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
 
 // 查询事件回调
@@ -42,19 +43,28 @@ func QueryCallback(c *gin.Context) {
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
 	}
+	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
+}
+
+type Callbacks struct {
+	Callbacks string `form:"callbacks" json:"callbacks"`
 }
 
 // 更新事件回调
 func UpdateCallback(c *gin.Context) {
 	appG := app.Gin{C: c}
-	call_back_tag := c.PostForm("callbacks")
-	callbacks := strings.Split(call_back_tag, ",")
+	var cbs Callbacks
+	err := c.BindJSON(&cbs)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"errcode": 400, "description": "Post Data Err"})
+	}
+	callbacks := strings.Split(cbs.Callbacks, ",")
 	//callbacks := []string{"user_add_org", "user_modify_org", "user_leave_org", "org_dept_create", "org_dept_modify", "org_dept_remove"}
-	callbackURL := setting.DingtalkSetting.CallBackHost + "/callback/detail"
+	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v1/callback/detail"
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
-		"token":         "ytsw3706",
-		"aes_key":       "35KWSX7PyqS3RRvjyMf17SpSD0m03StbqWR3x6wmY8y",
+		"token":         setting.DingtalkSetting.Token,
+		"aes_key":       setting.DingtalkSetting.AesKey,
 		"url":           callbackURL,
 	}
 	response, err := dingtalk.UpdateCallback(request)
@@ -65,6 +75,7 @@ func UpdateCallback(c *gin.Context) {
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
 	}
+	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
 
 // 删除事件回调
@@ -78,6 +89,7 @@ func DeleteCallback(c *gin.Context) {
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
 	}
+	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
 
 // 获取回调失败的结果
@@ -91,4 +103,5 @@ func GetFailedCallbacks(c *gin.Context) {
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
 	}
+	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }

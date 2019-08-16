@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-/*部门*/
 type Department struct {
 	ID        int    `gorm:"primary_key;COMMENT:'部门id'"`
 	Name      string `json:"name" gorm:"COMMENT:'部门名称'"`
@@ -31,7 +30,7 @@ func CountDepartmentSyncNum() (int, error) {
 func GetDepartmentByParentID(ParentID int) ([]*Department, error) {
 	var departments []*Department
 	err := db.Table("department").Where("parentid=?", ParentID).Find(&departments).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err != nil {
 		return nil, err
 	}
 	return departments, nil
@@ -46,4 +45,24 @@ func GetDepartmentByID(id int) (*Department, error) {
 		return &dt, nil
 	}
 	return nil, nil
+}
+func IsDeptIdExist(deptId int) (bool, error) {
+	var dt Department
+	err := db.Select("id").Where("id =?", deptId).First(&dt).Error
+	if err == gorm.ErrRecordNotFound {
+		return false, nil
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false, err
+	}
+	if dt.ID > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+func DeleteDepartment(depId int) error {
+	if err := db.Where("id=?", depId).Delete(Department{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

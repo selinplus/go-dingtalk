@@ -9,6 +9,27 @@ import (
 	"strconv"
 )
 
+//获取部门详情
+func GetDepartmentByID(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	id, errc := strconv.Atoi(c.Query("id"))
+	if errc != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	department, errd := models.GetDepartmentByID(id)
+	if errd != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	data := map[string]interface{}{
+		"key":   department.ID,
+		"value": department.ID,
+		"title": department.Name,
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
 //获取部门列表
 func GetDepartmentByParentID(c *gin.Context) {
 	var appG = app.Gin{C: c}

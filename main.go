@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/selinplus/go-dingtalk/pkg/cron"
+	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"log"
 	"net/http"
 	"os"
@@ -55,8 +56,12 @@ func main() {
 	log.Println(dir)
 	log.Printf("[info] start http server listening %s", endPoint)
 
-	server.ListenAndServe()
-	//dingtalk.RegCallbackInit()
+	dingtalk.RegCallbackInit()
+
+	err = server.ListenAndServe()
+	if err != nil {
+		log.Printf("init listen server fail:%v", err)
+	}
 
 	// If you want Graceful Restart, you need a Unix system and download github.com/fvbock/endless
 	//endless.DefaultReadTimeOut = readTimeout

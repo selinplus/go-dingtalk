@@ -64,6 +64,8 @@ type Dingtalk struct {
 	CorpID       string
 	OapiHost     string
 	CallBackHost string
+	Token        string
+	AesKey       string
 }
 
 var DingtalkSetting = &Dingtalk{}

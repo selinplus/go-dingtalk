@@ -82,7 +82,7 @@ func QueryCallback() (*QueryCallbackResponse, error) {
 func UpdateCallback(request map[string]interface{}) (*CallBackResponse, error) {
 	var data CallBackResponse
 	_, body, errs := gorequest.New().
-		Post(setting.DingtalkSetting.OapiHost + "/call_back/delete_call_back?access_token=" + GetAccessToken()).
+		Get(setting.DingtalkSetting.OapiHost + "/call_back/delete_call_back?access_token=" + GetAccessToken()).
 		Type("json").Send(request).End()
 	if len(errs) > 0 {
 		util.ShowError("CBUpdateCallback failed:", errs[0])
@@ -138,12 +138,13 @@ func GetFailedCallbacks() (*GetFailedCallbackResponse, error) {
 
 //main方法启动时注册回调接口
 func RegCallbackInit() {
+	log.Println("RegCallBack")
 	callbacks := []string{"user_add_org", "user_modify_org", "user_leave_org", "org_dept_create", "org_dept_modify", "org_dept_remove"}
 	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v1/callback/detail"
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
-		"token":         "ytsw3706",
-		"aes_key":       RandomString(43),
+		"token":         setting.DingtalkSetting.Token,
+		"aes_key":       setting.DingtalkSetting.AesKey,
 		"url":           callbackURL,
 	}
 	response, err := RegisterCallback(request)
@@ -153,4 +154,5 @@ func RegCallbackInit() {
 	if response.ErrCode == 0 {
 		logging.Info(fmt.Sprintf("RegisterCallback success!"))
 	}
+	logging.Info(fmt.Sprintf("RegisterCallback failed:%v!", response.ErrMsg))
 }

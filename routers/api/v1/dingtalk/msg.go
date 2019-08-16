@@ -151,17 +151,39 @@ func SendMsgMobile(c *gin.Context) {
 
 //获取消息列表
 func GetMsgs(c *gin.Context) {
-	appG := app.Gin{C: c}
+	var (
+		appG   = app.Gin{C: c}
+		msgs   []*models.Msg
+		userID string
+	)
 	tag, _ := strconv.Atoi(c.Query("tag"))
 	pageNum, _ := strconv.Atoi(c.Query("start"))
 	pageSize, _ := strconv.Atoi(c.Query("size"))
-	session := sessions.Default(c)
-	v := session.Get("userid")
-	userID := fmt.Sprintf("%v", v)
-	msgs, err := models.GetMsgs(userID, uint(tag), pageNum, pageSize)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
-		return
+	mobile := c.Query("mobile")
+	var err error
+	if len(mobile) > 0 {
+		userID, err = models.GetUseridByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		msgs, err = models.GetMsgs(userID, uint(tag), pageNum, pageSize)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
+			return
+		}
+		for _, msg := range msgs {
+			msg.FromID = mobile
+		}
+	} else {
+		session := sessions.Default(c)
+		v := session.Get("userid")
+		userID = fmt.Sprintf("%v", v)
+		msgs, err = models.GetMsgs(userID, uint(tag), pageNum, pageSize)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
+			return
+		}
 	}
 	data := make(map[string]interface{})
 	data["lists"] = msgs
@@ -170,16 +192,36 @@ func GetMsgs(c *gin.Context) {
 
 //获取消息详情
 func GetMsgByID(c *gin.Context) {
-	var appG = app.Gin{C: c}
+	var (
+		appG   = app.Gin{C: c}
+		msg    *models.Msg
+		userID string
+	)
 	id, _ := strconv.Atoi(c.Query("id"))
 	tag, _ := strconv.Atoi(c.Query("tag"))
-	session := sessions.Default(c)
-	v := session.Get("userid")
-	userID := fmt.Sprintf("%v", v)
-	msg, err := models.GetMsgByID(uint(id), uint(tag), userID)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
-		return
+	mobile := c.Query("mobile")
+	var err error
+	if len(mobile) > 0 {
+		userID, err = models.GetUseridByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		msg, err = models.GetMsgByID(uint(id), uint(tag), userID)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
+			return
+		}
+		msg.FromID = mobile
+	} else {
+		session := sessions.Default(c)
+		v := session.Get("userid")
+		userID = fmt.Sprintf("%v", v)
+		msg, err = models.GetMsgByID(uint(id), uint(tag), userID)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
+			return
+		}
 	}
 	if msg.ID > 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, msg)
@@ -190,13 +232,26 @@ func GetMsgByID(c *gin.Context) {
 
 //删除消息
 func DeleteMsg(c *gin.Context) {
-	var appG = app.Gin{C: c}
+	var (
+		appG   = app.Gin{C: c}
+		userID string
+	)
 	id, _ := strconv.Atoi(c.Query("id"))
 	tag, _ := strconv.Atoi(c.Query("tag"))
-	session := sessions.Default(c)
-	v := session.Get("userid")
-	userID := fmt.Sprintf("%v", v)
-	err := models.DeleteMsg(userID, uint(id), uint(tag))
+	mobile := c.Query("mobile")
+	var err error
+	if len(mobile) > 0 {
+		userID, err = models.GetUseridByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+	} else {
+		session := sessions.Default(c)
+		v := session.Get("userid")
+		userID = fmt.Sprintf("%v", v)
+	}
+	err = models.DeleteMsg(userID, uint(id), uint(tag))
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_MSG_FAIL, nil)
 		return
