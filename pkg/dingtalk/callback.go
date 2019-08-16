@@ -50,7 +50,7 @@ func RegisterCallback(request map[string]interface{}) (*CallBackResponse, error)
 		return nil, nil
 	} else {
 		err := json.Unmarshal([]byte(body), &data)
-		logging.Info(fmt.Sprintf("%v", data))
+		//logging.Info(fmt.Sprintf("%v", data))
 		if err != nil {
 			log.Printf("unmarshall CallBackResponse info error:%v", err)
 			return nil, err
@@ -152,6 +152,7 @@ func RegCallbackInit() {
 	}
 	if response.ErrCode == 0 {
 		logging.Info(fmt.Sprintf("RegisterCallback success!"))
+	} else {
+		logging.Info(fmt.Sprintf("RegisterCallback failed:%v!", response.ErrMsg))
 	}
-	logging.Info(fmt.Sprintf("RegisterCallback failed:%v!", response.ErrMsg))
 }
