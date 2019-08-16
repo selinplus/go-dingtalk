@@ -138,7 +138,6 @@ func GetFailedCallbacks() (*GetFailedCallbackResponse, error) {
 
 //main方法启动时注册回调接口
 func RegCallbackInit() {
-	log.Println("RegCallBack")
 	callbacks := []string{"user_add_org", "user_modify_org", "user_leave_org", "org_dept_create", "org_dept_modify", "org_dept_remove"}
 	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v1/callback/detail"
 	request := map[string]interface{}{

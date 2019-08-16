@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -56,7 +57,10 @@ func main() {
 	log.Println(dir)
 	log.Printf("[info] start http server listening %s", endPoint)
 
-	dingtalk.RegCallbackInit()
+	go func() {
+		time.Sleep(time.Second * 10)
+		dingtalk.RegCallbackInit()
+	}()
 
 	err = server.ListenAndServe()
 	if err != nil {
