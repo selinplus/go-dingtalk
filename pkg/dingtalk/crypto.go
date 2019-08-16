@@ -4,14 +4,11 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
 	"github.com/selinplus/go-dingtalk/pkg/util"
-	r "math/rand"
 	"sort"
-	"time"
 )
 
 const (
@@ -36,7 +33,7 @@ type DingTalkCrypto struct {
 
 func NewDingTalkCrypto(token, encodingAESKey, suiteKey string) *DingTalkCrypto {
 	if len(encodingAESKey) != AES_ENCODE_KEY_LENGTH {
-		panic("不合法的EncodingAESKey/Illegal EncodingAESKey")
+		panic("不合法的EncodingAESKey")
 	}
 	bkey, err := base64.StdEncoding.DecodeString(encodingAESKey + "=")
 	if err != nil {
@@ -66,14 +63,14 @@ func NewDingTalkCrypto(token, encodingAESKey, suiteKey string) *DingTalkCrypto {
 
 func (c *DingTalkCrypto) GetDecryptMsg(signature, timestamp, nonce, secretMsg string) (string, error) {
 	if !c.VerificationSignature(c.Token, timestamp, nonce, secretMsg, signature) {
-		return "", errors.New("ERROR: 签名不匹配/Signature mismatch")
+		return "", errors.New("ERROR: 签名不匹配")
 	}
 	decode, err := base64.StdEncoding.DecodeString(secretMsg)
 	if err != nil {
 		return "", err
 	}
 	if len(decode) < aes.BlockSize {
-		return "", errors.New("ERROR: 密文太短/Decode is too short")
+		return "", errors.New("ERROR: 密文太短")
 	}
 	blockMode := cipher.NewCBCDecrypter(c.Block, c.BKey[:c.Block.BlockSize()])
 	plantText := make([]byte, len(decode))
@@ -83,7 +80,7 @@ func (c *DingTalkCrypto) GetDecryptMsg(signature, timestamp, nonce, secretMsg st
 	plantText = plantText[20:]
 	corpID := plantText[size:]
 	if string(corpID) != c.SuiteKey {
-		return "", errors.New("ERROR: CorpID不匹配/CorpID mismatch")
+		return "", errors.New("ERROR: CorpID不匹配")
 	}
 	return string(plantText[:size]), nil
 }
@@ -98,10 +95,10 @@ func (c *DingTalkCrypto) GetDecryptMsg(signature, timestamp, nonce, secretMsg st
 func (c *DingTalkCrypto) GetEncryptMsg(replyMsg, timestamp, nonce string) (string, string, error) {
 	size := make([]byte, 4)
 	binary.BigEndian.PutUint32(size, uint32(len(replyMsg)))
-	replyMsg = RandomString(16) + string(size) + replyMsg + c.SuiteKey
+	replyMsg = util.RandomString(16) + string(size) + replyMsg + c.SuiteKey
 	plantText := pkCS7Padding([]byte(replyMsg), c.Block.BlockSize())
 	if len(plantText)%aes.BlockSize != 0 {
-		return "", "", errors.New("ERROR: 消息体size不为16的倍数/Text size is not a multiple of 16")
+		return "", "", errors.New("ERROR: 消息体size不为16的倍数")
 	}
 	blockMode := cipher.NewCBCEncrypter(c.Block, c.BKey[:c.Block.BlockSize()])
 	chipherText := make([]byte, len(plantText))
@@ -140,31 +137,4 @@ func pkCS7Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
-}
-
-// 随机字符串
-func RandomString(n int, alphabets ...byte) string {
-	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	var bytes = make([]byte, n)
-	var randby bool
-	if num, err := rand.Read(bytes); num != n || err != nil {
-		r.Seed(time.Now().UnixNano())
-		randby = true
-	}
-	for i, b := range bytes {
-		if len(alphabets) == 0 {
-			if randby {
-				bytes[i] = alphanum[r.Intn(len(alphanum))]
-			} else {
-				bytes[i] = alphanum[b%byte(len(alphanum))]
-			}
-		} else {
-			if randby {
-				bytes[i] = alphabets[r.Intn(len(alphabets))]
-			} else {
-				bytes[i] = alphabets[b%byte(len(alphabets))]
-			}
-		}
-	}
-	return string(bytes)
 }
