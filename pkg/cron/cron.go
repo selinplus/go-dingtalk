@@ -28,7 +28,7 @@ func Setup() {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
 		// 每天半夜同步一次部门和人员信息
-		if err := c.AddFunc("*/* 10 * * * *", func() { //test定时任务，10分钟一次
+		if err := c.AddFunc("*/30 10 * * * *", func() { //test定时任务，10分钟一次
 			//if err := c.AddFunc("@midnight", func() {
 			DepartmentUserSync()
 			for {
