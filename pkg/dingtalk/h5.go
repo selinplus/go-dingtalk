@@ -6,7 +6,6 @@ import (
 	"github.com/goinggo/mapstructure"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
-	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -226,7 +225,7 @@ func SubDepartmentList(wt int) ([]int, error) {
 				}
 			}
 		}
-		logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
+		//logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
 		return depIds, nil
 	}
 }

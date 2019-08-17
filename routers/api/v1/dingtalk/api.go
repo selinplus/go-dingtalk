@@ -69,6 +69,7 @@ func DepartmentUserSync(c *gin.Context) {
 		syncNum = 30 //goroutine数量
 	)
 	go func() {
+		logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
 		for {
 			time.Sleep(time.Second * 60)
 			useridsNum, depidsNum := cron.DepartmentUserSync(wt, syncNum)
@@ -91,14 +92,12 @@ func DepartmentUserSyncNum(c *gin.Context) {
 	appG := app.Gin{C: c}
 	depNum, deperr := models.CountDepartmentSyncNum()
 	if deperr != nil {
-		appG.Response(http.StatusInternalServerError,
-			e.ERROR_GET_DEPARTMENT_NUMBER_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_NUMBER_FAIL, nil)
 		return
 	}
 	userNum, usererr := models.CountUserSyncNum()
 	if usererr != nil {
-		appG.Response(http.StatusInternalServerError,
-			e.ERROR_GET_USER_NUMBER_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_NUMBER_FAIL, nil)
 		return
 	}
 	data := make(map[string]interface{})

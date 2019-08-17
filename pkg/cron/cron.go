@@ -21,8 +21,8 @@ func Setup() {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
 		// 每天半夜同步一次部门和人员信息
-		if err := c.AddFunc("@midnight", func() {
-			//if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
+		//if err := c.AddFunc("@midnight", func() {
+		if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
 			logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
 			wt := 20      //发生网页劫持后，发送递归请求的次数
 			syncNum := 30 //goroutine数量
