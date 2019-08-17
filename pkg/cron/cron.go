@@ -21,13 +21,13 @@ func Setup() {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
 		// 每天半夜同步一次部门和人员信息
-		//if err := c.AddFunc("@midnight", func() {
-		if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
+		//if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
+		if err := c.AddFunc("@midnight", func() {
 			logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
 			wt := 20      //发生网页劫持后，发送递归请求的次数
 			syncNum := 30 //goroutine数量
-			for {
-				time.Sleep(time.Second * 60)
+			for i := 0; i < 10; i++ {
+				time.Sleep(time.Second * 90)
 				useridsNum, depidsNum := DepartmentUserSync(wt, syncNum)
 				if useridsNum > 0 && depidsNum > 0 {
 					userNum, _ := models.CountUserSyncNum()
@@ -38,7 +38,7 @@ func Setup() {
 				}
 			}
 		Loop:
-			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
+			logging.Info(fmt.Sprintf("DepartmentUserSync stopped"))
 		}); err != nil {
 			logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
 		}

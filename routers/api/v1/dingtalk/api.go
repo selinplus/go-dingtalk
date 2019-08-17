@@ -70,8 +70,8 @@ func DepartmentUserSync(c *gin.Context) {
 	)
 	go func() {
 		logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
-		for {
-			time.Sleep(time.Second * 60)
+		for i := 0; i < 10; i++ {
+			time.Sleep(time.Second * 90)
 			useridsNum, depidsNum := cron.DepartmentUserSync(wt, syncNum)
 			if useridsNum > 0 && depidsNum > 0 {
 				userNum, _ := models.CountUserSyncNum()
@@ -82,7 +82,7 @@ func DepartmentUserSync(c *gin.Context) {
 			}
 		}
 	Loop:
-		logging.Info(fmt.Sprintf("DepartmentUserSync success"))
+		logging.Info(fmt.Sprintf("DepartmentUserSync stopped"))
 	}()
 	appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 }
