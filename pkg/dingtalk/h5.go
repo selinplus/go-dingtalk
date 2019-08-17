@@ -6,7 +6,6 @@ import (
 	"github.com/goinggo/mapstructure"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
-	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"github.com/selinplus/go-gin-web/pkg/logging"
@@ -192,7 +191,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 func SubDepartmentList(wt int) ([]int, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			cron.Flag = true
+			log.Println("Recover recursion times run out!")
 		}
 	}()
 	var depIds []int
@@ -240,7 +239,7 @@ func SubDepartmentList(wt int) ([]int, error) {
 func DepartmentDetail(id, wt int) *models.Department {
 	defer func() {
 		if r := recover(); r != nil {
-			cron.Flag = true
+			log.Println("Recover recursion times run out!")
 		}
 	}()
 	var department models.Department
@@ -274,7 +273,7 @@ func DepartmentDetail(id, wt int) *models.Department {
 func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 	defer func() {
 		if r := recover(); r != nil {
-			cron.Flag = true
+			log.Println("Recover recursion times run out!")
 		}
 	}()
 	var usersList []models.User
@@ -336,7 +335,7 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 func DepartmentUserIdsDetail(id, wt int) []string {
 	defer func() {
 		if r := recover(); r != nil {
-			cron.Flag = true
+			log.Println("Recover recursion times run out!")
 		}
 	}()
 	var useridslice []string
