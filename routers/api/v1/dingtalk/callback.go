@@ -159,9 +159,13 @@ func GetCallbacks(c *gin.Context) {
 	switch reply["EventType"] {
 	case "user_add_org", "user_modify_org":
 		for _, userid := range reply["UserId"].([]string) {
-			user := dingtalk.UserDetail(userid, 10)
-			if err := models.UserDetailSync(user); err != nil {
-				log.Printf("UserSync err:%v", err)
+			if user := dingtalk.UserDetail(userid, 10); user != nil {
+				if err := models.UserDetailSync(user); err != nil {
+					log.Printf("UserSync err:%v", err)
+					return
+				}
+			} else {
+				logging.Info(fmt.Sprintf("%v：获取用户详情失败", userid))
 				return
 			}
 		}
@@ -178,16 +182,20 @@ func GetCallbacks(c *gin.Context) {
 						return
 					}
 				} else {
-					log.Println("User not exist")
+					logging.Info(fmt.Sprintf("%v：用户不存在", userid))
 				}
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
 		for _, deptIds := range reply["DeptId"].([]string) {
 			deptId, _ := strconv.Atoi(deptIds)
-			dt := dingtalk.DepartmentDetail(deptId, 10)
-			if err := models.DepartmentSync(dt); err != nil {
-				log.Printf("DepartmentSync err:%v", err)
+			if dt := dingtalk.DepartmentDetail(deptId, 10); dt != nil {
+				if err := models.DepartmentSync(dt); err != nil {
+					log.Printf("DepartmentSync err:%v", err)
+					return
+				}
+			} else {
+				logging.Info(fmt.Sprintf("%v：获取部门详情失败", deptId))
 				return
 			}
 		}
@@ -205,7 +213,7 @@ func GetCallbacks(c *gin.Context) {
 						return
 					}
 				} else {
-					log.Println("Department not exist")
+					logging.Info(fmt.Sprintf("%v：部门不存在", deptId))
 				}
 			}
 		}

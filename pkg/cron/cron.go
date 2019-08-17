@@ -111,19 +111,21 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 							log.Printf("DepartmentSync err:%v", err)
 						}
 					}
-					userids := dingtalk.DepartmentUserIdsDetail(depId, wt)
-					cnt := len(userids)
-					userIdsNum += cnt
-					var pageNumTotal int
-					if cnt%100 == 0 {
-						pageNumTotal = cnt / 100
-					} else {
-						pageNumTotal = cnt/100 + 1
-					}
-					for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-						userlist := dingtalk.DepartmentUserDetail(depId, pageNum, wt)
-						if err := models.UserSync(userlist); err != nil {
-							log.Printf("UserSync err:%v", err)
+					if userids := dingtalk.DepartmentUserIdsDetail(depId, wt); userids != nil {
+						cnt := len(userids)
+						userIdsNum += cnt
+						var pageNumTotal int
+						if cnt%100 == 0 {
+							pageNumTotal = cnt / 100
+						} else {
+							pageNumTotal = cnt/100 + 1
+						}
+						for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
+							if userlist := dingtalk.DepartmentUserDetail(depId, pageNum, wt); userlist != nil {
+								if err := models.UserSync(userlist); err != nil {
+									log.Printf("UserSync err:%v", err)
+								}
+							}
 						}
 					}
 				}
