@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"log"
 	"net/http"
-
-	"github.com/selinplus/go-dingtalk/pkg/e"
 )
 
 // BindAndValid binds and validates data

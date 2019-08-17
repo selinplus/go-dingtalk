@@ -8,7 +8,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
-	"github.com/selinplus/go-gin-web/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"log"
 	"net/http"
 	"sync"
