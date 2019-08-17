@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	flag      bool //超过递归次数后，panic标志，用于启动循环
-	wt        = 20 //发生网页劫持后，发送递归请求的次数
-	depidsNum int  //同步部门数，用于停止同步循环
+	flag       bool //超过递归次数后，panic标志，用于启动循环
+	wt         = 20 //发生网页劫持后，发送递归请求的次数
+	useridsNum int  //同步用户数，用于停止同步循环
 )
 
 func Setup() {
@@ -31,18 +31,18 @@ func Setup() {
 		if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
 			logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
 			//if err := c.AddFunc("@midnight", func() {
-			DepartmentUserSync()
+			flag = true
 			for {
-				logging.Info(fmt.Sprintf("sync failed,DepartmentUserSync restart..."))
 				if flag {
-					time.Sleep(time.Second * 300)
+					logging.Info(fmt.Sprintf("sync failed,DepartmentUserSync restart..."))
+					time.Sleep(time.Second * 60)
 					DepartmentUserSync()
-					depNum, _ := models.CountDepartmentSyncNum()
-					if depNum == depidsNum {
-						flag = false
-					}
 				}
-				break
+				userNum, _ := models.CountUserSyncNum()
+				if userNum == useridsNum {
+					flag = false
+					break
+				}
 			}
 			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
 		}); err != nil {
@@ -80,6 +80,7 @@ func DepartmentUserSync() {
 			flag = true
 		}
 	}()
+	useridsNum = 0
 	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
@@ -89,7 +90,6 @@ func DepartmentUserSync() {
 	if depIds != nil {
 		var seg int
 		depidsLen := len(depIds)
-		depidsNum = len(depIds) //用于判断信息同步是否完成
 		if depidsLen%8 == 0 {
 			seg = depidsLen / 8
 		} else {
@@ -131,6 +131,7 @@ func DepartmentUserSync() {
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId, wt)
 					cnt := len(userids)
+					useridsNum += cnt
 					var pageNumTotal int
 					if cnt%100 == 0 {
 						pageNumTotal = cnt / 100
