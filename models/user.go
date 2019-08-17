@@ -31,7 +31,7 @@ func UserSync(users *[]User) error {
 func CountUserSyncNum() (int, error) {
 	var userNum int
 	t := time.Now().Format("2006-01-02") + " 00:00:00"
-	if err := db.Table("user").Where("sync_time>?", t).Count(&userNum).Error; err != nil {
+	if err := db.Table("user").Where("sync_time>=?", t).Count(&userNum).Error; err != nil {
 		return 0, err
 	}
 	return userNum, nil

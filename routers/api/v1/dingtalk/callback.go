@@ -42,6 +42,7 @@ func RegisterCallback(c *gin.Context) {
 	}
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
+		return
 	}
 	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
@@ -56,14 +57,17 @@ func QueryCallback(c *gin.Context) {
 	}
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
+		return
 	}
 	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
 
 // 更新事件回调
 func UpdateCallback(c *gin.Context) {
-	appG := app.Gin{C: c}
-	var cbs Callbacks
+	var (
+		appG = app.Gin{C: c}
+		cbs  Callbacks
+	)
 	err := c.BindJSON(&cbs)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"errcode": 400, "description": "Post Data Err"})
@@ -84,6 +88,7 @@ func UpdateCallback(c *gin.Context) {
 	}
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
+		return
 	}
 	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
@@ -98,6 +103,7 @@ func DeleteCallback(c *gin.Context) {
 	}
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
+		return
 	}
 	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
@@ -112,22 +118,25 @@ func GetFailedCallbacks(c *gin.Context) {
 	}
 	if response.ErrCode == 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, response)
+		return
 	}
 	appG.Response(http.StatusBadRequest, e.SUCCESS, response)
 }
 
 // 获取回调的结果
 func GetCallbacks(c *gin.Context) {
-	var reply = map[string]interface{}{}
+	var (
+		reply = map[string]interface{}{}
+		cbd   CallbackDetail
+		res   = "success"
+	)
 	signature := c.Query("signature")
 	timestamp := c.Query("timestamp")
 	nonce := c.Query("nonce")
-	var cbd CallbackDetail
 	err := c.BindJSON(&cbd)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"errcode": 400, "description": "Post Data Err"})
-	} else {
-		log.Println(cbd)
+		return
 	}
 	var (
 		secretMsg = cbd.Encrypt
@@ -206,7 +215,6 @@ func GetCallbacks(c *gin.Context) {
 		logging.Info(fmt.Sprintf("Unregister Callback,replyMsg is %v", reply))
 		return
 	}
-	res := "success"
 	crypt, sign, _ := dc.GetEncryptMsg(res, timestamp, nonce)
 	data := map[string]interface{}{
 		"msg_signature": sign,

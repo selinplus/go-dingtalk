@@ -189,9 +189,11 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 
 // 获取子部门Id列表
 func SubDepartmentList(wt int) ([]int, error) {
-	var depIds []int
-	var subDeptIdList = map[string]interface{}{}
-	var err error
+	var (
+		subDeptIdList = map[string]interface{}{}
+		depIds        []int
+		err           error
+	)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/department/list?access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
@@ -205,7 +207,6 @@ func SubDepartmentList(wt int) ([]int, error) {
 				depIds, err = SubDepartmentList(wt)
 				return depIds, err
 			} else {
-				panic("Recursion times has run out!")
 				return nil, err
 			}
 		}
@@ -249,7 +250,6 @@ func DepartmentDetail(id, wt int) *models.Department {
 				dt := DepartmentDetail(id, wt)
 				return dt
 			} else {
-				panic("Recursion times has run out!")
 				return nil
 			}
 		}
@@ -261,9 +261,11 @@ func DepartmentDetail(id, wt int) *models.Department {
 
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
-	var usersList []models.User
-	var user models.User
-	var userlist = map[string]interface{}{}
+	var (
+		usersList []models.User
+		user      models.User
+		userlist  = map[string]interface{}{}
+	)
 	offset := strconv.Itoa(pageNum * 100)
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -284,7 +286,6 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 					dt := DepartmentUserDetail(id, pageNum, wt)
 					return dt
 				} else {
-					panic("Recursion times has run out!")
 					return nil
 				}
 			}
@@ -318,8 +319,10 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 
 //获取部门用户userid列表
 func DepartmentUserIdsDetail(id, wt int) []string {
-	var useridslice []string
-	var useridslist = map[string]interface{}{}
+	var (
+		useridslice []string
+		useridslist = map[string]interface{}{}
+	)
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/getDeptMember").
@@ -338,7 +341,6 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 					dt := DepartmentUserIdsDetail(id, wt)
 					return dt
 				} else {
-					panic("Recursion times has run out!")
 					return nil
 				}
 			}
@@ -358,13 +360,10 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 
 //获取用户详情
 func UserDetail(userid string, wt int) *models.User {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println(r)
-		}
-	}()
-	var user models.User
-	var userlist = map[string]interface{}{}
+	var (
+		user     models.User
+		userlist = map[string]interface{}{}
+	)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/get").
 		Query("access_token=" + GetAccessToken()).Query("userid=" + userid).
@@ -382,7 +381,6 @@ func UserDetail(userid string, wt int) *models.User {
 					u := UserDetail(userid, wt)
 					return u
 				} else {
-					panic("Recursion times has run out!")
 					return nil
 				}
 			}

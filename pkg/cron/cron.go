@@ -11,16 +11,9 @@ import (
 	"time"
 )
 
-var (
-	flag       bool //超过递归次数后，panic标志，用于启动循环
-	wt         = 20 //发生网页劫持后，发送递归请求的次数
-	useridsNum int  //同步用户数，用于停止同步循环
-)
-
 func Setup() {
 	go func() {
-		logging.Info(fmt.Sprintf("Cron starting..."))
-		defer logging.Info(fmt.Sprintf("Cron stopped..."))
+		log.Println("Cron starting...")
 		// 定义一个cron运行器
 		c := cron.New()
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
@@ -28,22 +21,23 @@ func Setup() {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
 		// 每天半夜同步一次部门和人员信息
-		if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
+		if err := c.AddFunc("@midnight", func() {
+			//if err := c.AddFunc("0 */10 * * * *", func() { //test定时任务，10分钟一次
 			logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
-			//if err := c.AddFunc("@midnight", func() {
-			flag = true
+			wt := 20      //发生网页劫持后，发送递归请求的次数
+			syncNum := 30 //goroutine数量
 			for {
-				if flag {
-					logging.Info(fmt.Sprintf("sync failed,DepartmentUserSync restart..."))
-					time.Sleep(time.Second * 60)
-					DepartmentUserSync()
-				}
-				userNum, _ := models.CountUserSyncNum()
-				if userNum == useridsNum {
-					flag = false
-					break
+				time.Sleep(time.Second * 60)
+				useridsNum, depidsNum := DepartmentUserSync(wt, syncNum)
+				if useridsNum > 0 && depidsNum > 0 {
+					userNum, _ := models.CountUserSyncNum()
+					depNum, _ := models.CountDepartmentSyncNum()
+					if userNum == useridsNum && depNum == depidsNum {
+						goto Loop
+					}
 				}
 			}
+		Loop:
 			logging.Info(fmt.Sprintf("DepartmentUserSync success"))
 		}); err != nil {
 			logging.Info(fmt.Sprintf("DepartmentUserSync failed：%v", err))
@@ -73,23 +67,19 @@ func MessageDingding() {
 }
 
 //同步一次部门和人员信息
-func DepartmentUserSync() {
-	defer func() {
-		if r := recover(); r != nil {
-			logging.Info(r)
-			flag = true
-		}
-	}()
-	useridsNum = 0
+func DepartmentUserSync(wt, syncNum int) (int, int) {
+	var (
+		userIdsNum = 0
+		depidsLen  = 0
+	)
 	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
-		flag = true
-		return
+		return userIdsNum, depidsLen
 	}
 	if depIds != nil {
 		var seg int
-		depidsLen := len(depIds)
+		depidsLen = len(depIds)
 		if depidsLen%8 == 0 {
 			seg = depidsLen / 8
 		} else {
@@ -109,18 +99,10 @@ func DepartmentUserSync() {
 				close(depIdChan)
 			}
 		}
-		syncNum := 30
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
-			wg.Done()
 			go func() {
-				defer func() {
-					if r := recover(); r != nil {
-						logging.Info(r)
-						flag = true
-					}
-				}()
 				for depId := range depIdChan {
 					department := dingtalk.DepartmentDetail(depId, wt)
 					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
@@ -131,7 +113,7 @@ func DepartmentUserSync() {
 					}
 					userids := dingtalk.DepartmentUserIdsDetail(depId, wt)
 					cnt := len(userids)
-					useridsNum += cnt
+					userIdsNum += cnt
 					var pageNumTotal int
 					if cnt%100 == 0 {
 						pageNumTotal = cnt / 100
@@ -145,8 +127,10 @@ func DepartmentUserSync() {
 						}
 					}
 				}
+				wg.Done()
 			}()
 		}
 		wg.Wait()
 	}
+	return userIdsNum, depidsLen
 }
