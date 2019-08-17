@@ -160,6 +160,9 @@ func GetCallbacks(c *gin.Context) {
 		for _, userid := range reply["UserId"].([]string) {
 			b, err := models.IsUseridExist(userid)
 			if err != nil {
+				log.Printf("Get IsUseridExist err:%v", err)
+				return
+			} else {
 				if b {
 					if err := models.DeleteUser(userid); err != nil {
 						log.Printf("DeleteUser err:%v", err)
@@ -168,9 +171,6 @@ func GetCallbacks(c *gin.Context) {
 				} else {
 					log.Println("User not exist")
 				}
-			} else {
-				log.Printf("Get IsUseridExist err:%v", err)
-				return
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
@@ -187,6 +187,9 @@ func GetCallbacks(c *gin.Context) {
 			deptId, _ := strconv.Atoi(deptIds)
 			b, err := models.IsDeptIdExist(deptId)
 			if err != nil {
+				log.Printf("Get IsDeptIdExist err:%v", err)
+				return
+			} else {
 				if b {
 					if err := models.DeleteDepartment(deptId); err != nil {
 						log.Printf("DepartmentSync err:%v", err)
@@ -195,9 +198,6 @@ func GetCallbacks(c *gin.Context) {
 				} else {
 					log.Println("Department not exist")
 				}
-			} else {
-				log.Printf("Get IsDeptIdExist err:%v", err)
-				return
 			}
 		}
 	case "check_url":

@@ -6,8 +6,10 @@ import (
 	"github.com/goinggo/mapstructure"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
+	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
+	"github.com/selinplus/go-gin-web/pkg/logging"
 	"log"
 	"strconv"
 	"strings"
@@ -188,6 +190,11 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 
 // 获取子部门Id列表
 func SubDepartmentList(wt int) ([]int, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			cron.Flag = true
+		}
+	}()
 	var depIds []int
 	var subDeptIdList = map[string]interface{}{}
 	var err error
@@ -224,13 +231,18 @@ func SubDepartmentList(wt int) ([]int, error) {
 				}
 			}
 		}
-		log.Printf("depIds length is %d", len(depIds))
+		logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
 		return depIds, nil
 	}
 }
 
 // 获取部门详情
 func DepartmentDetail(id, wt int) *models.Department {
+	defer func() {
+		if r := recover(); r != nil {
+			cron.Flag = true
+		}
+	}()
 	var department models.Department
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -260,6 +272,11 @@ func DepartmentDetail(id, wt int) *models.Department {
 
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
+	defer func() {
+		if r := recover(); r != nil {
+			cron.Flag = true
+		}
+	}()
 	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
@@ -317,6 +334,11 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 
 //获取部门用户userid列表
 func DepartmentUserIdsDetail(id, wt int) []string {
+	defer func() {
+		if r := recover(); r != nil {
+			cron.Flag = true
+		}
+	}()
 	var useridslice []string
 	var useridslist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
@@ -357,6 +379,11 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 
 //获取用户详情
 func UserDetail(userid string, wt int) *models.User {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recover recursion times run out!")
+		}
+	}()
 	var user models.User
 	var userlist = map[string]interface{}{}
 	_, body, errs := gorequest.New().

@@ -22,12 +22,7 @@ func GetDepartmentByID(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
 		return
 	}
-	data := map[string]interface{}{
-		"key":   department.ID,
-		"value": department.ID,
-		"title": department.Name,
-	}
-	appG.Response(http.StatusOK, e.SUCCESS, data)
+	appG.Response(http.StatusOK, e.SUCCESS, department)
 }
 
 //获取部门列表

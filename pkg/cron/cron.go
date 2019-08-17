@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
-var flag bool
-var depidsNum int
+var (
+	Flag      bool
+	depidsNum int
+)
 
 func Setup() {
 	go func() {
@@ -28,12 +30,12 @@ func Setup() {
 		if err := c.AddFunc("@midnight", func() {
 			DepartmentUserSync()
 			for {
-				if flag {
+				if Flag {
 					time.Sleep(time.Second * 90)
 					DepartmentUserSync()
 					depNum, _ := models.CountDepartmentSyncNum()
-					if depidsNum == depNum {
-						flag = false
+					if depNum == depidsNum {
+						Flag = false
 					}
 				}
 				break
@@ -70,19 +72,20 @@ func MessageDingding() {
 func DepartmentUserSync() {
 	defer func() {
 		if r := recover(); r != nil {
-			flag = true
+			Flag = true
 		}
 	}()
 	var wt = 10 //发生网页劫持后，发送递归请求的次数
 	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
+		Flag = true
 		return
 	}
 	if depIds != nil {
 		var seg int
 		depidsLen := len(depIds)
-		depidsNum = depidsLen //用于判断信息同步是否完成
+		depidsNum = len(depIds) //用于判断信息同步是否完成
 		if depidsLen%8 == 0 {
 			seg = depidsLen / 8
 		} else {
@@ -110,7 +113,7 @@ func DepartmentUserSync() {
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
-						flag = true
+						Flag = true
 					}
 				}()
 				for depId := range depIdChan {
