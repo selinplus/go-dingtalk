@@ -64,25 +64,10 @@ func DepartmentUserSync(c *gin.Context) {
 	var (
 		appG    = app.Gin{C: c}
 		wt      = 20 //发生网页劫持后，发送递归请求的次数
-		syncNum = 30 //goroutine数量
+		syncNum = 60 //goroutine数量
 	)
 	cron.DepartmentUserSync(wt, syncNum)
-	t := time.Now().Format("2006-01-02 15:04:05")
-	depNum, deperr := models.CountDepartmentSyncNum(t)
-	if deperr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_NUMBER_FAIL, nil)
-		return
-	}
-	userNum, usererr := models.CountUserSyncNum(t)
-	if usererr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_NUMBER_FAIL, nil)
-		return
-	}
-	data := make(map[string]interface{})
-	data["syncTime"] = t
-	data["depNum"] = depNum
-	data["userNum"] = userNum
-	appG.Response(http.StatusOK, e.SUCCESS, data)
+	appG.Response(http.StatusOK, e.SUCCESS, "同步请求发送成功")
 }
 
 //获取部门用户信息同步条数
