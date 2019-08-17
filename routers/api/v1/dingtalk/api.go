@@ -141,7 +141,7 @@ func DepartmentUserSync(c *gin.Context) {
 				}
 			}()
 		}
-		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，		数据同步中...")
+		appG.Response(http.StatusOK, e.SUCCESS, "请求发送成功，数据同步中...")
 		wg.Wait()
 	}
 }
