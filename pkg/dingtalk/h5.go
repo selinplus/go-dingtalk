@@ -215,17 +215,19 @@ func SubDepartmentList(wt int) ([]int, error) {
 			log.Printf("unmarshall SubDeptIdList info error:%v", err)
 			return nil, err
 		}
-		depts := subDeptIdList["department"].([]interface{})
-		for _, v := range depts {
-			vv := v.(map[string]interface{})
-			for k, val := range vv {
-				if k == "id" {
-					depIds = append(depIds, int(val.(float64)))
-					break
+		if subDeptIdList["department"] != nil {
+			depts := subDeptIdList["department"].([]interface{})
+			for _, v := range depts {
+				vv := v.(map[string]interface{})
+				for k, val := range vv {
+					if k == "id" {
+						depIds = append(depIds, int(val.(float64)))
+						break
+					}
 				}
 			}
+			//logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
 		}
-		//logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
 		return depIds, nil
 	}
 }

@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
-	"time"
 )
 
 type Department struct {
@@ -19,9 +18,8 @@ func DepartmentSync(data interface{}) error {
 	}
 	return nil
 }
-func CountDepartmentSyncNum() (int, error) {
+func CountDepartmentSyncNum(t string) (int, error) {
 	var depidsNum int
-	t := time.Now().Format("2006-01-02") + " 00:00:00"
 	if err := db.Table("department").Where("sync_time>=?", t).Count(&depidsNum).Error; err != nil {
 		return 0, err
 	}

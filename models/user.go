@@ -3,7 +3,6 @@ package models
 import (
 	"github.com/jinzhu/gorm"
 	"strings"
-	"time"
 )
 
 type User struct {
@@ -28,9 +27,8 @@ func UserSync(users *[]User) error {
 	}
 	return nil
 }
-func CountUserSyncNum() (int, error) {
+func CountUserSyncNum(t string) (int, error) {
 	var userNum int
-	t := time.Now().Format("2006-01-02") + " 00:00:00"
 	if err := db.Table("user").Where("sync_time>=?", t).Count(&userNum).Error; err != nil {
 		return 0, err
 	}

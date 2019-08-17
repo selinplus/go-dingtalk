@@ -54,7 +54,7 @@ func InitRouter() *gin.Engine {
 		//获取回调的结果
 		apiv1.POST("/callback/detail", dingtalk.GetCallbacks)
 
-		//部门用户信息同步
+		//同步一次部门用户信息
 		apiv1.GET("/sync", dingtalk.DepartmentUserSync)
 		//获取部门用户信息同步条数
 		apiv1.GET("/syncnum", dingtalk.DepartmentUserSyncNum)
