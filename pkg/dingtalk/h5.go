@@ -191,7 +191,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 func SubDepartmentList(wt int) ([]int, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recover recursion times run out!")
+			log.Println(r)
 		}
 	}()
 	var depIds []int
@@ -206,7 +206,7 @@ func SubDepartmentList(wt int) ([]int, error) {
 		if strings.Contains(body, "<") {
 			wt = wt - 1
 			if wt >= 0 {
-				time.Sleep(time.Second * 5)
+				time.Sleep(time.Second * 10)
 				depIds, err = SubDepartmentList(wt)
 				return depIds, err
 			} else {
@@ -239,7 +239,7 @@ func SubDepartmentList(wt int) ([]int, error) {
 func DepartmentDetail(id, wt int) *models.Department {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recover recursion times run out!")
+			log.Println(r)
 		}
 	}()
 	var department models.Department
@@ -273,7 +273,7 @@ func DepartmentDetail(id, wt int) *models.Department {
 func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recover recursion times run out!")
+			log.Println(r)
 		}
 	}()
 	var usersList []models.User
@@ -335,7 +335,7 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 func DepartmentUserIdsDetail(id, wt int) []string {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recover recursion times run out!")
+			log.Println(r)
 		}
 	}()
 	var useridslice []string
@@ -380,7 +380,7 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 func UserDetail(userid string, wt int) *models.User {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recover recursion times run out!")
+			log.Println(r)
 		}
 	}()
 	var user models.User
