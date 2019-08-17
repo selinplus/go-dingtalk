@@ -189,11 +189,6 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 
 // 获取子部门Id列表
 func SubDepartmentList(wt int) ([]int, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println(r)
-		}
-	}()
 	var depIds []int
 	var subDeptIdList = map[string]interface{}{}
 	var err error
@@ -237,11 +232,6 @@ func SubDepartmentList(wt int) ([]int, error) {
 
 // 获取部门详情
 func DepartmentDetail(id, wt int) *models.Department {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println(r)
-		}
-	}()
 	var department models.Department
 	depId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
@@ -255,7 +245,7 @@ func DepartmentDetail(id, wt int) *models.Department {
 		if strings.Contains(body, "<") {
 			wt = wt - 1
 			if wt >= 0 {
-				time.Sleep(time.Second * 5)
+				time.Sleep(time.Second * 10)
 				dt := DepartmentDetail(id, wt)
 				return dt
 			} else {
@@ -271,11 +261,6 @@ func DepartmentDetail(id, wt int) *models.Department {
 
 // 获取部门用户详情
 func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println(r)
-		}
-	}()
 	var usersList []models.User
 	var user models.User
 	var userlist = map[string]interface{}{}
@@ -295,7 +280,7 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 			if strings.Contains(body, "<") {
 				wt = wt - 1
 				if wt >= 0 {
-					time.Sleep(time.Second * 5)
+					time.Sleep(time.Second * 10)
 					dt := DepartmentUserDetail(id, pageNum, wt)
 					return dt
 				} else {
@@ -333,11 +318,6 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 
 //获取部门用户userid列表
 func DepartmentUserIdsDetail(id, wt int) []string {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println(r)
-		}
-	}()
 	var useridslice []string
 	var useridslist = map[string]interface{}{}
 	depId := strconv.Itoa(id)
@@ -354,7 +334,7 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 			if strings.Contains(body, "<") {
 				wt = wt - 1
 				if wt >= 0 {
-					time.Sleep(time.Second * 5)
+					time.Sleep(time.Second * 10)
 					dt := DepartmentUserIdsDetail(id, wt)
 					return dt
 				} else {
@@ -398,7 +378,7 @@ func UserDetail(userid string, wt int) *models.User {
 			if strings.Contains(body, "<") {
 				wt = wt - 1
 				if wt >= 0 {
-					time.Sleep(time.Second * 5)
+					time.Sleep(time.Second * 10)
 					u := UserDetail(userid, wt)
 					return u
 				} else {

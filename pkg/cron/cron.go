@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	Flag      bool //超过递归次数后，panic标志，用于启动循环
+	flag      bool //超过递归次数后，panic标志，用于启动循环
 	wt        = 20 //发生网页劫持后，发送递归请求的次数
 	depidsNum int  //同步部门数，用于停止同步循环
 )
@@ -31,12 +31,12 @@ func Setup() {
 		if err := c.AddFunc("@midnight", func() {
 			DepartmentUserSync()
 			for {
-				if Flag {
-					time.Sleep(time.Second * 60)
+				if flag {
+					time.Sleep(time.Second * 300)
 					DepartmentUserSync()
 					depNum, _ := models.CountDepartmentSyncNum()
 					if depNum == depidsNum {
-						Flag = false
+						flag = false
 					}
 				}
 				break
@@ -73,13 +73,13 @@ func MessageDingding() {
 func DepartmentUserSync() {
 	defer func() {
 		if r := recover(); r != nil {
-			Flag = true
+			flag = true
 		}
 	}()
 	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
-		Flag = true
+		flag = true
 		return
 	}
 	if depIds != nil {
@@ -113,7 +113,7 @@ func DepartmentUserSync() {
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
-						Flag = true
+						flag = true
 					}
 				}()
 				for depId := range depIdChan {

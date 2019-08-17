@@ -1,10 +1,10 @@
 package app
 
 import (
+	"fmt"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
-	"golang.org/x/exp/errors/fmt"
 	"log"
 	"net/http"
 
