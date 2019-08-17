@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	Flag      bool
+	flag      bool
 	depidsNum int
 )
 
@@ -30,12 +30,12 @@ func Setup() {
 		if err := c.AddFunc("@midnight", func() {
 			DepartmentUserSync()
 			for {
-				if Flag {
+				if flag {
 					time.Sleep(time.Second * 90)
 					DepartmentUserSync()
 					depNum, _ := models.CountDepartmentSyncNum()
 					if depNum == depidsNum {
-						Flag = false
+						flag = false
 					}
 				}
 				break
@@ -72,14 +72,14 @@ func MessageDingding() {
 func DepartmentUserSync() {
 	defer func() {
 		if r := recover(); r != nil {
-			Flag = true
+			flag = true
 		}
 	}()
 	var wt = 10 //发生网页劫持后，发送递归请求的次数
 	depIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
-		Flag = true
+		flag = true
 		return
 	}
 	if depIds != nil {
@@ -113,7 +113,7 @@ func DepartmentUserSync() {
 			go func() {
 				defer func() {
 					if r := recover(); r != nil {
-						Flag = true
+						flag = true
 					}
 				}()
 				for depId := range depIdChan {
