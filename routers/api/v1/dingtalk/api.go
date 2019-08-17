@@ -10,6 +10,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -64,10 +65,16 @@ func DepartmentUserSync(c *gin.Context) {
 	var (
 		appG    = app.Gin{C: c}
 		wt      = 20 //发生网页劫持后，发送递归请求的次数
-		syncNum = 60 //goroutine数量
+		syncNum = 30 //goroutine数量
 	)
-	cron.DepartmentUserSync(wt, syncNum)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		cron.DepartmentUserSync(wt, syncNum)
+		wg.Done()
+	}()
 	appG.Response(http.StatusOK, e.SUCCESS, "同步请求发送成功")
+	wg.Wait()
 }
 
 //获取部门用户信息同步条数

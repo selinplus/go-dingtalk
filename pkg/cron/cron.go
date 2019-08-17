@@ -108,11 +108,12 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 		for k := 0; k < syncNum; k++ {
 			go func() {
 				for depId := range depIdChan {
-					department := dingtalk.DepartmentDetail(depId, wt)
-					department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-					if department.ID != 0 {
-						if err := models.DepartmentSync(department); err != nil {
-							log.Printf("DepartmentSync err:%v", err)
+					if department := dingtalk.DepartmentDetail(depId, wt); department != nil {
+						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+						if department.ID != 0 {
+							if err := models.DepartmentSync(department); err != nil {
+								log.Printf("DepartmentSync err:%v", err)
+							}
 						}
 					}
 					if userids := dingtalk.DepartmentUserIdsDetail(depId, wt); userids != nil {
