@@ -39,8 +39,7 @@ func GetUserByDepartmentID(deptId string) ([]*User, error) {
 		users    []*User
 		usersAll []*User
 	)
-	dp := "%" + deptId + "%"
-	if err := db.Table("user").Where("deptId like ?", dp).Find(&usersAll).Error; err != nil {
+	if err := db.Table("user").Where("deptId like ?", "%"+deptId+"%").Find(&usersAll).Error; err != nil {
 		return nil, err
 	}
 	for _, user := range usersAll {
@@ -52,19 +51,12 @@ func GetUserByDepartmentID(deptId string) ([]*User, error) {
 	}
 	return users, nil
 }
-func GetUseridByMobile(mobile string) (string, error) {
+func GetUserByMobile(mobile string) (*User, error) {
 	var user User
 	if err := db.Table("user").Where("mobile=?", mobile).First(&user).Error; err != nil {
-		return "", err
+		return nil, err
 	}
-	return user.UserID, nil
-}
-func GetDeptIdByMobile(mobile string) (string, error) {
-	var user User
-	if err := db.Table("user").Where("mobile=?", mobile).First(&user).Error; err != nil {
-		return "", err
-	}
-	return user.Department, nil
+	return &user, nil
 }
 func UserDetailSync(data interface{}) error {
 	if err := db.Model(&User{}).Save(&data).Error; err != nil {

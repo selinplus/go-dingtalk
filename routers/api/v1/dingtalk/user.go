@@ -31,12 +31,12 @@ func GetDepartmentByUserMobile(c *gin.Context) {
 	var appG = app.Gin{C: c}
 	var dts []*models.Department
 	mb := c.Query("mobile")
-	depIds, errd := models.GetDeptIdByMobile(mb)
+	user, errd := models.GetUserByMobile(mb)
 	if errd != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
 		return
 	}
-	for _, deptId := range strings.Split(depIds, ",") {
+	for _, deptId := range strings.Split(user.Department, ",") {
 		deptId, err := strconv.Atoi(deptId)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)

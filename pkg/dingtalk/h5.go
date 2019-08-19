@@ -190,7 +190,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 func SubDepartmentList(wt int) ([]int, error) {
 	var (
 		subDeptIdList = map[string]interface{}{}
-		depIds        []int
+		deptIds       []int
 		err           error
 	)
 	_, body, errs := gorequest.New().
@@ -205,8 +205,8 @@ func SubDepartmentList(wt int) ([]int, error) {
 				wt = wt - 1
 				if wt >= 0 {
 					time.Sleep(time.Second * 10)
-					depIds, err = SubDepartmentList(wt)
-					return depIds, err
+					deptIds, err = SubDepartmentList(wt)
+					return deptIds, err
 				} else {
 					return nil, err
 				}
@@ -221,23 +221,23 @@ func SubDepartmentList(wt int) ([]int, error) {
 				vv := v.(map[string]interface{})
 				for k, val := range vv {
 					if k == "id" {
-						depIds = append(depIds, int(val.(float64)))
+						deptIds = append(deptIds, int(val.(float64)))
 						break
 					}
 				}
 			}
-			//logging.Info(fmt.Sprintf("depIds length is %d", len(depIds)))
+			//logging.Info(fmt.Sprintf("deptIds length is %d", len(deptIds)))
 		}
-		return depIds, nil
+		return deptIds, nil
 	}
 }
 
 // 获取部门详情
 func DepartmentDetail(id, wt int) *models.Department {
 	var department models.Department
-	depId := strconv.Itoa(id)
+	deptId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
-		Get(setting.DingtalkSetting.OapiHost + "/department/get?access_token=" + GetAccessToken() + "&id=" + depId).End()
+		Get(setting.DingtalkSetting.OapiHost + "/department/get?access_token=" + GetAccessToken() + "&id=" + deptId).End()
 	if len(errs) > 0 {
 		util.ShowError("get department failed:", errs[0])
 		return nil
@@ -268,10 +268,10 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 		userlist  = map[string]interface{}{}
 	)
 	offset := strconv.Itoa(pageNum * 100)
-	depId := strconv.Itoa(id)
+	deptId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/listbypage").
-		Query("access_token=" + GetAccessToken()).Query("department_id=" + depId).
+		Query("access_token=" + GetAccessToken()).Query("department_id=" + deptId).
 		Query("offset=" + offset).Query("size=100").
 		End()
 	if len(errs) > 0 {
@@ -307,8 +307,8 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 							v := strconv.Itoa(int(d.(float64)))
 							paramSlice = append(paramSlice, v)
 						}
-						depIds := strings.Join(paramSlice, ",")
-						user.Department = depIds
+						deptIds := strings.Join(paramSlice, ",")
+						user.Department = deptIds
 					}
 				}
 				usersList = append(usersList, user)
@@ -324,10 +324,10 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 		useridslice []string
 		useridslist = map[string]interface{}{}
 	)
-	depId := strconv.Itoa(id)
+	deptId := strconv.Itoa(id)
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/user/getDeptMember").
-		Query("access_token=" + GetAccessToken()).Query("deptId=" + depId).
+		Query("access_token=" + GetAccessToken()).Query("deptId=" + deptId).
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get userids failed:", errs[0])
@@ -395,7 +395,7 @@ func UserDetail(userid string, wt int) *models.User {
 			log.Printf("unmarshall user info error:%v", err)
 			return nil
 		}
-		var depIds string
+		var deptIds string
 		if len(userlist) > 0 {
 			for k, val := range userlist {
 				if k == "department" {
@@ -404,11 +404,11 @@ func UserDetail(userid string, wt int) *models.User {
 						v := strconv.Itoa(int(d.(float64)))
 						paramSlice = append(paramSlice, v)
 					}
-					depIds = strings.Join(paramSlice, ",")
+					deptIds = strings.Join(paramSlice, ",")
 					break
 				}
 			}
-			user.Department = depIds
+			user.Department = deptIds
 		}
 		return &user
 	}

@@ -42,7 +42,7 @@ func MessageDingding() {
 		if asyncsendReturn != nil {
 			if asyncsendReturn.Errcode == 0 {
 				if err := models.UpdateMsgFlag(msg.ID); err != nil {
-					logging.Info(fmt.Sprintf("UpdateMsgFlag err:%v", err))
+					logging.Info(fmt.Sprintf("%v update msg_flag err:%v", msg.ID, err))
 				}
 			}
 		}
@@ -52,63 +52,64 @@ func MessageDingding() {
 //同步信息
 func Sync() {
 	logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
-	t := time.Now().Format("2006-01-02") + " 00:00:00"
-	wt := 20      //发生网页劫持后，发送递归请求的次数
-	syncNum := 30 //goroutine数量
+	var (
+		t  = time.Now().Format("2006-01-02") + " 00:00:00"
+		sn = 30 //goroutine数量
+		wt = 20 //发生网页劫持后，发送递归请求的次数
+	)
 	for i := 0; i < 10; i++ {
 		time.Sleep(time.Second * 90)
-		useridsNum, depidsNum := DepartmentUserSync(wt, syncNum)
-		if useridsNum > 0 && depidsNum > 0 {
+		useridsNum, deptIdsNum := DepartmentUserSync(wt, sn)
+		if useridsNum > 0 && deptIdsNum > 0 {
 			userNum, _ := models.CountUserSyncNum(t)
-			depNum, _ := models.CountDepartmentSyncNum(t)
-			if userNum == useridsNum && depNum == depidsNum {
-				goto Loop
+			deptNum, _ := models.CountDepartmentSyncNum(t)
+			if userNum == useridsNum && deptNum == deptIdsNum {
+				break
 			}
 		}
 	}
-Loop:
-	logging.Info(fmt.Sprintf("DepartmentUserSync stopped"))
+	logging.Info(fmt.Sprintf("DepartmentUserSync success"))
 }
 
 //同步一次部门和人员信息
 func DepartmentUserSync(wt, syncNum int) (int, int) {
 	var (
 		userIdsNum = 0
-		depidsLen  = 0
+		deptIdsNum = 0
 	)
-	depIds, err := dingtalk.SubDepartmentList(wt)
+	deptIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
 		logging.Info(fmt.Sprintf("%v", err))
-		return userIdsNum, depidsLen
+		return userIdsNum, deptIdsNum
 	}
-	if depIds != nil {
+	if deptIds != nil {
 		var seg int
-		depidsLen = len(depIds)
-		if depidsLen%8 == 0 {
-			seg = depidsLen / 8
+		deptIdsNum = len(deptIds)
+		if deptIdsNum%8 == 0 {
+			seg = deptIdsNum / 8
 		} else {
-			seg = (depidsLen / 8) + 1
+			seg = (deptIdsNum / 8) + 1
 		}
-		depIdChan := make(chan int, 100) //部门id
+		deptIdChan := make(chan int, 100) //部门id
 		for j := 0; j < 8; j++ {
-			segIds := depIds[j*seg : (j+1)*seg]
+			segIds := deptIds[j*seg : (j+1)*seg]
 			var num int
 			go func() {
-				for _, depId := range segIds {
-					depIdChan <- depId
+				for _, deptId := range segIds {
+					deptIdChan <- deptId
 					num++
 				}
 			}()
-			if num == depidsLen {
-				close(depIdChan)
+			if num == deptIdsNum {
+				close(deptIdChan)
 			}
 		}
 		wg := &sync.WaitGroup{}
 		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
 			go func() {
-				for depId := range depIdChan {
-					if department := dingtalk.DepartmentDetail(depId, wt); department != nil {
+				for deptId := range deptIdChan {
+					if department := dingtalk.DepartmentDetail(deptId, wt); department != nil {
 						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 						if department.ID != 0 {
 							if err := models.DepartmentSync(department); err != nil {
@@ -116,7 +117,7 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 							}
 						}
 					}
-					if userids := dingtalk.DepartmentUserIdsDetail(depId, wt); userids != nil {
+					if userids := dingtalk.DepartmentUserIdsDetail(deptId, wt); userids != nil {
 						cnt := len(userids)
 						userIdsNum += cnt
 						var pageNumTotal int
@@ -126,7 +127,7 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 							pageNumTotal = cnt/100 + 1
 						}
 						for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-							if userlist := dingtalk.DepartmentUserDetail(depId, pageNum, wt); userlist != nil {
+							if userlist := dingtalk.DepartmentUserDetail(deptId, pageNum, wt); userlist != nil {
 								if err := models.UserSync(userlist); err != nil {
 									log.Printf("UserSync err:%v", err)
 								}
@@ -139,5 +140,5 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 		}
 		wg.Wait()
 	}
-	return userIdsNum, depidsLen
+	return userIdsNum, deptIdsNum
 }

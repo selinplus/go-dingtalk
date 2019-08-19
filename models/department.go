@@ -44,7 +44,7 @@ func GetDepartmentByID(id int) (*Department, error) {
 	}
 	return nil, nil
 }
-func IsParentDepartment(deptId int) bool {
+func IsLeafDepartment(deptId int) bool {
 	var dt Department
 	err := db.Select("id").Where("parentid =?", deptId).First(&dt).Error
 	if err == gorm.ErrRecordNotFound {
@@ -72,8 +72,8 @@ func IsDeptIdExist(deptId int) (bool, error) {
 	}
 	return false, nil
 }
-func DeleteDepartment(depId int) error {
-	if err := db.Where("id=?", depId).Delete(Department{}).Error; err != nil {
+func DeleteDepartment(deptId int) error {
+	if err := db.Where("id=?", deptId).Delete(Department{}).Error; err != nil {
 		return err
 	}
 	return nil
