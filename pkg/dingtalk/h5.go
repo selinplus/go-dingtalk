@@ -199,18 +199,18 @@ func SubDepartmentList(wt int) ([]int, error) {
 		util.ShowError("get department list_ids failed:", errs[0])
 		return nil, errs[0]
 	} else {
-		if strings.Contains(body, "<") {
-			wt = wt - 1
-			if wt >= 0 {
-				time.Sleep(time.Second * 10)
-				depIds, err = SubDepartmentList(wt)
-				return depIds, err
-			} else {
-				return nil, err
-			}
-		}
 		err = json.Unmarshal([]byte(body), &subDeptIdList)
 		if err != nil {
+			if strings.Contains(body, "<") {
+				wt = wt - 1
+				if wt >= 0 {
+					time.Sleep(time.Second * 10)
+					depIds, err = SubDepartmentList(wt)
+					return depIds, err
+				} else {
+					return nil, err
+				}
+			}
 			//log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
 			log.Printf("unmarshall SubDeptIdList info error:%v", err)
 			return nil, err

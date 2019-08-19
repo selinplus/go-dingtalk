@@ -52,10 +52,12 @@ func GetDepartmentByParentID(c *gin.Context) {
 	}
 	if len(departments) > 0 {
 		for _, department := range departments {
+			leaf := models.IsParentDepartment(department.ID)
 			dt := map[string]interface{}{
-				"key":   department.ID,
-				"value": department.ID,
-				"title": department.Name,
+				"key":    department.ID,
+				"value":  department.ID,
+				"title":  department.Name,
+				"isLeaf": leaf,
 			}
 			dts = append(dts, dt)
 		}

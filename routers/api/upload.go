@@ -24,7 +24,6 @@ func UploadFile(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-
 	if image == nil {
 		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
 		return
@@ -32,7 +31,7 @@ func UploadFile(c *gin.Context) {
 
 	imageName := upload.GetImageName(image.Filename)
 	fullPath := upload.GetImageFullPath()
-	savePath := upload.GetImagePath()
+	//savePath := upload.GetImagePath()
 	src := fullPath + imageName
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckImageSize(file) {
@@ -54,7 +53,7 @@ func UploadFile(c *gin.Context) {
 	}
 
 	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
-		"name": upload.GetImageFullUrl(imageName),
-		"url":  savePath + imageName,
+		"name": image.Filename,
+		"url":  upload.GetImageFullUrl(imageName),
 	})
 }

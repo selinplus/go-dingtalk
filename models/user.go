@@ -44,26 +44,27 @@ func GetUserByDepartmentID(deptId string) ([]*User, error) {
 		return nil, err
 	}
 	for _, user := range usersAll {
-		if strings.Contains(user.Department, ",") {
-			deptIds := strings.Split(user.Department, ",")
-			for _, DepartmentId := range deptIds {
-				if DepartmentId == deptId {
-					users = append(users, user)
-				}
+		for _, DepartmentId := range strings.Split(user.Department, ",") {
+			if DepartmentId == deptId {
+				users = append(users, user)
 			}
-		} else {
-			users = append(users, user)
 		}
 	}
 	return users, nil
 }
 func GetUseridByMobile(mobile string) (string, error) {
-	var userid []string
-	if err := db.Table("user").Pluck("userid", &userid).
-		Where("mobile=?", mobile).Error; err != nil {
+	var user User
+	if err := db.Table("user").Where("mobile=?", mobile).First(&user).Error; err != nil {
 		return "", err
 	}
-	return userid[0], nil
+	return user.UserID, nil
+}
+func GetDeptIdByMobile(mobile string) (string, error) {
+	var user User
+	if err := db.Table("user").Where("mobile=?", mobile).First(&user).Error; err != nil {
+		return "", err
+	}
+	return user.Department, nil
 }
 func UserDetailSync(data interface{}) error {
 	if err := db.Model(&User{}).Save(&data).Error; err != nil {
