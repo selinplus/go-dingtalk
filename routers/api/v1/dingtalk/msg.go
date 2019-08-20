@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
-	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"net/http"
@@ -77,14 +76,14 @@ func SendMsg(c *gin.Context) {
 		if err != nil {
 			logging.Info(fmt.Sprintf("%v", err))
 		}
-		tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
-		if asyncsendReturn != nil {
-			if asyncsendReturn.Errcode == 0 {
-				_ = models.UpdateMsgFlag(msg.ID)
-			}
-			appG.Response(http.StatusOK, e.SUCCESS, asyncsendReturn)
-		}
+		//tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
+		//asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		//if asyncsendReturn != nil {
+		//	if asyncsendReturn.Errcode == 0 {
+		//		_ = models.UpdateMsgFlag(msg.ID)
+		//	}
+		//	appG.Response(http.StatusOK, e.SUCCESS, asyncsendReturn)
+		//}
 		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
