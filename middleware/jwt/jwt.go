@@ -17,7 +17,7 @@ func JWT() gin.HandlerFunc {
 		var data interface{}
 
 		code = e.SUCCESS
-		token := c.GetHeader("token")
+		token := c.GetHeader("X-Access-Token")
 		auth := c.GetHeader("Authorization")
 		//token := c.Query("token")
 		if len(auth) > 0 {
