@@ -10,6 +10,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -76,14 +77,6 @@ func SendMsg(c *gin.Context) {
 		if err != nil {
 			logging.Info(fmt.Sprintf("%v", err))
 		}
-		//tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
-		//asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
-		//if asyncsendReturn != nil {
-		//	if asyncsendReturn.Errcode == 0 {
-		//		_ = models.UpdateMsgFlag(msg.ID)
-		//	}
-		//	appG.Response(http.StatusOK, e.SUCCESS, asyncsendReturn)
-		//}
 		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
@@ -233,7 +226,7 @@ func DeleteMsg(c *gin.Context) {
 		appG   = app.Gin{C: c}
 		userID string
 	)
-	id, _ := strconv.Atoi(c.Query("id"))
+	ids := c.Query("id")
 	tag, _ := strconv.Atoi(c.Query("tag"))
 	mobile := c.Query("mobile")
 	var err error
@@ -249,10 +242,13 @@ func DeleteMsg(c *gin.Context) {
 		v := session.Get("userid")
 		userID = fmt.Sprintf("%v", v)
 	}
-	err = models.DeleteMsg(userID, uint(id), uint(tag))
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_MSG_FAIL, nil)
-		return
+	for _, id := range strings.Split(ids, ",") {
+		i, _ := strconv.Atoi(id)
+		err = models.DeleteMsg(userID, uint(i), uint(tag))
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_MSG_FAIL, id+"删除失败")
+			return
+		}
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
