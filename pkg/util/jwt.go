@@ -1,6 +1,9 @@
 package util
 
 import (
+	"fmt"
+	"github.com/selinplus/go-dingtalk/pkg/setting"
+	"log"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -8,9 +11,8 @@ import (
 
 var jwtSecret []byte
 
-type Claims struct {
+type CustomClaims struct {
 	Username string `json:"username"`
-	Password string `json:"password"`
 	jwt.StandardClaims
 }
 
@@ -19,9 +21,8 @@ func GenerateToken(username, password string) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(330 * 24 * time.Hour)
 
-	claims := Claims{
-		EncodeMD5(username),
-		EncodeMD5(password),
+	claims := CustomClaims{
+		username,
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
 			Issuer:    "daerdo-medicine",
@@ -35,13 +36,20 @@ func GenerateToken(username, password string) (string, error) {
 }
 
 // ParseToken parsing token
-func ParseToken(token string) (*Claims, error) {
-	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+func ParseToken(token string) (interface{}, error) {
+	secret := []byte(setting.AppSetting.JwtSecret)
+	tokenClaims, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, e error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected siging method:%v", token.Header["alg"])
+		}
+		return secret, nil
 	})
-
 	if tokenClaims != nil {
-		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
+		if claims, ok := tokenClaims.Claims.(jwt.MapClaims); ok && tokenClaims.Valid {
+			for k, v := range claims {
+				log.Printf("key is : %v, val is %v \n", k, v)
+			}
+			//log.Printf("username is %v, Expired at %v", claims["username"], claims["expires_at"])
 			return claims, nil
 		}
 	}
