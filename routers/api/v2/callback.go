@@ -1,4 +1,4 @@
-package dingtalk
+package v2
 
 import (
 	"encoding/json"
@@ -28,7 +28,7 @@ type CallbackDetail struct {
 func RegisterCallback(c *gin.Context) {
 	appG := app.Gin{C: c}
 	callbacks := []string{"user_add_org", "user_modify_org", "user_leave_org", "org_dept_create", "org_dept_modify", "org_dept_remove"}
-	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v1/callback/detail"
+	callbackURL := setting.DingtalkSetting.CallBackHost + "/api/v2/callback/detail"
 	request := map[string]interface{}{
 		"call_back_tag": callbacks,
 		"token":         setting.DingtalkSetting.Token,

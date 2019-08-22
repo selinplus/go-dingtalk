@@ -20,6 +20,10 @@ var MsgFlags = map[int]string{
 	ERROR_UPLOAD_CHECK_IMAGE_FAIL:   "检查图片失败",
 	ERROR_UPLOAD_CHECK_IMAGE_FORMAT: "校验图片错误，图片格式或大小有问题",
 
+	ERROR_UPLOAD_SAVE_FILE_FAIL:    "保存文件失败",
+	ERROR_UPLOAD_CHECK_FILE_FAIL:   "检查文件失败",
+	ERROR_UPLOAD_CHECK_FILE_FORMAT: "校验文件错误，文件格式或大小有问题",
+
 	ERROR_USERNAME_EXIST: "用户名已存在",
 
 	ERROR_ADD_MSG_FAIL:     "发送信息失败",
@@ -32,6 +36,8 @@ var MsgFlags = map[int]string{
 	ERROR_GET_DEPARTMENT_FAIL:        "获取部门列表失败",
 	ERROR_GET_USER_FAIL:              "获取部门用户列表失败",
 	ERROR_GET_USERBYMOBILE_FAIL:      "用户手机号不正确",
+
+	ERROR_ADD_DEV_FAIL: "设备登记失败",
 }
 
 // GetMsg get error information based on Code

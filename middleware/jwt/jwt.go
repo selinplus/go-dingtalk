@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,7 @@ func JWT() gin.HandlerFunc {
 
 		code = e.SUCCESS
 		token := c.GetHeader("X-Access-Token")
+		log.Println(token)
 		auth := c.GetHeader("Authorization")
 		//token := c.Query("token")
 		if len(auth) > 0 {
@@ -27,6 +29,7 @@ func JWT() gin.HandlerFunc {
 			code = e.INVALID_PARAMS
 		} else {
 			_, err := util.ParseToken(token)
+			log.Println(err)
 			if err != nil {
 				switch err.(*jwt.ValidationError).Errors {
 				case jwt.ValidationErrorExpired:

@@ -49,7 +49,7 @@ func ParseToken(token string) (interface{}, error) {
 			for k, v := range claims {
 				log.Printf("key is : %v, val is %v \n", k, v)
 			}
-			//log.Printf("username is %v, Expired at %v", claims["username"], claims["expires_at"])
+			log.Printf("username is %v, Expired at %v", claims["username"], claims["expires_at"])
 			return claims, nil
 		}
 	}

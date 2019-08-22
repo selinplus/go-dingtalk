@@ -35,20 +35,20 @@ func UploadFile(c *gin.Context) {
 	src := fullPath + imageName
 
 	if !upload.CheckImageExt(imageName) || !upload.CheckImageSize(file) {
-		appG.Response(http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_IMAGE_FORMAT, nil)
+		appG.Response(http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
 		return
 	}
 
 	err = upload.CheckImage(fullPath)
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_IMAGE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_FILE_FAIL, nil)
 		return
 	}
 
 	if err := c.SaveUploadedFile(image, src); err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_IMAGE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_FILE_FAIL, nil)
 		return
 	}
 

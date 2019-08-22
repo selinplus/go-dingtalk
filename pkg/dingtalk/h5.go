@@ -11,6 +11,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,6 +30,9 @@ type UserInfo struct {
 var Token = &AccessToken{}
 
 func GetAccessToken() string {
+	lock := &sync.Mutex{}
+	lock.Lock()
+	defer lock.Unlock()
 	t := time.Now().UnixNano()
 	if Token == nil || t-Token.ExpiresTime >= 0 {
 		_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/gettoken").
