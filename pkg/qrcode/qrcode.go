@@ -109,8 +109,8 @@ func GenerateQrWithLogo(uri, path string) (string, string, error) {
 		err error
 		q   *qrcode.QRCode
 	)
-	date := time.Now().Format("20060102")
-	name := q.Content + date + EXT_JPG
+	date := time.Now().Format("20060102_150405")
+	name := uri + date + EXT_JPG
 	src := path + name
 	if file.CheckNotExist(src) == true {
 		// 先创建一个二维码

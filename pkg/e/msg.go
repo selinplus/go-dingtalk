@@ -37,7 +37,9 @@ var MsgFlags = map[int]string{
 	ERROR_GET_USER_FAIL:              "获取部门用户列表失败",
 	ERROR_GET_USERBYMOBILE_FAIL:      "用户手机号不正确",
 
-	ERROR_ADD_DEV_FAIL: "设备登记失败",
+	ERROR_ADD_DEV_FAIL:     "设备登记失败",
+	ERROR_GET_DEV_FAIL:     "获取设备登记信息失败",
+	ERROR_GET_DEVLIST_FAIL: "获取设备登记信息列表失败",
 }
 
 // GetMsg get error information based on Code

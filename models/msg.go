@@ -40,6 +40,7 @@ func GetMsgs(userID string, tag uint, pageNum, pageSize int) ([]*Msg, error) {
 	}
 	return msg, nil
 }
+
 func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	var msg Msg
 	if err := db.Preload("Attachments").Find(&msg, "id=?", id).
@@ -53,6 +54,7 @@ func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 	}
 	return nil, nil
 }
+
 func GetMsgFlag() ([]*Msg, error) {
 	var msgs []*Msg
 	if err := db.Table("msg").Where("flag_notice=0").Scan(&msgs).Error; err != nil {

@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
@@ -55,8 +56,8 @@ func ImpDevices(fileName string) []*Device {
 
 func ReadXmlToStructs(fileName string) []*Device {
 	dev := make([]*Device, 0)
-	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	inFile := setting.AppSetting.ImageSavePath + fileName
+	timeStamp := strconv.Itoa(int(time.Now().Unix()))
+	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ImageSavePath + fileName
 	xlFile, err := xlsx.OpenFile(inFile)
 	defer os.Remove(inFile)
 	if err != nil {
@@ -78,7 +79,7 @@ func ReadXmlToStructs(fileName string) []*Device {
 				case i == 0:
 					d.Zcbh = text
 				case i == 1:
-					d.ID = text + "_" + timeStamp
+					d.ID = text + "_" + timeStamp + "_" + d.Zcbh
 					d.Lx = text
 				case i == 2:
 					d.Mc = text
@@ -159,4 +160,59 @@ func InsertDeviceXml(devs []*Device) []*Device {
 		return errDev
 	}
 	return nil
+}
+
+func GetDevices(mc string, pageNo, pageSize int) ([]*Device, error) {
+	var devs []*Device
+	offset := (pageNo - 1) * pageSize
+	err := db.Raw("select * from device where mc like ? LIMIT ?,?", "%"+mc+"%", offset, pageSize).
+		Scan(&devs).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return devs, nil
+}
+
+func GetDevicesCount(mc string) (int, error) {
+	var total int
+	if err := db.Table("device").Where("mc like ?", "%"+mc+"%").Count(&total).Error; err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func GetDeviceByID(id string) (*Device, error) {
+	var dev Device
+	if err := db.Find(&dev, "id=?", id).Error; err != nil {
+		return nil, err
+	}
+	if len(dev.ID) > 0 {
+		return &dev, nil
+	}
+	return nil, nil
+}
+
+type DevResponse struct {
+	ID   string
+	Zcbh string `json:"zcbh"`
+	Lx   string `json:"lx"`
+	Mc   string `json:"mc"`
+	Xh   string `json:"xh"`
+	Xlh  string `json:"xlh"`
+	Zt   string `json:"zt"`
+	Sydw string `json:"sydw"`
+	Syks string `json:"syks"`
+	Syr  string `json:"syr"`
+}
+
+func GetDeviceModByDevID(devid string) (*DevResponse, error) {
+	var dev DevResponse
+	if err := db.Raw("select device.id,device.zcbh,device.lx,device.mc,device.xh,device.xlh,device.zt,devmodify.sydw,devmodify.syks,devmodify.syr from device left join devmodify on device.id=devmodify.devid left join devtype on devtype.dm=device.lx where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
+		Scan(&dev).Error; err != nil {
+		return nil, err
+	}
+	if len(dev.ID) > 0 {
+		return &dev, nil
+	}
+	return nil, nil
 }

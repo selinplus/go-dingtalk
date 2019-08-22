@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -44,8 +45,19 @@ func AddDeviceMod(c *gin.Context) {
 		Czr:   form.Czr,
 		Qsrq:  t,
 	}
-	err = models.ModifyZzrq(d.DevID, t)
-	err = models.AddDevMod(d)
+	flag, err := models.IsLastModifyZzrqExist(d.DevID)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	if flag {
+		err = models.ModifyZzrq(d.DevID, t)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+			return
+		}
+	}
+	err = models.AddDevMod(&d)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
@@ -55,4 +67,38 @@ func AddDeviceMod(c *gin.Context) {
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 	}
+}
+
+//设备流水记录列表查询
+func GetDevModList(c *gin.Context) {
+	appG := app.Gin{C: c}
+	mc := c.Query("mc")
+	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
+	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	devs, err := models.GetDevMods(mc, pageNo, pageSize)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	total, er := models.GetDevModCount(mc)
+	if er != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	data := make(map[string]interface{})
+	data["lists"] = devs
+	data["total"] = total
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//设备流水记录查询
+func GetDevModByDevID(c *gin.Context) {
+	appG := app.Gin{C: c}
+	id := c.Query("id")
+	devs, err := models.GetDevModByDevID(id)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, devs)
 }

@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,8 +46,8 @@ func AddDevice(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	sbbh := string(form.Lx) + "_" + timeStamp
+	timeStamp := strconv.Itoa(int(time.Now().Unix()))
+	sbbh := string(form.Lx) + "_" + timeStamp + "_" + form.Zcbh
 	//生成二维码
 	//qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
 	//name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
@@ -121,4 +122,79 @@ func ImpDevices(c *gin.Context) {
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//获取设备列表
+func GetDevices(c *gin.Context) {
+	appG := app.Gin{C: c}
+	mc := c.Query("mc")
+	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
+	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	devs, err := models.GetDevices(mc, pageNo, pageSize)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	total, er := models.GetDevicesCount(mc)
+	if er != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	data := make(map[string]interface{})
+	data["lists"] = devs
+	data["total"] = total
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//获取设备详情
+func GetDeviceByID(c *gin.Context) {
+	appG := app.Gin{C: c}
+	id := c.Query("id")
+	dev, err := models.GetDeviceByID(id)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		return
+	}
+	if len(dev.ID) > 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, dev)
+	} else {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+	}
+}
+
+//查询设备信息及当前使用状态详情
+func GetDeviceModByDevID(c *gin.Context) {
+	appG := app.Gin{C: c}
+	id := c.Query("id")
+	dev, err := models.GetDeviceModByDevID(id)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		return
+	}
+	if len(dev.ID) > 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, dev)
+	} else {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+	}
+}
+
+//生成二维码
+func QrCode(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		qrs  []interface{}
+	)
+	ids := c.Query("id")
+	for _, id := range strings.Split(ids, ",") {
+		name, _, err := qrcode.GenerateQrWithLogo(id, qrcode.GetQrCodeFullPath())
+		if err != nil {
+			log.Println(err)
+		}
+		data := map[string]string{
+			"qrName": name,
+			"qrUrl":  qrcode.GetQrCodeFullUrl(name),
+		}
+		qrs = append(qrs, &data)
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, qrs)
 }
