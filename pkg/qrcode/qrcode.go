@@ -1,13 +1,19 @@
 package qrcode
 
 import (
+	"errors"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"image/jpeg"
-
+	"github.com/nfnt/resize"
 	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
+	"github.com/skip2/go-qrcode"
+	"image"
+	"image/draw"
+	"image/jpeg"
+	"os"
+	"time"
 )
 
 type QrCode struct {
@@ -20,7 +26,12 @@ type QrCode struct {
 }
 
 const (
-	EXT_JPG = ".jpg"
+	logo_file = "/logo/logo.jpg"
+	logo_w    = 54
+	logo_h    = 54
+	qr_size   = 256
+	qr_level  = qrcode.High
+	EXT_JPG   = ".jpg"
 )
 
 // NewQrCode initialize instance
@@ -62,7 +73,9 @@ func (q *QrCode) GetQrCodeExt() string {
 
 // Encode generate QR code
 func (q *QrCode) Encode(path string) (string, string, error) {
-	name := GetQrCodeFileName(q.URL) + q.GetQrCodeExt()
+	//name := GetQrCodeFileName(q.URL) + q.GetQrCodeExt()
+	date := time.Now().Format("20060102")
+	name := q.URL + date + q.GetQrCodeExt()
 	src := path + name
 	if file.CheckNotExist(src) == true {
 		code, err := qr.Encode(q.URL, q.Level, q.Mode)
@@ -87,5 +100,55 @@ func (q *QrCode) Encode(path string) (string, string, error) {
 		}
 	}
 
+	return name, path, nil
+}
+
+// Encode generate QR code with logo
+func GenerateQrWithLogo(uri, path string) (string, string, error) {
+	var (
+		err error
+		q   *qrcode.QRCode
+	)
+	date := time.Now().Format("20060102")
+	name := q.Content + date + EXT_JPG
+	src := path + name
+	if file.CheckNotExist(src) == true {
+		// 先创建一个二维码
+		q, err = qrcode.New(uri, qr_level)
+		if err != nil {
+			err = errors.New("can not create a qrcode")
+			return "", "", err
+		}
+		png := q.Image(qr_size)
+		bounds := png.Bounds()
+		// 通过二维码创建一个空画布
+		newImg := image.NewRGBA(bounds)
+		// 读取logo文件
+		logo_path := setting.AppSetting.RuntimeRootPath + logo_file
+		filelogo, err := os.Open(logo_path)
+		if err != nil {
+			return "", "", err
+		}
+		defer filelogo.Close()
+		// 将file转换成image
+		logo, _, err := image.Decode(filelogo)
+		if err != nil {
+			return "", "", err
+		}
+		// 按比例缩放logo
+		logo = resize.Resize(logo_w, 0, logo, resize.Lanczos3)
+		// 在画布上分别画上二维码，缩略后的logo
+		draw.Draw(newImg, newImg.Bounds(), png, png.Bounds().Min, draw.Over)
+		draw.Draw(newImg, image.Rect((qr_size/2)-(logo_w/2), (qr_size/2)-(logo_h/2), (qr_size/2)+(logo_w/2), (qr_size/2)+(logo_h/2)), logo, logo.Bounds().Min, draw.Over)
+		f, err := file.MustOpen(name, path)
+		if err != nil {
+			return "", "", err
+		}
+		defer f.Close()
+		err = jpeg.Encode(f, newImg, nil)
+		if err != nil {
+			return "", "", err
+		}
+	}
 	return name, path, nil
 }

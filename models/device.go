@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"github.com/boombuler/barcode/qr"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
@@ -79,7 +78,7 @@ func ReadXmlToStructs(fileName string) []*Device {
 				case i == 0:
 					d.Zcbh = text
 				case i == 1:
-					d.ID = text + "-" + timeStamp
+					d.ID = text + "_" + timeStamp
 					d.Lx = text
 				case i == 2:
 					d.Mc = text
@@ -122,8 +121,9 @@ func InsertDeviceXml(devs []*Device) []*Device {
 	if len(devs) > 0 {
 		for _, dev := range devs {
 			//生成二维码
-			qrc := qrcode.NewQrCode(dev.ID, 300, 300, qr.M, qr.Auto)
-			name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
+			//qrc := qrcode.NewQrCode(dev.ID, 300, 300, qr.M, qr.Auto)
+			//name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
+			name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
 			if err != nil {
 				log.Println(err)
 			}

@@ -1,7 +1,6 @@
 package dingtalk
 
 import (
-	"github.com/boombuler/barcode/qr"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -47,10 +46,11 @@ func AddDevice(c *gin.Context) {
 		return
 	}
 	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	sbbh := string(form.Lx) + "-" + timeStamp
+	sbbh := string(form.Lx) + "_" + timeStamp
 	//生成二维码
-	qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
-	name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
+	//qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
+	//name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
+	name, _, err := qrcode.GenerateQrWithLogo(sbbh, qrcode.GetQrCodeFullPath())
 	if err != nil {
 		log.Println(err)
 	}
