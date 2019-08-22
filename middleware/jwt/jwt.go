@@ -19,7 +19,6 @@ func JWT() gin.HandlerFunc {
 
 		code = e.SUCCESS
 		token := c.GetHeader("X-Access-Token")
-		log.Println(token)
 		auth := c.GetHeader("Authorization")
 		//token := c.Query("token")
 		if len(auth) > 0 {
