@@ -2,7 +2,7 @@ package models
 
 type Devstate struct {
 	ID uint   `gorm:"primary_key;"`
-	Dm int    `json:"dm" gorm:"COMMENT:'设备状态代码'"`
+	Dm string `json:"dm" gorm:"COMMENT:'设备状态代码'"`
 	Mc string `json:"mc" gorm:"COMMENT:'设备状态'"`
 }
 

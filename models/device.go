@@ -16,7 +16,7 @@ import (
 type Device struct {
 	ID    string `gorm:"primary_key;COMMENT:'设备编号'"`
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
-	Lx    int    `json:"lx" gorm:"COMMENT:'设备类型'"`
+	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`
 	Mc    string `json:"mc" gorm:"COMMENT:'设备名称'"`
 	Xh    string `json:"xh" gorm:"COMMENT:'设备型号'"`
 	Xlh   string `json:"xlh" gorm:"COMMENT:'序列号'"`
@@ -31,7 +31,7 @@ type Device struct {
 	Rkrq  string `json:"rkrq" gorm:"COMMENT:'入库日期'"`
 	QrUrl string `json:"qrurl" gorm:"COMMENT:'二维码URL';column:qrurl"`
 	Czr   string `json:"czr" gorm:"COMMENT:'操作人'"`
-	Zt    int    `json:"zt" gorm:"COMMENT:'设备状态'"`
+	Zt    string `json:"zt" gorm:"COMMENT:'设备状态'"`
 }
 
 func AddDevice(data interface{}) error {
@@ -79,9 +79,8 @@ func ReadXmlToStructs(fileName string) []*Device {
 				case i == 0:
 					d.Zcbh = text
 				case i == 1:
-					d.ID = text + timeStamp
-					lx, _ := strconv.Atoi(text)
-					d.Lx = lx
+					d.ID = text + "-" + timeStamp
+					d.Lx = text
 				case i == 2:
 					d.Mc = text
 				case i == 3:
@@ -107,8 +106,7 @@ func ReadXmlToStructs(fileName string) []*Device {
 				case i == 13:
 					d.Czr = text
 				case i == 14:
-					zt, _ := strconv.Atoi(text)
-					d.Zt = zt
+					d.Zt = text
 				}
 			}
 			logging.Debug(fmt.Sprintf("*: %+v", d))

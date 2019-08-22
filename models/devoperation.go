@@ -2,7 +2,7 @@ package models
 
 type Devoperation struct {
 	ID uint   `gorm:"primary_key;"`
-	Dm int    `json:"dm" gorm:"COMMENT:'操作类型代码';"`
+	Dm string `json:"dm" gorm:"COMMENT:'操作类型代码';"`
 	Mc string `json:"mc" gorm:"COMMENT:'操作类型';"`
 }
 

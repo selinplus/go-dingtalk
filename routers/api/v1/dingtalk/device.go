@@ -18,7 +18,7 @@ import (
 type DeviceForm struct {
 	ID   string
 	Zcbh string `json:"zcbh"`
-	Lx   int    `json:"lx"`
+	Lx   string `json:"lx"`
 	Mc   string `json:"mc" `
 	Xh   string `json:"xh"`
 	Xlh  string `json:"xlh"`
@@ -32,7 +32,7 @@ type DeviceForm struct {
 	Gys  string `json:"gys"`
 	Rkrq string `json:"rkrq"`
 	Czr  string `json:"czr"`
-	Zt   int    `json:"zt"`
+	Zt   string `json:"zt"`
 }
 
 //单项录入
@@ -47,7 +47,7 @@ func AddDevice(c *gin.Context) {
 		return
 	}
 	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
-	sbbh := string(form.Lx) + timeStamp
+	sbbh := string(form.Lx) + "-" + timeStamp
 	//生成二维码
 	qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
 	name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())

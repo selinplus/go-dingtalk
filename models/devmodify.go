@@ -3,7 +3,7 @@ package models
 type Devmodify struct {
 	ID    uint   `gorm:"primary_key;AUTO_INCREMENT"`
 	DevID string `json:"devid" gorm:"COMMENT:'设备编号';column:devid"`
-	Czlx  int    `json:"czlx" gorm:"COMMENT:'操作类型'"`
+	Czlx  string `json:"czlx" gorm:"COMMENT:'操作类型'"`
 	Sydw  string `json:"sydw" gorm:"COMMENT:'使用单位'"`
 	Syks  string `json:"syks" gorm:"COMMENT:'使用科室'"`
 	Syr   string `json:"syr" gorm:"COMMENT:'使用人'"`

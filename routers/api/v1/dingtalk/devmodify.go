@@ -11,7 +11,7 @@ import (
 
 type DevmodifyForm struct {
 	DevID string `json:"devid"`
-	Czlx  int    `json:"czlx"`
+	Czlx  string `json:"czlx"`
 	Sydw  string `json:"sydw"`
 	Syks  string `json:"syks"`
 	Syr   string `json:"syr"`
