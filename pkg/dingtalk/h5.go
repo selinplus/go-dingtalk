@@ -139,13 +139,13 @@ func GetJsApiConfig(url string) string {
 }
 
 //发送工作通知
-func MseesageToDingding(title, text, userid_list string) string {
+func MseesageToDingding(msg *models.Msg) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
 	link := map[string]interface{}{
-		"messageUrl": "http://s.dingtalk.com/market/dingtalk/error_code.php",
+		"messageUrl": setting.DingtalkSetting.CallBackHost + "/xxzs/detail/id/" + strconv.Itoa(int(msg.ID)) + "/tag/1",
 		"picUrl":     "@lALOACZwe2Rk",
-		"title":      title,
-		"text":       text,
+		"title":      msg.Title,
+		"text":       msg.Content,
 	}
 	msgcotent := map[string]interface{}{
 		"msgtype": "link",
@@ -153,7 +153,7 @@ func MseesageToDingding(title, text, userid_list string) string {
 	}
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
-		"userid_list": userid_list,
+		"userid_list": msg.ToID,
 		"to_all_user": false,
 		"msg":         msgcotent,
 	}

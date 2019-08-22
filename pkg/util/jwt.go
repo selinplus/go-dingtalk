@@ -38,7 +38,6 @@ func GenerateToken(username, password string) (string, error) {
 // ParseToken parsing token
 func ParseToken(token string) (interface{}, error) {
 	secret := []byte(setting.AppSetting.JwtSecret)
-	log.Println(setting.AppSetting.JwtSecret)
 	tokenClaims, err := jwt.Parse(token, func(token *jwt.Token) (i interface{}, e error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected siging method:%v", token.Header["alg"])

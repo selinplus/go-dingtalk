@@ -13,7 +13,7 @@ var MsgFlags = map[int]string{
 	ERROE_VERSION_LOW:               "版本过低，请更新新版本",
 	ERROR_USERNAME_PASSWORD:         "用户名密码不正确",
 	ERROR_AUTH_CHECK_TOKEN_FAIL:     "Token鉴权失败",
-	ERROR_AUTH_CHECK_TOKEN_TIMEOUT:  "Token已超时",
+	ERROR_AUTH_CHECK_TOKEN_TIMEOUT:  "Token已超时,请重新登录",
 	ERROR_AUTH_TOKEN:                "Token生成失败",
 	ERROR_AUTH:                      "Token错误",
 	ERROR_UPLOAD_SAVE_IMAGE_FAIL:    "保存图片失败",

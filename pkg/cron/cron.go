@@ -37,7 +37,7 @@ func MessageDingding() {
 		return
 	}
 	for _, msg := range msgs {
-		tcmprJson := dingtalk.MseesageToDingding(msg.Title, msg.Content, msg.ToID)
+		tcmprJson := dingtalk.MseesageToDingding(msg)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil {
 			if asyncsendReturn.Errcode == 0 {

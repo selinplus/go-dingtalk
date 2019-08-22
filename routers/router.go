@@ -30,13 +30,13 @@ func InitRouter() *gin.Engine {
 	r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 	r.StaticFS("/qrcode", http.Dir(qrcode.GetQrCodeFullPath()))
 
+	//上传文件
+	r.POST("/file/upload", api.UploadFile)
+
 	//内网
 	apiv1 := r.Group("/api/v1")
 	apiv1.Use(jwt.JWT())
 	{
-		//上传文件
-		apiv1.POST("/file/upload", api.UploadFile)
-
 		//获取部门用户信息同步条数
 		apiv1.GET("/syncnum", dingtalk.DepartmentUserSyncNum)
 		//获取部门详情
