@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
+	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
@@ -67,6 +68,17 @@ func GetDepartmentByParentID(c *gin.Context) {
 	} else {
 		appG.Response(http.StatusOK, e.SUCCESS, data)
 	}
+}
+
+//同步一次部门用户信息
+func DepartmentUserSync(c *gin.Context) {
+	var (
+		appG    = app.Gin{C: c}
+		wt      = 20 //发生网页劫持后，发送递归请求的次数
+		syncNum = 30 //goroutine数量
+	)
+	go cron.DepartmentUserSync(wt, syncNum)
+	appG.Response(http.StatusOK, e.SUCCESS, "同步请求发送成功")
 }
 
 //获取部门用户信息同步条数

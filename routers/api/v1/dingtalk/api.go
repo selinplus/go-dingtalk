@@ -1,4 +1,4 @@
-package v2
+package dingtalk
 
 import (
 	"github.com/gin-contrib/sessions"

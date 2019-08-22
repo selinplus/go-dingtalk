@@ -2,9 +2,12 @@ package models
 
 import (
 	"fmt"
+	"github.com/boombuler/barcode/qr"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/tealeg/xlsx"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -33,6 +36,13 @@ type Device struct {
 
 func AddDevice(data interface{}) error {
 	if err := db.Create(data).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func EditDevice(data interface{}) error {
+	if err := db.Model(&Device{}).Updates(data).Error; err != nil {
 		return err
 	}
 	return nil
@@ -73,19 +83,32 @@ func ReadXmlToStructs(fileName string) []*Device {
 					lx, _ := strconv.Atoi(text)
 					d.Lx = lx
 				case i == 2:
-
+					d.Mc = text
 				case i == 3:
+					d.Xh = text
 				case i == 4:
+					d.Xlh = text
 				case i == 5:
+					d.Ly = text
 				case i == 6:
+					d.Scs = text
 				case i == 7:
+					d.Scrq = text
 				case i == 8:
+					d.Grrq = text
 				case i == 9:
+					d.Bfnx = text
 				case i == 10:
+					d.Jg = text
 				case i == 11:
+					d.Gys = text
 				case i == 12:
+					d.Rkrq = text
 				case i == 13:
+					d.Czr = text
 				case i == 14:
+					zt, _ := strconv.Atoi(text)
+					d.Zt = zt
 				}
 			}
 			logging.Debug(fmt.Sprintf("*: %+v", d))
@@ -100,11 +123,33 @@ func InsertDeviceXml(devs []*Device) []*Device {
 	logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
 	if len(devs) > 0 {
 		for _, dev := range devs {
-			d := Device{
-				Mc: dev.Mc,
-			}
-			err := db.Model(Device{}).Create(&d).Error
+			//生成二维码
+			qrc := qrcode.NewQrCode(dev.ID, 300, 300, qr.M, qr.Auto)
+			name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
 			if err != nil {
+				log.Println(err)
+			}
+			d := Device{
+				ID:    dev.ID,
+				Zcbh:  dev.Zcbh,
+				Lx:    dev.Lx,
+				Mc:    dev.Mc,
+				Xh:    dev.Xh,
+				Xlh:   dev.Xlh,
+				Ly:    dev.Ly,
+				Scs:   dev.Scs,
+				Scrq:  dev.Scrq,
+				Grrq:  dev.Grrq,
+				Bfnx:  dev.Bfnx,
+				Jg:    dev.Jg,
+				Gys:   dev.Gys,
+				Rkrq:  dev.Rkrq,
+				QrUrl: qrcode.GetQrCodeFullUrl(name),
+				Czr:   dev.Czr,
+				Zt:    dev.Zt,
+			}
+			errd := db.Model(Device{}).Create(&d).Error
+			if errd != nil {
 				errDev = append(errDev, dev)
 			}
 		}
@@ -116,18 +161,4 @@ func InsertDeviceXml(devs []*Device) []*Device {
 		return errDev
 	}
 	return nil
-}
-
-func EditDevice(data interface{}) error {
-	if err := db.Model(&Device{}).Updates(data).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func QrCode(id string) {
-	//qr := qrcode.NewQrCode(id, 300, 300, qr.M, qr.Auto)
-	//posterName := qrcode.GetQrCodeFileName(qr.URL) + qr.GetQrCodeExt()
-	//poster_url := qrcode.GetQrCodeFullUrl(posterName)
-	//poster_save_url := filePath + posterName,
 }

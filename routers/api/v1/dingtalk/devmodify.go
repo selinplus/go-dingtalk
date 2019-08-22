@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type AddDevmodifyForm struct {
+type DevmodifyForm struct {
 	DevID string `json:"devid"`
 	Czlx  int    `json:"czlx"`
 	Sydw  string `json:"sydw"`
@@ -24,7 +24,7 @@ type AddDevmodifyForm struct {
 func AddDeviceMod(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form AddDevmodifyForm
+		form DevmodifyForm
 		err  error
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)

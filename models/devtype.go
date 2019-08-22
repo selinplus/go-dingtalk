@@ -13,3 +13,10 @@ func GetDevtype() ([]*Devtype, error) {
 	}
 	return ds, nil
 }
+
+func EditDevtype(data interface{}) error {
+	if err := db.Model(&Devtype{}).Updates(data).Error; err != nil {
+		return err
+	}
+	return nil
+}

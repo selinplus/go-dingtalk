@@ -1,10 +1,9 @@
 package qrcode
 
 import (
-	"image/jpeg"
-
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
+	"image/jpeg"
 
 	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/setting"

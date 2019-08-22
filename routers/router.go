@@ -11,7 +11,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"github.com/selinplus/go-dingtalk/routers/api"
 	"github.com/selinplus/go-dingtalk/routers/api/v1/dingtalk"
-	"github.com/selinplus/go-dingtalk/routers/api/v2"
 	"net/http"
 )
 
@@ -78,57 +77,57 @@ func InitRouter() *gin.Engine {
 		//上传文件
 		apiv2.POST("/file/upload", api.UploadFile)
 		//免登
-		apiv2.POST("/login", v2.Login)
+		apiv2.POST("/login", dingtalk.Login)
 		//鉴权
-		apiv2.GET("/js_api_config", v2.JsApiConfig)
+		apiv2.GET("/js_api_config", dingtalk.JsApiConfig)
 
 		//注册事件回调
-		apiv2.GET("/callback/reg", v2.RegisterCallback)
+		apiv2.GET("/callback/reg", dingtalk.RegisterCallback)
 		// 查询事件回调
-		apiv2.GET("/callback/query", v2.QueryCallback)
+		apiv2.GET("/callback/query", dingtalk.QueryCallback)
 		// 更新事件回调
-		apiv2.POST("/callback/update", v2.UpdateCallback)
+		apiv2.POST("/callback/update", dingtalk.UpdateCallback)
 		// 删除事件回调
-		apiv2.GET("/callback/delete", v2.DeleteCallback)
+		apiv2.GET("/callback/delete", dingtalk.DeleteCallback)
 		// 获取回调失败的结果
-		apiv2.GET("/callback/failed", v2.GetFailedCallbacks)
+		apiv2.GET("/callback/failed", dingtalk.GetFailedCallbacks)
 		//获取回调的结果
-		apiv2.POST("/callback/detail", v2.GetCallbacks)
+		apiv2.POST("/callback/detail", dingtalk.GetCallbacks)
 
 		//同步一次部门用户信息
-		apiv2.GET("/sync", v2.DepartmentUserSync)
+		apiv2.GET("/sync", dingtalk.DepartmentUserSync)
 		//获取部门用户信息同步条数
-		apiv2.GET("/syncnum", v2.DepartmentUserSyncNum)
+		apiv2.GET("/syncnum", dingtalk.DepartmentUserSyncNum)
 
 		//获取部门详情
-		apiv2.GET("/department/detail", v2.GetDepartmentByID)
+		apiv2.GET("/department/detail", dingtalk.GetDepartmentByID)
 		//获取部门列表
-		apiv2.GET("/department/list", v2.GetDepartmentByParentID)
+		apiv2.GET("/department/list", dingtalk.GetDepartmentByParentID)
 		//获取部门用户列表
-		apiv2.GET("/user/list", v2.GetUserByDepartmentID)
+		apiv2.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
 		//发消息
-		apiv2.POST("/msg/send", v2.SendMsg)
+		apiv2.POST("/msg/send", dingtalk.SendMsg)
 		//获取消息列表
-		apiv2.GET("/msg/list", v2.GetMsgs)
+		apiv2.GET("/msg/list", dingtalk.GetMsgs)
 		//获取消息详情
-		apiv2.GET("/msg/detail", v2.GetMsgByID)
+		apiv2.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
-		apiv2.GET("/msg/delete", v2.DeleteMsg)
+		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
 
 		//单项录入
-		apiv2.POST("/dev/add", v2.AddDevice)
+		apiv2.POST("/dev/add", dingtalk.AddDevice)
 		//批量导入
-		apiv2.POST("/dev/imp", v2.ImpDevices)
+		apiv2.POST("/dev/imp", dingtalk.ImpDevices)
 		//流转登记
-		apiv2.POST("/dev/mod", v2.AddDeviceMod)
+		apiv2.POST("/dev/mod", dingtalk.AddDeviceMod)
 
 		//查询设备状态代码
-		apiv2.GET("/dev/state", v2.GetDevstate)
+		apiv2.GET("/dev/state", dingtalk.GetDevstate)
 		//查询设备类型代码
-		apiv2.GET("/dev/type", v2.GetDevtype)
+		apiv2.GET("/dev/type", dingtalk.GetDevtype)
 		//查询操作类型代码
-		apiv2.GET("/dev/op", v2.GetDevOp)
+		apiv2.GET("/dev/op", dingtalk.GetDevOp)
 	}
 	return r
 }

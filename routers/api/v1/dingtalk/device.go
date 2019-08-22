@@ -1,18 +1,21 @@
 package dingtalk
 
 import (
+	"github.com/boombuler/barcode/qr"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-type AddDeviceForm struct {
+type DeviceForm struct {
 	ID   string
 	Zcbh string `json:"zcbh"`
 	Lx   int    `json:"lx"`
@@ -36,21 +39,42 @@ type AddDeviceForm struct {
 func AddDevice(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form AddDeviceForm
+		form DeviceForm
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	t := time.Now().Format("2006-01-02 15:04:05")
 	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
 	sbbh := string(form.Lx) + timeStamp
-	dev := models.Device{
-		ID:   sbbh,
-		Rkrq: t,
+	//生成二维码
+	qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
+	name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
+	if err != nil {
+		log.Println(err)
 	}
-	err := models.AddDevice(&dev)
+	dev := models.Device{
+		ID:    sbbh,
+		Zcbh:  form.Zcbh,
+		Lx:    form.Lx,
+		Mc:    form.Mc,
+		Xh:    form.Xh,
+		Xlh:   form.Xlh,
+		Ly:    form.Ly,
+		Scs:   form.Scs,
+		Scrq:  form.Scrq,
+		Grrq:  form.Grrq,
+		Bfnx:  form.Bfnx,
+		Jg:    form.Jg,
+		Zp:    form.Zp,
+		Gys:   form.Gys,
+		Rkrq:  form.Rkrq,
+		QrUrl: qrcode.GetQrCodeFullUrl(name),
+		Czr:   form.Czr,
+		Zt:    form.Zt,
+	}
+	err = models.AddDevice(&dev)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
 		return
