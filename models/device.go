@@ -77,8 +77,11 @@ func ReadXmlToStructs(fileName, czr string) []*Device {
 		logging.Info(err.Error())
 		return nil
 	}
-	for _, sheet := range xlFile.Sheets {
+	for sNum, sheet := range xlFile.Sheets {
 		logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+		if sNum > 0 {
+			break
+		}
 		//遍历行读取
 		for k, row := range sheet.Rows {
 			// 跳过标题行，遍历每行的列读取
