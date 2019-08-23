@@ -172,24 +172,24 @@ func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
 }
 
 type DevResponse struct {
-	ID   string
-	Zcbh string `json:"zcbh"`
-	Lx   string `json:"lx"`
-	Mc   string `json:"mc"`
-	Xh   string `json:"xh"`
-	Xlh  string `json:"xlh"`
-	Zt   string `json:"zt"`
-	Sydw string `json:"sydw"`
-	Syks string `json:"syks"`
-	Syr  string `json:"syr"`
+	ID    string
+	Zcbh  string `json:"zcbh"`
+	Lx    string `json:"lx"`
+	Mc    string `json:"mc"`
+	Xh    string `json:"xh"`
+	Xlh   string `json:"xlh"`
+	Qrurl string `json:"qrurl"`
+	Zt    string `json:"zt"`
+	Sydw  string `json:"sydw"`
+	Syks  string `json:"syks"`
+	Syr   string `json:"syr"`
 }
 
 func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, error) {
 	var devs []*DevResponse
 	offset := (pageNo - 1) * pageSize
-	err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
-		Scan(&devs).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,device.qrurl,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
+		Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	return devs, nil
