@@ -13,10 +13,3 @@ func GetDevstate() ([]*Devstate, error) {
 	}
 	return ds, nil
 }
-
-func EditDevstate(data interface{}) error {
-	if err := db.Model(&Devstate{}).Updates(data).Error; err != nil {
-		return err
-	}
-	return nil
-}

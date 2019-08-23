@@ -41,8 +41,21 @@ func AddDevice(data interface{}) error {
 	return nil
 }
 
-func EditDevice(data interface{}) error {
-	if err := db.Model(&Device{}).Updates(data).Error; err != nil {
+//判断序列号是否存在
+func IsXlhExist(xlh string) bool {
+	var dev Device
+	err := db.Table("device").Where("xlh=?", xlh).First(&dev).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false
+	}
+	if err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
+}
+
+func EditDevice(dev *Device) error {
+	if err := db.Table("device").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
 		return err
 	}
 	return nil
@@ -55,7 +68,7 @@ func ImpDevices(fileName, czr string) ([]*Device, int, int) {
 }
 
 func ReadXmlToStructs(fileName, czr string) []*Device {
-	dev := make([]*Device, 0)
+	devs := make([]*Device, 0)
 	timeStamp := strconv.Itoa(int(time.Now().Unix()))
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ImageSavePath + fileName
 	xlFile, err := xlsx.OpenFile(inFile)
@@ -107,10 +120,10 @@ func ReadXmlToStructs(fileName, czr string) []*Device {
 				}
 			}
 			logging.Debug(fmt.Sprintf("*: %+v", d))
-			dev = append(dev, &d)
+			devs = append(devs, &d)
 		}
 	}
-	return dev
+	return devs
 }
 
 func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
@@ -118,33 +131,37 @@ func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
 	logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
 	if len(devs) > 0 {
 		for _, dev := range devs {
-			//生成二维码
-			name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
-			if err != nil {
-				log.Println(err)
-			}
 			d := Device{
-				ID:    dev.ID,
-				Zcbh:  dev.Zcbh,
-				Lx:    dev.Lx,
-				Mc:    dev.Mc,
-				Xh:    dev.Xh,
-				Xlh:   dev.Xlh,
-				Ly:    dev.Ly,
-				Scs:   dev.Scs,
-				Scrq:  dev.Scrq,
-				Grrq:  dev.Grrq,
-				Bfnx:  dev.Bfnx,
-				Jg:    dev.Jg,
-				Gys:   dev.Gys,
-				Rkrq:  dev.Rkrq,
-				QrUrl: qrcode.GetQrCodeFullUrl(name),
-				Czr:   dev.Czr,
-				Zt:    dev.Zt,
+				ID:   dev.ID,
+				Zcbh: dev.Zcbh,
+				Lx:   dev.Lx,
+				Mc:   dev.Mc,
+				Xh:   dev.Xh,
+				Xlh:  dev.Xlh,
+				Ly:   dev.Ly,
+				Scs:  dev.Scs,
+				Scrq: dev.Scrq,
+				Grrq: dev.Grrq,
+				Bfnx: dev.Bfnx,
+				Jg:   dev.Jg,
+				Gys:  dev.Gys,
+				Rkrq: time.Now().Format("2006-01-02 15:04:05"),
+				Czr:  dev.Czr,
+				Zt:   dev.Zt,
 			}
-			errd := db.Model(&Device{}).Save(&d).Error
-			if errd != nil {
+			if IsXlhExist(dev.Xlh) {
 				errDev = append(errDev, dev)
+			} else {
+				//生成二维码
+				name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
+				if err != nil {
+					log.Println(err)
+				}
+				d.QrUrl = qrcode.GetQrCodeFullUrl(name)
+				errd := db.Model(&Device{}).Save(&d).Error
+				if errd != nil {
+					errDev = append(errDev, dev)
+				}
 			}
 		}
 	}
@@ -170,7 +187,7 @@ type DevResponse struct {
 func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, error) {
 	var devs []*DevResponse
 	offset := (pageNo - 1) * pageSize
-	err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and devmodify.syr like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
+	err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
 		Scan(&devs).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -180,7 +197,7 @@ func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, er
 
 func GetDevicesCount(con map[string]string) (int, error) {
 	var devs []*Device
-	if err := db.Raw("select device.* from device left join devmodify on device.id=devmodify.devid where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and devmodify.syr like ?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%").
+	if err := db.Raw("select device.* from device left join devmodify on device.id=devmodify.devid where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%").
 		Scan(&devs).Error; err != nil {
 		return 0, err
 	}

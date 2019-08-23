@@ -30,6 +30,7 @@ func AddMsgTag(msgID uint, ToID, FromID string) error {
 	}
 	return nil
 }
+
 func DeleteMsg(userid string, msg_id, tag uint) error {
 	if tag == 0 {
 		if err := db.Table("msg_tag").

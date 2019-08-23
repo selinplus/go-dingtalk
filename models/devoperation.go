@@ -13,10 +13,3 @@ func GetDevOp() ([]*Devoperation, error) {
 	}
 	return ds, nil
 }
-
-func EditDevOp(data interface{}) error {
-	if err := db.Model(&Devoperation{}).Updates(data).Error; err != nil {
-		return err
-	}
-	return nil
-}

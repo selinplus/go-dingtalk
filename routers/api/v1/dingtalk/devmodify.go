@@ -75,15 +75,21 @@ func GetDevModList(c *gin.Context) {
 	devid := c.Query("devid")
 	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
 	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	total, er := models.GetDevModCount(devid)
+	if er != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
 	devs, err := models.GetDevMods(devid, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	total, er := models.GetDevModCount(devid)
-	if er != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
-		return
+	for _, dev := range devs {
+		usyr, _ := models.GetUserByMobile(dev.Syr)
+		uczr, _ := models.GetUserByMobile(dev.Czr)
+		dev.Syr = usyr.Name
+		dev.Czr = uczr.Name
 	}
 	data := make(map[string]interface{})
 	data["lists"] = devs

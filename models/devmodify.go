@@ -44,7 +44,7 @@ func ModifyZzrq(devid, t string) error {
 func GetDevMods(devid string, pageNo, pageSize int) ([]*Devmodify, error) {
 	var devs []*Devmodify
 	offset := (pageNo - 1) * pageSize
-	err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and device.devid = ? LIMIT ?,?", devid, offset, pageSize).Scan(&devs).Error
+	err := db.Raw("select devmodify.id,devmodify.devid,devoperation.mc as czlx,department.name as sydw,department.name as syks,devmodify.syr,devmodify.cfwz,devmodify.czrq,devmodify.czr,devmodify.qsrq,devmodify.zzrq from devmodify left join device on device.id=devmodify.devid left join devoperation on devoperation.dm=devmodify.czlx left join  department on department.id=devmodify.syks  where devmodify.devid = ? LIMIT ?,?", devid, offset, pageSize).Scan(&devs).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func GetDevMods(devid string, pageNo, pageSize int) ([]*Devmodify, error) {
 
 func GetDevModCount(devid string) (int, error) {
 	var devs []*Devmodify
-	if err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and device.devid = ? ", devid).Scan(&devs).Error; err != nil {
+	if err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and devmodify.devid = ? ", devid).Scan(&devs).Error; err != nil {
 		return 0, err
 	}
 	return len(devs), nil

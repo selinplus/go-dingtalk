@@ -127,20 +127,6 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
 		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
-
-		//单项录入
-		apiv2.POST("/dev/add", dingtalk.AddDevice)
-		//批量导入
-		apiv2.POST("/dev/imp", dingtalk.ImpDevices)
-		//流转登记
-		apiv2.POST("/dev/mod", dingtalk.AddDeviceMod)
-
-		//查询设备状态代码
-		apiv2.GET("/dev/state", dingtalk.GetDevstate)
-		//查询设备类型代码
-		apiv2.GET("/dev/type", dingtalk.GetDevtype)
-		//查询操作类型代码
-		apiv2.GET("/dev/op", dingtalk.GetDevOp)
 	}
 	return r
 }

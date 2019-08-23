@@ -48,33 +48,35 @@ func AddDevice(c *gin.Context) {
 	}
 	timeStamp := strconv.Itoa(int(time.Now().Unix()))
 	sbbh := string(form.Lx) + form.Xlh + timeStamp
+	dev := models.Device{
+		ID:   sbbh,
+		Zcbh: form.Zcbh,
+		Lx:   form.Lx,
+		Mc:   form.Mc,
+		Xh:   form.Xh,
+		Xlh:  form.Xlh,
+		Ly:   form.Ly,
+		Scs:  form.Scs,
+		Scrq: form.Scrq,
+		Grrq: form.Grrq,
+		Bfnx: form.Bfnx,
+		Jg:   form.Jg,
+		Zp:   form.Zp,
+		Gys:  form.Gys,
+		Rkrq: time.Now().Format("2006-01-02 15:04:05"),
+		Czr:  form.Czr,
+		Zt:   form.Zt,
+	}
+	if models.IsXlhExist(form.Xlh) {
+		appG.Response(http.StatusInternalServerError, e.ERROR_XLHEXIST_FAIL, nil)
+		return
+	}
 	//生成二维码
-	//qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
-	//name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
 	name, _, err := qrcode.GenerateQrWithLogo(sbbh, qrcode.GetQrCodeFullPath())
 	if err != nil {
 		log.Println(err)
 	}
-	dev := models.Device{
-		ID:    sbbh,
-		Zcbh:  form.Zcbh,
-		Lx:    form.Lx,
-		Mc:    form.Mc,
-		Xh:    form.Xh,
-		Xlh:   form.Xlh,
-		Ly:    form.Ly,
-		Scs:   form.Scs,
-		Scrq:  form.Scrq,
-		Grrq:  form.Grrq,
-		Bfnx:  form.Bfnx,
-		Jg:    form.Jg,
-		Zp:    form.Zp,
-		Gys:   form.Gys,
-		Rkrq:  time.Now().Format("2006-01-02 15:04:05"),
-		QrUrl: qrcode.GetQrCodeFullUrl(name),
-		Czr:   form.Czr,
-		Zt:    form.Zt,
-	}
+	dev.QrUrl = qrcode.GetQrCodeFullUrl(name)
 	err = models.AddDevice(&dev)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
@@ -90,7 +92,7 @@ func AddDevice(c *gin.Context) {
 //批量导入
 func ImpDevices(c *gin.Context) {
 	appG := app.Gin{C: c}
-	czr := c.Query("czr")
+	czr := c.PostForm("czr")
 	file, image, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
@@ -143,6 +145,7 @@ func UpdateDevice(c *gin.Context) {
 		return
 	}
 	dev := models.Device{
+		ID:   form.ID,
 		Zcbh: form.Zcbh,
 		Lx:   form.Lx,
 		Mc:   form.Mc,
@@ -164,7 +167,7 @@ func UpdateDevice(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, nil)
 		return
 	}
-	appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, nil)
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //获取设备列表
@@ -182,7 +185,7 @@ func GetDevices(c *gin.Context) {
 		rkrqq = "2000-01-01 00:00:00"
 	}
 	if rkrqz == "" {
-		rkrqq = "2099-01-01 00:00:00"
+		rkrqz = "2099-01-01 00:00:00"
 	}
 	con := map[string]string{
 		"rkrqq": rkrqq,

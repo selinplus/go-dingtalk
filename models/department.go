@@ -18,6 +18,7 @@ func DepartmentSync(data interface{}) error {
 	}
 	return nil
 }
+
 func CountDepartmentSyncNum(t string) (int, error) {
 	var depidsNum int
 	if err := db.Table("department").Where("sync_time>=?", t).Count(&depidsNum).Error; err != nil {
@@ -25,6 +26,7 @@ func CountDepartmentSyncNum(t string) (int, error) {
 	}
 	return depidsNum, nil
 }
+
 func GetDepartmentByParentID(ParentID int) ([]*Department, error) {
 	var departments []*Department
 	err := db.Table("department").Where("parentid=?", ParentID).Find(&departments).Error
@@ -33,6 +35,7 @@ func GetDepartmentByParentID(ParentID int) ([]*Department, error) {
 	}
 	return departments, nil
 }
+
 func GetDepartmentByID(id int) (*Department, error) {
 	var dt Department
 	if err := db.Table("department").Where("id=?", id).First(&dt).
@@ -44,6 +47,7 @@ func GetDepartmentByID(id int) (*Department, error) {
 	}
 	return nil, nil
 }
+
 func IsLeafDepartment(deptId int) bool {
 	var dt Department
 	err := db.Select("id").Where("parentid =?", deptId).First(&dt).Error
@@ -58,6 +62,7 @@ func IsLeafDepartment(deptId int) bool {
 	}
 	return true
 }
+
 func IsDeptIdExist(deptId int) (bool, error) {
 	var dt Department
 	err := db.Select("id").Where("id =?", deptId).First(&dt).Error
@@ -72,6 +77,7 @@ func IsDeptIdExist(deptId int) (bool, error) {
 	}
 	return false, nil
 }
+
 func DeleteDepartment(deptId int) error {
 	if err := db.Where("id=?", deptId).Delete(Department{}).Error; err != nil {
 		return err
