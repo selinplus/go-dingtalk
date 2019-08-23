@@ -35,7 +35,7 @@ type Device struct {
 }
 
 func AddDevice(data interface{}) error {
-	if err := db.Create(data).Error; err != nil {
+	if err := db.Model(&Device{}).Save(data).Error; err != nil {
 		return err
 	}
 	return nil
@@ -48,13 +48,13 @@ func EditDevice(data interface{}) error {
 	return nil
 }
 
-func ImpDevices(fileName string) []*Device {
-	devs := ReadXmlToStructs(fileName)
-	errDev := InsertDeviceXml(devs)
-	return errDev
+func ImpDevices(fileName, czr string) ([]*Device, int, int) {
+	devs := ReadXmlToStructs(fileName, czr)
+	errDev, success, failed := InsertDeviceXml(devs)
+	return errDev, success, failed
 }
 
-func ReadXmlToStructs(fileName string) []*Device {
+func ReadXmlToStructs(fileName, czr string) []*Device {
 	dev := make([]*Device, 0)
 	timeStamp := strconv.Itoa(int(time.Now().Unix()))
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ImageSavePath + fileName
@@ -73,19 +73,20 @@ func ReadXmlToStructs(fileName string) []*Device {
 				continue
 			}
 			d := Device{}
+			d.Czr = czr
 			for i, cell := range row.Cells {
 				text := cell.String()
 				switch {
 				case i == 0:
 					d.Zcbh = text
 				case i == 1:
-					d.ID = text + "_" + timeStamp + "_" + d.Zcbh
 					d.Lx = text
 				case i == 2:
 					d.Mc = text
 				case i == 3:
 					d.Xh = text
 				case i == 4:
+					d.ID = d.Lx + text + timeStamp
 					d.Xlh = text
 				case i == 5:
 					d.Ly = text
@@ -102,10 +103,6 @@ func ReadXmlToStructs(fileName string) []*Device {
 				case i == 11:
 					d.Gys = text
 				case i == 12:
-					d.Rkrq = text
-				case i == 13:
-					d.Czr = text
-				case i == 14:
 					d.Zt = text
 				}
 			}
@@ -116,14 +113,12 @@ func ReadXmlToStructs(fileName string) []*Device {
 	return dev
 }
 
-func InsertDeviceXml(devs []*Device) []*Device {
+func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
 	errDev := make([]*Device, 0)
 	logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
 	if len(devs) > 0 {
 		for _, dev := range devs {
 			//生成二维码
-			//qrc := qrcode.NewQrCode(dev.ID, 300, 300, qr.M, qr.Auto)
-			//name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
 			name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
 			if err != nil {
 				log.Println(err)
@@ -147,49 +142,16 @@ func InsertDeviceXml(devs []*Device) []*Device {
 				Czr:   dev.Czr,
 				Zt:    dev.Zt,
 			}
-			errd := db.Model(Device{}).Create(&d).Error
+			errd := db.Model(&Device{}).Save(&d).Error
 			if errd != nil {
 				errDev = append(errDev, dev)
 			}
 		}
 	}
 	if len(errDev) > 0 {
-		for _, e := range errDev {
-			logging.Info(fmt.Sprintf("%+v", e))
-		}
-		return errDev
+		return errDev, len(devs) - len(errDev), len(errDev)
 	}
-	return nil
-}
-
-func GetDevices(mc string, pageNo, pageSize int) ([]*Device, error) {
-	var devs []*Device
-	offset := (pageNo - 1) * pageSize
-	err := db.Raw("select * from device where mc like ? LIMIT ?,?", "%"+mc+"%", offset, pageSize).
-		Scan(&devs).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil, err
-	}
-	return devs, nil
-}
-
-func GetDevicesCount(mc string) (int, error) {
-	var total int
-	if err := db.Table("device").Where("mc like ?", "%"+mc+"%").Count(&total).Error; err != nil {
-		return 0, err
-	}
-	return total, nil
-}
-
-func GetDeviceByID(id string) (*Device, error) {
-	var dev Device
-	if err := db.Find(&dev, "id=?", id).Error; err != nil {
-		return nil, err
-	}
-	if len(dev.ID) > 0 {
-		return &dev, nil
-	}
-	return nil, nil
+	return nil, len(devs), 0
 }
 
 type DevResponse struct {
@@ -205,9 +167,40 @@ type DevResponse struct {
 	Syr  string `json:"syr"`
 }
 
+func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, error) {
+	var devs []*DevResponse
+	offset := (pageNo - 1) * pageSize
+	err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and devmodify.syr like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
+		Scan(&devs).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return devs, nil
+}
+
+func GetDevicesCount(con map[string]string) (int, error) {
+	var devs []*Device
+	if err := db.Raw("select device.* from device left join devmodify on device.id=devmodify.devid where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and devmodify.syr like ?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%").
+		Scan(&devs).Error; err != nil {
+		return 0, err
+	}
+	return len(devs), nil
+}
+
+func GetDeviceByID(id string) (*Device, error) {
+	var dev Device
+	if err := db.Find(&dev, "id=?", id).Error; err != nil {
+		return nil, err
+	}
+	if len(dev.ID) > 0 {
+		return &dev, nil
+	}
+	return nil, nil
+}
+
 func GetDeviceModByDevID(devid string) (*DevResponse, error) {
 	var dev DevResponse
-	if err := db.Raw("select device.id,device.zcbh,device.lx,device.mc,device.xh,device.xlh,device.zt,devmodify.sydw,devmodify.syks,devmodify.syr from device left join devmodify on device.id=devmodify.devid left join devtype on devtype.dm=device.lx where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
+	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
 		Scan(&dev).Error; err != nil {
 		return nil, err
 	}

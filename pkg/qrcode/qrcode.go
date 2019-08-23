@@ -26,7 +26,7 @@ type QrCode struct {
 }
 
 const (
-	logo_file = "/logo/logo.jpg"
+	logo_file = "/qrcode/bg.jpg"
 	logo_w    = 54
 	logo_h    = 54
 	qr_size   = 256

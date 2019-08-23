@@ -63,16 +63,16 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/imp", dingtalk.ImpDevices)
 		//获取设备列表
 		apiv1.GET("/dev/list", dingtalk.GetDevices)
+		//更新设备信息
+		apiv1.POST("/dev/update", dingtalk.UpdateDevice)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dingtalk.GetDeviceByID)
 		//查询设备信息及当前使用状态详情
 		apiv1.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//流转登记
 		apiv1.POST("/devmod/add", dingtalk.AddDeviceMod)
-		//设备流水记录列表查询
+		//设备流水记录查询
 		apiv1.GET("/devmod/list", dingtalk.GetDevModList)
-		//设备信息及流水记录查询
-		apiv1.GET("/devmod/detail", dingtalk.GetDevModByDevID)
 
 		//生成二维码
 		apiv1.GET("/qrcode/create", dingtalk.QrCode)

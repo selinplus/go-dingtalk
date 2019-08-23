@@ -47,7 +47,7 @@ func AddDevice(c *gin.Context) {
 		return
 	}
 	timeStamp := strconv.Itoa(int(time.Now().Unix()))
-	sbbh := string(form.Lx) + "_" + timeStamp + "_" + form.Zcbh
+	sbbh := string(form.Lx) + form.Xlh + timeStamp
 	//生成二维码
 	//qrc := qrcode.NewQrCode(sbbh, 300, 300, qr.M, qr.Auto)
 	//name, _, err := qrc.Encode(qrcode.GetQrCodeFullPath())
@@ -70,7 +70,7 @@ func AddDevice(c *gin.Context) {
 		Jg:    form.Jg,
 		Zp:    form.Zp,
 		Gys:   form.Gys,
-		Rkrq:  form.Rkrq,
+		Rkrq:  time.Now().Format("2006-01-02 15:04:05"),
 		QrUrl: qrcode.GetQrCodeFullUrl(name),
 		Czr:   form.Czr,
 		Zt:    form.Zt,
@@ -90,6 +90,7 @@ func AddDevice(c *gin.Context) {
 //批量导入
 func ImpDevices(c *gin.Context) {
 	appG := app.Gin{C: c}
+	czr := c.Query("czr")
 	file, image, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
@@ -117,25 +118,88 @@ func ImpDevices(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_FILE_FAIL, nil)
 		return
 	}
-	if errDev := models.ImpDevices(imageName); errDev != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, errDev)
+	errDev, success, failed := models.ImpDevices(imageName, czr)
+	data := map[string]interface{}{
+		"suNum":  success,
+		"faNum":  failed,
+		"errDev": errDev,
+	}
+	if errDev != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, data)
 		return
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//更新设备信息
+func UpdateDevice(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form DeviceForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	dev := models.Device{
+		Zcbh: form.Zcbh,
+		Lx:   form.Lx,
+		Mc:   form.Mc,
+		Xh:   form.Xh,
+		Xlh:  form.Xlh,
+		Ly:   form.Ly,
+		Scs:  form.Scs,
+		Scrq: form.Scrq,
+		Grrq: form.Grrq,
+		Bfnx: form.Bfnx,
+		Jg:   form.Jg,
+		Zp:   form.Zp,
+		Gys:  form.Gys,
+		Czr:  form.Czr,
+		Zt:   form.Zt,
+	}
+	err := models.EditDevice(&dev)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, nil)
+		return
+	}
+	appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, nil)
 }
 
 //获取设备列表
 func GetDevices(c *gin.Context) {
-	appG := app.Gin{C: c}
-	mc := c.Query("mc")
+	var (
+		appG  = app.Gin{C: c}
+		rkrqq = c.Query("rkrqq")
+		rkrqz = c.Query("rkrqz")
+		sbbh  = c.Query("sbbh")
+		xlh   = c.Query("xlh")
+		syr   = c.Query("syr")
+		mc    = c.Query("mc")
+	)
+	if rkrqq == "" {
+		rkrqq = "2000-01-01 00:00:00"
+	}
+	if rkrqz == "" {
+		rkrqq = "2099-01-01 00:00:00"
+	}
+	con := map[string]string{
+		"rkrqq": rkrqq,
+		"rkrqz": rkrqz,
+		"sbbh":  sbbh,
+		"xlh":   xlh,
+		"syr":   syr,
+		"mc":    mc,
+	}
 	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
 	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
-	devs, err := models.GetDevices(mc, pageNo, pageSize)
+	devs, err := models.GetDevices(con, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	total, er := models.GetDevicesCount(mc)
+	total, er := models.GetDevicesCount(con)
 	if er != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return

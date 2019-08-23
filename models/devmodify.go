@@ -41,37 +41,20 @@ func ModifyZzrq(devid, t string) error {
 	return nil
 }
 
-func GetDevMods(mc string, pageNo, pageSize int) ([]*Devmodify, error) {
+func GetDevMods(devid string, pageNo, pageSize int) ([]*Devmodify, error) {
 	var devs []*Devmodify
 	offset := (pageNo - 1) * pageSize
-	err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and device.mc like ? LIMIT ?,?", "%"+mc+"%", offset, pageSize).Scan(&devs).Error
+	err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and device.devid = ? LIMIT ?,?", devid, offset, pageSize).Scan(&devs).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	return devs, nil
 }
 
-func GetDevModCount(mc string) (int, error) {
-	var (
-		devs  []*Devmodify
-		total int
-	)
-	if err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and device.mc like ? ", "%"+mc+"%").Scan(&devs).Error; err != nil {
+func GetDevModCount(devid string) (int, error) {
+	var devs []*Devmodify
+	if err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and device.devid = ? ", devid).Scan(&devs).Error; err != nil {
 		return 0, err
 	}
-	for _, _ = range devs {
-		total++
-	}
-	return total, nil
-}
-
-func GetDevModByDevID(devid string) (*Devmodify, error) {
-	var dev Devmodify
-	if err := db.Raw("select * from devmodify where devid = ? order by id desc limit 1", devid).Scan(&dev).Error; err != nil {
-		return nil, err
-	}
-	if dev.ID > 0 {
-		return &dev, nil
-	}
-	return nil, nil
+	return len(devs), nil
 }

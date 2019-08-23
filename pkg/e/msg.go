@@ -40,6 +40,7 @@ var MsgFlags = map[int]string{
 	ERROR_ADD_DEV_FAIL:     "设备登记失败",
 	ERROR_GET_DEV_FAIL:     "获取设备登记信息失败",
 	ERROR_GET_DEVLIST_FAIL: "获取设备登记信息列表失败",
+	ERROR_UPDATE_DEV_FAIL:  "更新设备登记信息失败",
 }
 
 // GetMsg get error information based on Code

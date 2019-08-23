@@ -69,18 +69,18 @@ func AddDeviceMod(c *gin.Context) {
 	}
 }
 
-//设备流水记录列表查询
+//设备流水记录查询
 func GetDevModList(c *gin.Context) {
 	appG := app.Gin{C: c}
-	mc := c.Query("mc")
+	devid := c.Query("devid")
 	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
 	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
-	devs, err := models.GetDevMods(mc, pageNo, pageSize)
+	devs, err := models.GetDevMods(devid, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	total, er := models.GetDevModCount(mc)
+	total, er := models.GetDevModCount(devid)
 	if er != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
@@ -89,16 +89,4 @@ func GetDevModList(c *gin.Context) {
 	data["lists"] = devs
 	data["total"] = total
 	appG.Response(http.StatusOK, e.SUCCESS, data)
-}
-
-//设备流水记录查询
-func GetDevModByDevID(c *gin.Context) {
-	appG := app.Gin{C: c}
-	id := c.Query("id")
-	devs, err := models.GetDevModByDevID(id)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
-		return
-	}
-	appG.Response(http.StatusOK, e.SUCCESS, devs)
 }
