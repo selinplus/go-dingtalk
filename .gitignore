@@ -7,3 +7,4 @@ runtime/*
 !runtime/qrcode/bg.jpg
 !runtime/fonts
 !runtime/device.xlsx
+!runtime/bg.jpg
