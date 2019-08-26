@@ -414,6 +414,7 @@ func UserDetail(userid string, wt int) *models.User {
 			}
 			user.Department = deptIds
 		}
+		log.Println(user)
 		return &user
 	}
 }

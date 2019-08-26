@@ -61,8 +61,9 @@ func GetUserByMobile(mobile string) (*User, error) {
 	}
 	return &user, nil
 }
-func UserDetailSync(data interface{}) error {
-	if err := db.Model(&User{}).Save(&data).Error; err != nil {
+
+func UserDetailSync(user interface{}) error {
+	if err := db.Create(user).Error; err != nil {
 		return err
 	}
 	return nil
