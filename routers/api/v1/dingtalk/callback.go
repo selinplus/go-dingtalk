@@ -151,7 +151,7 @@ func GetCallbacks(c *gin.Context) {
 	}
 	//logging.Info(fmt.Sprintf("replyMsg is:%v", replyMsg))
 	errJson := json.Unmarshal([]byte(replyMsg), &reply)
-	log.Printf("replyMsg is:%v", reply)
+	//log.Printf("replyMsg is:%v", reply)
 	if errJson != nil {
 		log.Printf("unmarshall replyMsg info error:%v", errJson)
 		return
@@ -188,7 +188,8 @@ func GetCallbacks(c *gin.Context) {
 		}
 	case "org_dept_create", "org_dept_modify":
 		for _, deptId := range reply["DeptId"].([]interface{}) {
-			if dt := dingtalk.DepartmentDetail(deptId.(int), 10); dt != nil {
+			deptid := int(deptId.(float64))
+			if dt := dingtalk.DepartmentDetail(deptid, 10); dt != nil {
 				if err := models.DepartmentSync(dt); err != nil {
 					log.Printf("DepartmentSync err:%v", err)
 					return
@@ -200,13 +201,14 @@ func GetCallbacks(c *gin.Context) {
 		}
 	case "org_dept_remove":
 		for _, deptId := range reply["DeptId"].([]interface{}) {
-			b, err := models.IsDeptIdExist(deptId.(int))
+			deptid := int(deptId.(float64))
+			b, err := models.IsDeptIdExist(deptid)
 			if err != nil {
 				log.Printf("Get IsDeptIdExist err:%v", err)
 				return
 			} else {
 				if b {
-					if err := models.DeleteDepartment(deptId.(int)); err != nil {
+					if err := models.DeleteDepartment(deptid); err != nil {
 						log.Printf("DepartmentSync err:%v", err)
 						return
 					}
