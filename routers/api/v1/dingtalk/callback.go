@@ -158,8 +158,8 @@ func GetCallbacks(c *gin.Context) {
 	}
 	switch reply["EventType"] {
 	case "user_add_org", "user_modify_org":
-		for _, userid := range reply["UserId"].([]string) {
-			if user := dingtalk.UserDetail(userid, 10); user != nil {
+		for _, userid := range reply["UserId"].([]interface{}) {
+			if user := dingtalk.UserDetail(userid.(string), 10); user != nil {
 				if err := models.UserDetailSync(user); err != nil {
 					log.Printf("UserSync err:%v", err)
 					return
@@ -170,14 +170,14 @@ func GetCallbacks(c *gin.Context) {
 			}
 		}
 	case "user_leave_org":
-		for _, userid := range reply["UserId"].([]string) {
-			b, err := models.IsUseridExist(userid)
+		for _, userid := range reply["UserId"].([]interface{}) {
+			b, err := models.IsUseridExist(userid.(string))
 			if err != nil {
 				log.Printf("Get IsUseridExist err:%v", err)
 				return
 			} else {
 				if b {
-					if err := models.DeleteUser(userid); err != nil {
+					if err := models.DeleteUser(userid.(string)); err != nil {
 						log.Printf("DeleteUser err:%v", err)
 						return
 					}
@@ -187,8 +187,8 @@ func GetCallbacks(c *gin.Context) {
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
-		for _, deptIds := range reply["DeptId"].([]string) {
-			deptId, _ := strconv.Atoi(deptIds)
+		for _, deptIds := range reply["DeptId"].([]interface{}) {
+			deptId, _ := strconv.Atoi(deptIds.(string))
 			if dt := dingtalk.DepartmentDetail(deptId, 10); dt != nil {
 				if err := models.DepartmentSync(dt); err != nil {
 					log.Printf("DepartmentSync err:%v", err)
@@ -200,8 +200,8 @@ func GetCallbacks(c *gin.Context) {
 			}
 		}
 	case "org_dept_remove":
-		for _, deptIds := range reply["DeptId"].([]string) {
-			deptId, _ := strconv.Atoi(deptIds)
+		for _, deptIds := range reply["DeptId"].([]interface{}) {
+			deptId, _ := strconv.Atoi(deptIds.(string))
 			b, err := models.IsDeptIdExist(deptId)
 			if err != nil {
 				log.Printf("Get IsDeptIdExist err:%v", err)
