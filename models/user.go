@@ -63,7 +63,7 @@ func GetUserByMobile(mobile string) (*User, error) {
 }
 
 func UserDetailSync(user interface{}) error {
-	if err := db.Create(user).Error; err != nil {
+	if err := db.Save(user).Error; err != nil {
 		return err
 	}
 	return nil
