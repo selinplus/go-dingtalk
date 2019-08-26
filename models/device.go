@@ -181,6 +181,15 @@ type DevResponse struct {
 	Mc    string `json:"mc"`
 	Xh    string `json:"xh"`
 	Xlh   string `json:"xlh"`
+	Ly    string `json:"ly"`
+	Scs   string `json:"scs"`
+	Scrq  string `json:"scrq"`
+	Grrq  string `json:"grrq"`
+	Bfnx  string `json:"bfnx"`
+	Jg    string `json:"jg"`
+	Zp    string `json:"zp"`
+	Gys   string `json:"gys"`
+	Rkrq  string `json:"rkrq"`
 	Qrurl string `json:"qrurl"`
 	Zt    string `json:"zt"`
 	Sydw  string `json:"sydw"`
@@ -191,7 +200,7 @@ type DevResponse struct {
 func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, error) {
 	var devs []*DevResponse
 	offset := (pageNo - 1) * pageSize
-	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,device.qrurl,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
+	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,device.ly,device.scs,device.scrq,device.grrq,device.bfnx,device.jg,device.zp,device.gys,device.rkrq,device.qrurl,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ? LIMIT ?,?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%", offset, pageSize).
 		Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -220,7 +229,7 @@ func GetDeviceByID(id string) (*Device, error) {
 
 func GetDeviceModByDevID(devid string) (*DevResponse, error) {
 	var dev DevResponse
-	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
+	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,device.ly,device.scs,device.scrq,device.grrq,device.bfnx,device.jg,device.zp,device.gys,device.rkrq,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
 		Scan(&dev).Error; err != nil {
 		return nil, err
 	}
