@@ -169,12 +169,12 @@ func UpdateDevice(c *gin.Context) {
 		Czr:  form.Czr,
 		Zt:   form.Zt,
 	}
-	if form.Xlh != "" {
-		if models.IsXlhExist(form.Xlh) {
-			appG.Response(http.StatusInternalServerError, e.ERROR_XLHEXIST_FAIL, nil)
-			return
-		}
-	}
+	//if form.Xlh != "" {
+	//	if models.IsXlhExist(form.Xlh) {
+	//		appG.Response(http.StatusInternalServerError, e.ERROR_XLHEXIST_FAIL, nil)
+	//		return
+	//	}
+	//}
 	if form.Czr != "" {
 		if _, err := models.GetUserByMobile(form.Czr); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
