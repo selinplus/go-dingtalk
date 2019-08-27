@@ -95,7 +95,7 @@ func AddDevice(c *gin.Context) {
 //批量导入
 func ImpDevices(c *gin.Context) {
 	appG := app.Gin{C: c}
-	czr := c.PostForm("czr")
+	czr := c.Query("czr")
 	if _, err := models.GetUserByMobile(czr); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 		return
@@ -168,6 +168,18 @@ func UpdateDevice(c *gin.Context) {
 		Gys:  form.Gys,
 		Czr:  form.Czr,
 		Zt:   form.Zt,
+	}
+	if form.Xlh != "" {
+		if models.IsXlhExist(form.Xlh) {
+			appG.Response(http.StatusInternalServerError, e.ERROR_XLHEXIST_FAIL, nil)
+			return
+		}
+	}
+	if form.Czr != "" {
+		if _, err := models.GetUserByMobile(form.Czr); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
 	}
 	err := models.EditDevice(&dev)
 	if err != nil {
