@@ -5,7 +5,6 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/middleware/cors"
-	"github.com/selinplus/go-dingtalk/middleware/jwt"
 	"github.com/selinplus/go-dingtalk/pkg/export"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
@@ -35,7 +34,7 @@ func InitRouter() *gin.Engine {
 
 	//内网
 	apiv1 := r.Group("/api/v1")
-	apiv1.Use(jwt.JWT())
+	//apiv1.Use(jwt.JWT())
 	{
 		//获取部门用户信息同步条数
 		apiv1.GET("/syncnum", dingtalk.DepartmentUserSyncNum)
@@ -73,9 +72,6 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/devmod/add", dingtalk.AddDeviceMod)
 		//设备流水记录查询
 		apiv1.GET("/devmod/list", dingtalk.GetDevModList)
-
-		//生成二维码
-		apiv1.GET("/qrcode/create", dingtalk.QrCode)
 
 		//查询设备状态代码
 		apiv1.GET("/dev/state", dingtalk.GetDevstate)

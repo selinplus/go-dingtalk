@@ -33,6 +33,14 @@ func AddDeviceMod(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	if _, err := models.GetUserByMobile(form.Czr); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
+	if _, err := models.GetUserByMobile(form.Syr); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
 	t := time.Now().Format("2006-01-02 15:04:05")
 	d := models.Devmodify{
 		DevID: form.DevID,
@@ -86,10 +94,14 @@ func GetDevModList(c *gin.Context) {
 		return
 	}
 	for _, dev := range devs {
-		usyr, _ := models.GetUserByMobile(dev.Syr)
-		uczr, _ := models.GetUserByMobile(dev.Czr)
-		dev.Syr = usyr.Name
-		dev.Czr = uczr.Name
+		if dev.Syr != "" {
+			usyr, _ := models.GetUserByMobile(dev.Syr)
+			dev.Syr = usyr.Name
+		}
+		if dev.Czr != "" {
+			uczr, _ := models.GetUserByMobile(dev.Czr)
+			dev.Czr = uczr.Name
+		}
 	}
 	data := make(map[string]interface{})
 	data["lists"] = devs

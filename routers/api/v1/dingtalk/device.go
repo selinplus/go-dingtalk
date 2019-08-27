@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -44,6 +43,10 @@ func AddDevice(c *gin.Context) {
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	if _, err := models.GetUserByMobile(form.Czr); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 		return
 	}
 	timeStamp := strconv.Itoa(int(time.Now().Unix()))
@@ -93,6 +96,10 @@ func AddDevice(c *gin.Context) {
 func ImpDevices(c *gin.Context) {
 	appG := app.Gin{C: c}
 	czr := c.PostForm("czr")
+	if _, err := models.GetUserByMobile(czr); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
 	file, image, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
@@ -202,6 +209,12 @@ func GetDevices(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
+	for _, dev := range devs {
+		if dev.Czr != "" {
+			uczr, _ := models.GetUserByMobile(dev.Czr)
+			dev.Czr = uczr.Name
+		}
+	}
 	total, er := models.GetDevicesCount(con)
 	if er != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
@@ -243,25 +256,4 @@ func GetDeviceModByDevID(c *gin.Context) {
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 	}
-}
-
-//生成二维码
-func QrCode(c *gin.Context) {
-	var (
-		appG = app.Gin{C: c}
-		qrs  []interface{}
-	)
-	ids := c.Query("id")
-	for _, id := range strings.Split(ids, ",") {
-		name, _, err := qrcode.GenerateQrWithLogo(id, qrcode.GetQrCodeFullPath())
-		if err != nil {
-			log.Println(err)
-		}
-		data := map[string]string{
-			"qrName": name,
-			"qrUrl":  qrcode.GetQrCodeFullUrl(name),
-		}
-		qrs = append(qrs, &data)
-	}
-	appG.Response(http.StatusOK, e.SUCCESS, qrs)
 }
