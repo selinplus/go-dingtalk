@@ -1,6 +1,8 @@
 package dingtalk
 
 import (
+	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -268,4 +270,69 @@ func GetDeviceModByDevID(c *gin.Context) {
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 	}
+}
+
+//获取当前用户设备列表
+func GetDevicesByUser(c *gin.Context) {
+	var (
+		appG     = app.Gin{C: c}
+		session  = sessions.Default(c)
+		userid   = fmt.Sprintf("%v", session.Get("userid"))
+		rkrqq    = c.Query("rkrqq")
+		rkrqz    = c.Query("rkrqz")
+		sbbh     = c.Query("sbbh")
+		xlh      = c.Query("xlh")
+		mc       = c.Query("mc")
+		pageNo   int
+		pageSize int
+	)
+	if rkrqq == "" {
+		rkrqq = "2000-01-01 00:00:00"
+	}
+	if rkrqz == "" {
+		rkrqz = "2099-01-01 00:00:00"
+	}
+	syr, uerr := models.GetUserByUserid(userid)
+	if uerr != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
+	con := map[string]string{
+		"rkrqq": rkrqq,
+		"rkrqz": rkrqz,
+		"sbbh":  sbbh,
+		"xlh":   xlh,
+		"syr":   syr.Mobile,
+		"mc":    mc,
+	}
+	if c.Query("pageNo") == "" {
+		pageNo = 1
+	} else {
+		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
+	}
+	if c.Query("pageSize") == "" {
+		pageSize = 10000
+	} else {
+		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
+	}
+	devs, err := models.GetDevices(con, pageNo, pageSize)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	for _, dev := range devs {
+		if dev.Czr != "" {
+			uczr, _ := models.GetUserByMobile(dev.Czr)
+			dev.Czr = uczr.Name
+		}
+	}
+	total, er := models.GetDevicesCount(con)
+	if er != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	data := make(map[string]interface{})
+	data["lists"] = devs
+	data["total"] = total
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }

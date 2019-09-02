@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
+	"github.com/tealeg/xlsx"
 	"log"
 )
 
@@ -83,5 +85,217 @@ func CheckTable() {
 		db.CreateTable(Devtype{})
 	} else {
 		db.AutoMigrate(Devtype{})
+	}
+}
+
+func InitDb() {
+	CheckTable()
+	var cnt int
+	err := db.Select("id").Model(&Devtype{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init db error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		AddType()
+	}
+	err = db.Select("id").Model(&Devstate{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init db error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		AddState()
+	}
+	err = db.Select("id").Model(&Devoperation{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init db error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		AddOpera()
+	}
+}
+
+func AddType() {
+	devType := readXmlToMapType()
+	InsertType(devType)
+}
+
+func AddState() {
+	devState := readXmlToMapState()
+	InsertState(devState)
+}
+
+func AddOpera() {
+	devOpera := readXmlToMapOpera()
+	InsertOpera(devOpera)
+}
+
+func readXmlToMapType() []map[string]string {
+	res := make([]map[string]string, 0)
+	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
+	xlFile, err := xlsx.OpenFile(inFile)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	for k, sheet := range xlFile.Sheets {
+		if k == 1 {
+			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+			//遍历行读取
+			for r, row := range sheet.Rows {
+				if r == 0 {
+					continue
+				}
+				m := make(map[string]string, 0)
+				// 遍历每行的列读取
+				for i, cell := range row.Cells {
+					text := cell.String()
+					switch {
+					case i == 0:
+						m["dm"] = text
+					case i == 1:
+						m["mc"] = text
+					}
+				}
+				res = append(res, m)
+			}
+		}
+	}
+	return res
+}
+
+func readXmlToMapState() []map[string]string {
+	res := make([]map[string]string, 0)
+	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
+	xlFile, err := xlsx.OpenFile(inFile)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	for k, sheet := range xlFile.Sheets {
+		if k == 2 {
+			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+			//遍历行读取
+			for r, row := range sheet.Rows {
+				if r == 0 {
+					continue
+				}
+				m := make(map[string]string, 0)
+				// 遍历每行的列读取
+				for i, cell := range row.Cells {
+					text := cell.String()
+					switch {
+					case i == 0:
+						m["dm"] = text
+					case i == 1:
+						m["mc"] = text
+					}
+				}
+				res = append(res, m)
+			}
+		}
+	}
+	return res
+}
+
+func readXmlToMapOpera() []map[string]string {
+	res := make([]map[string]string, 0)
+	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
+	xlFile, err := xlsx.OpenFile(inFile)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	for k, sheet := range xlFile.Sheets {
+		if k == 3 {
+			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+			//遍历行读取
+			for r, row := range sheet.Rows {
+				if r == 0 {
+					continue
+				}
+				m := make(map[string]string, 0)
+				// 遍历每行的列读取
+				for i, cell := range row.Cells {
+					text := cell.String()
+					switch {
+					case i == 0:
+						m["dm"] = text
+					case i == 1:
+						m["mc"] = text
+					}
+				}
+				res = append(res, m)
+			}
+		}
+	}
+	return res
+}
+
+func InsertType(devType []map[string]string) {
+	er := make([]Devtype, 0)
+	logging.Debug(fmt.Sprintf("------------------%d------", len(devType)))
+	if len(devType) > 0 {
+		for _, d := range devType {
+			dev := Devtype{
+				Dm: d["dm"],
+				Mc: d["mc"],
+			}
+			err := db.Model(Devtype{}).Create(&dev).Error
+			if err != nil {
+				er = append(er, dev)
+			}
+		}
+	}
+	if len(er) > 0 {
+		for _, e := range er {
+			logging.Info(fmt.Sprintf("%+v", e))
+		}
+	}
+}
+
+func InsertState(devState []map[string]string) {
+	er := make([]Devstate, 0)
+	logging.Debug(fmt.Sprintf("------------------%d------", len(devState)))
+	if len(devState) > 0 {
+		for _, d := range devState {
+			dev := Devstate{
+				Dm: d["dm"],
+				Mc: d["mc"],
+			}
+			err := db.Model(Devstate{}).Create(&dev).Error
+			if err != nil {
+				er = append(er, dev)
+			}
+		}
+	}
+	if len(er) > 0 {
+		for _, e := range er {
+			logging.Info(fmt.Sprintf("%+v", e))
+		}
+	}
+}
+
+func InsertOpera(devOpera []map[string]string) {
+	er := make([]Devoperation, 0)
+	logging.Debug(fmt.Sprintf("------------------%d------", len(devOpera)))
+	if len(devOpera) > 0 {
+		for _, d := range devOpera {
+			dev := Devoperation{
+				Dm: d["dm"],
+				Mc: d["mc"],
+			}
+			err := db.Model(Devoperation{}).Create(&dev).Error
+			if err != nil {
+				er = append(er, dev)
+			}
+		}
+	}
+	if len(er) > 0 {
+		for _, e := range er {
+			logging.Info(fmt.Sprintf("%+v", e))
+		}
 	}
 }

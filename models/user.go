@@ -90,3 +90,11 @@ func DeleteUser(userid string) error {
 	}
 	return nil
 }
+
+func GetUserByUserid(userid string) (*User, error) {
+	var user User
+	if err := db.Table("user").Where("userid=?", userid).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

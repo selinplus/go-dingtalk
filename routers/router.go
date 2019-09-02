@@ -124,6 +124,11 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
 		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
+
+		//查询设备信息及当前使用状态详情
+		apiv2.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
+		//获取当前用户设备列表
+		apiv2.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
 	}
 	return r
 }

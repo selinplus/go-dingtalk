@@ -37,6 +37,12 @@ func init() {
 // @license.url https://github.com/selinplus/go-dingtalk/blob/master/LICENSE
 func main() {
 	gin.SetMode(setting.ServerSetting.RunMode)
+	if len(os.Args) == 2 {
+		models.InitDb()
+		log.Println("*******database init over*****")
+		log.Println("*******please rerun the program*****")
+		return
+	}
 	routersInit := routers.InitRouter()
 	readTimeout := setting.ServerSetting.ReadTimeout
 	writeTimeout := setting.ServerSetting.WriteTimeout

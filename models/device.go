@@ -78,10 +78,10 @@ func ReadXmlToStructs(fileName, czr string) []*Device {
 		return nil
 	}
 	for sNum, sheet := range xlFile.Sheets {
-		logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
 		if sNum > 0 {
 			break
 		}
+		//logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
 		//遍历行读取
 		for k, row := range sheet.Rows {
 			// 跳过标题行，遍历每行的列读取
@@ -122,7 +122,7 @@ func ReadXmlToStructs(fileName, czr string) []*Device {
 					d.Zt = text
 				}
 			}
-			logging.Debug(fmt.Sprintf("*: %+v", d))
+			//logging.Debug(fmt.Sprintf("*: %+v", d))
 			devs = append(devs, &d)
 		}
 	}
