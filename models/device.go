@@ -1,15 +1,14 @@
 package models
 
 import (
-	"fmt"
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/jinzhu/gorm"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
-	"github.com/selinplus/go-dingtalk/pkg/setting"
-	"github.com/tealeg/xlsx"
+	"io"
 	"log"
-	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -34,11 +33,11 @@ type Device struct {
 	Zt    string `json:"zt" gorm:"COMMENT:'设备状态'"`
 }
 
-func AddDevice(data interface{}) error {
-	if err := db.Model(&Device{}).Save(data).Error; err != nil {
-		return err
-	}
-	return nil
+//生成设备编号
+func GenerateSbbh(lx, xlh string) string {
+	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+	sbbh := lx + xlh + timeStamp[:13]
+	return sbbh
 }
 
 //判断序列号是否存在
@@ -54,6 +53,13 @@ func IsXlhExist(xlh string) bool {
 	return true
 }
 
+func AddDevice(data interface{}) error {
+	if err := db.Model(&Device{}).Save(data).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func EditDevice(dev *Device) error {
 	if err := db.Table("device").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
 		return err
@@ -61,117 +67,134 @@ func EditDevice(dev *Device) error {
 	return nil
 }
 
-func ImpDevices(fileName, czr string) ([]*Device, int, int) {
+//批量导入
+func ImpDevices(fileName io.Reader, czr string) ([]*Device, int, int) {
 	devs := ReadXmlToStructs(fileName, czr)
 	errDev, success, failed := InsertDeviceXml(devs)
 	return errDev, success, failed
 }
 
-func ReadXmlToStructs(fileName, czr string) []*Device {
+func ReadXmlToStructs(fileName io.Reader, czr string) []*Device {
 	devs := make([]*Device, 0)
-	timeStamp := strconv.Itoa(int(time.Now().Unix()))
-	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ImageSavePath + fileName
-	xlFile, err := xlsx.OpenFile(inFile)
-	defer os.Remove(inFile)
+	xlsx, err := excelize.OpenReader(fileName)
 	if err != nil {
 		logging.Info(err.Error())
 		return nil
 	}
-	for sNum, sheet := range xlFile.Sheets {
-		if sNum > 0 {
-			break
+	sheetName := xlsx.GetSheetName(1)
+	rows, err := xlsx.GetRows(sheetName)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	//logging.Info(fmt.Sprintf("sheet name: %s", sheetName))
+	//遍历行读取
+	for k, row := range rows {
+		// 跳过标题行，遍历每行的列读取
+		if k == 0 {
+			continue
 		}
-		//logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
-		//遍历行读取
-		for k, row := range sheet.Rows {
-			// 跳过标题行，遍历每行的列读取
-			if k == 0 {
-				continue
+		d := Device{}
+		d.Czr = czr
+		for i, cell := range row {
+			switch {
+			case i == 0:
+				d.Zcbh = cell
+			case i == 1:
+				d.Lx = cell
+			case i == 2:
+				d.Mc = cell
+			case i == 3:
+				d.Xh = cell
+			case i == 4:
+				d.Xlh = cell
+			case i == 5:
+				d.Ly = cell
+			case i == 6:
+				d.Scs = cell
+			case i == 7:
+				d.Scrq = cell
+			case i == 8:
+				d.Grrq = cell
+			case i == 9:
+				d.Bfnx = cell
+			case i == 10:
+				d.Jg = cell
+			case i == 11:
+				d.Gys = cell
+			case i == 12:
+				d.Zt = cell
 			}
-			d := Device{}
-			d.Czr = czr
-			for i, cell := range row.Cells {
-				text := cell.String()
-				switch {
-				case i == 0:
-					d.Zcbh = text
-				case i == 1:
-					d.Lx = text
-				case i == 2:
-					d.Mc = text
-				case i == 3:
-					d.Xh = text
-				case i == 4:
-					d.ID = d.Lx + text + timeStamp
-					d.Xlh = text
-				case i == 5:
-					d.Ly = text
-				case i == 6:
-					d.Scs = text
-				case i == 7:
-					d.Scrq = text
-				case i == 8:
-					d.Grrq = text
-				case i == 9:
-					d.Bfnx = text
-				case i == 10:
-					d.Jg = text
-				case i == 11:
-					d.Gys = text
-				case i == 12:
-					d.Zt = text
-				}
-			}
-			//logging.Debug(fmt.Sprintf("*: %+v", d))
-			devs = append(devs, &d)
 		}
+		d.ID = GenerateSbbh(d.Lx, d.Xlh)
+		//logging.Debug(fmt.Sprintf("*: %+v", d))
+		devs = append(devs, &d)
 	}
 	return devs
 }
 
 func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
-	errDev := make([]*Device, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
-	if len(devs) > 0 {
-		for _, dev := range devs {
-			d := Device{
-				ID:   dev.ID,
-				Zcbh: dev.Zcbh,
-				Lx:   dev.Lx,
-				Mc:   dev.Mc,
-				Xh:   dev.Xh,
-				Xlh:  dev.Xlh,
-				Ly:   dev.Ly,
-				Scs:  dev.Scs,
-				Scrq: dev.Scrq,
-				Grrq: dev.Grrq,
-				Bfnx: dev.Bfnx,
-				Jg:   dev.Jg,
-				Gys:  dev.Gys,
-				Rkrq: time.Now().Format("2006-01-02 15:04:05"),
-				Czr:  dev.Czr,
-				Zt:   dev.Zt,
+	var (
+		errDev   = make([]*Device, 0)
+		devsChan = make(chan *Device)
+		wg       = &sync.WaitGroup{}
+		devsNum  = len(devs)
+		wtNum    = 30
+	)
+	//logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
+	if devsNum > 0 {
+		go func() {
+			for _, dev := range devs {
+				devsChan <- dev
 			}
-			if IsXlhExist(dev.Xlh) {
-				errDev = append(errDev, dev)
-			} else {
-				//生成二维码
-				name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
-				if err != nil {
-					log.Println(err)
+			close(devsChan)
+		}()
+		for k := 0; k < wtNum; k++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for dev := range devsChan {
+					d := Device{
+						ID:   dev.ID,
+						Zcbh: dev.Zcbh,
+						Lx:   dev.Lx,
+						Mc:   dev.Mc,
+						Xh:   dev.Xh,
+						Xlh:  dev.Xlh,
+						Ly:   dev.Ly,
+						Scs:  dev.Scs,
+						Scrq: dev.Scrq,
+						Grrq: dev.Grrq,
+						Bfnx: dev.Bfnx,
+						Jg:   dev.Jg,
+						Gys:  dev.Gys,
+						Rkrq: time.Now().Format("2006-01-02 15:04:05"),
+						Czr:  dev.Czr,
+						Zt:   dev.Zt,
+					}
+					if IsXlhExist(dev.Xlh) {
+						//logging.Info(fmt.Sprintf("%s:序列号已存在!", dev.Xlh))
+						errDev = append(errDev, dev)
+					} else {
+						//生成二维码
+						name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
+						if err != nil {
+							log.Println(err)
+						}
+						d.QrUrl = qrcode.GetQrCodeFullUrl(name)
+						if err = db.Model(&Device{}).Save(&d).Error; err != nil {
+							errDev = append(errDev, dev)
+						}
+					}
 				}
-				d.QrUrl = qrcode.GetQrCodeFullUrl(name)
-				errd := db.Model(&Device{}).Save(&d).Error
-				if errd != nil {
-					errDev = append(errDev, dev)
-				}
-			}
+			}()
 		}
+		wg.Wait()
 	}
 	if len(errDev) > 0 {
-		return errDev, len(devs) - len(errDev), len(errDev)
+		return errDev, devsNum - len(errDev), len(errDev)
 	}
-	return nil, len(devs), 0
+	return nil, devsNum, 0
 }
 
 type DevResponse struct {

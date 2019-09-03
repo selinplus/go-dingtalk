@@ -9,7 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
-	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"log"
 	"net/http"
 	"strconv"
@@ -51,8 +50,7 @@ func AddDevice(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 		return
 	}
-	timeStamp := strconv.Itoa(int(time.Now().Unix()))
-	sbbh := string(form.Lx) + form.Xlh + timeStamp
+	sbbh := models.GenerateSbbh(form.Lx, form.Xlh)
 	dev := models.Device{
 		ID:   sbbh,
 		Zcbh: form.Zcbh,
@@ -102,42 +100,17 @@ func ImpDevices(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 		return
 	}
-	file, image, err := c.Request.FormFile("file")
+	file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-	if image == nil {
-		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
-		return
-	}
-	imageName := upload.GetImageName(image.Filename)
-	fullPath := upload.GetImageFullPath()
-	src := fullPath + imageName
-	if !upload.CheckImageExt(imageName) || !upload.CheckImageSize(file) {
-		appG.Response(http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
-		return
-	}
-	if err = upload.CheckImage(fullPath); err != nil {
-		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_FILE_FAIL, nil)
-		return
-	}
-	if err = c.SaveUploadedFile(image, src); err != nil {
-		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_FILE_FAIL, nil)
-		return
-	}
-	errDev, success, failed := models.ImpDevices(imageName, czr)
+	errDev, success, failed := models.ImpDevices(file, czr)
 	data := map[string]interface{}{
 		"suNum":  success,
 		"faNum":  failed,
 		"errDev": errDev,
-	}
-	if errDev != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, data)
-		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
