@@ -129,6 +129,8 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//获取当前用户设备列表
 		apiv2.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
+		//设备流水记录查询
+		apiv2.GET("/devmod/list", dingtalk.GetDevModList)
 	}
 	return r
 }

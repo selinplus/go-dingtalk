@@ -40,6 +40,7 @@ func Login(c *gin.Context) {
 	}
 	log.Println("user id is empty:in Login")
 }
+
 func JsApiConfig(c *gin.Context) {
 	appG := app.Gin{C: c}
 	url := c.Query("url")

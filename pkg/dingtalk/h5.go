@@ -6,6 +6,7 @@ import (
 	"github.com/goinggo/mapstructure"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -108,10 +109,12 @@ func getJsApiTicket() string {
 		return apiTicket.Ticket
 	}
 }
+
 func genJsApiSign(ticket string, nonceStr string, timeStamp string, url string) string {
 	s := fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%s&url=%s", ticket, nonceStr, timeStamp, url)
 	return util.Sha1Sign(s)
 }
+
 func GetJsApiConfig(url string) string {
 	var config map[string]string
 	ticket := getJsApiTicket()
@@ -201,39 +204,48 @@ func SubDepartmentList(wt int) ([]int, error) {
 		Get(setting.DingtalkSetting.OapiHost + "/department/list?access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
 		util.ShowError("get department list_ids failed:", errs[0])
-		return nil, errs[0]
-	} else {
-		err = json.Unmarshal([]byte(body), &subDeptIdList)
-		if err != nil {
-			if strings.Contains(body, "<") {
-				wt = wt - 1
-				if wt >= 0 {
-					time.Sleep(time.Second * 10)
-					deptIds, err = SubDepartmentList(wt)
-					return deptIds, err
-				} else {
-					return nil, err
-				}
-			}
-			//log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
-			log.Printf("unmarshall SubDeptIdList info error:%v", err)
+		logging.Info(fmt.Sprintf("get department list_ids failed:", errs[0]))
+		wt = wt - 1
+		if wt >= 0 {
+			logging.Info(fmt.Sprintf("wait 10s, SubDepartmentList %d time again:", wt))
+			time.Sleep(time.Second * 10)
+			deptIds, err = SubDepartmentList(wt)
+			return deptIds, err
+		} else {
 			return nil, err
 		}
-		if subDeptIdList["department"] != nil {
-			depts := subDeptIdList["department"].([]interface{})
-			for _, v := range depts {
-				vv := v.(map[string]interface{})
-				for k, val := range vv {
-					if k == "id" {
-						deptIds = append(deptIds, int(val.(float64)))
-						break
-					}
+	}
+	err = json.Unmarshal([]byte(body), &subDeptIdList)
+	if err != nil {
+		if strings.Contains(body, "<") {
+			wt = wt - 1
+			if wt >= 0 {
+				logging.Info(fmt.Sprintf("wait 10s, SubDepartmentList %d time again:", wt))
+				time.Sleep(time.Second * 10)
+				deptIds, err = SubDepartmentList(wt)
+				return deptIds, err
+			} else {
+				return nil, err
+			}
+		}
+		//log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
+		log.Printf("unmarshall SubDeptIdList info error:%v", err)
+		return nil, err
+	}
+	if subDeptIdList["department"] != nil {
+		depts := subDeptIdList["department"].([]interface{})
+		for _, v := range depts {
+			vv := v.(map[string]interface{})
+			for k, val := range vv {
+				if k == "id" {
+					deptIds = append(deptIds, int(val.(float64)))
+					break
 				}
 			}
-			//logging.Info(fmt.Sprintf("deptIds length is %d", len(deptIds)))
 		}
-		return deptIds, nil
+		logging.Info(fmt.Sprintf("deptIds length is %d", len(deptIds)))
 	}
+	return deptIds, nil
 }
 
 // 获取部门详情
@@ -244,11 +256,21 @@ func DepartmentDetail(id, wt int) *models.Department {
 		Get(setting.DingtalkSetting.OapiHost + "/department/get?access_token=" + GetAccessToken() + "&id=" + deptId).End()
 	if len(errs) > 0 {
 		util.ShowError("get department failed:", errs[0])
-		return nil
+		logging.Info(fmt.Sprintf("get department failed:", errs[0]))
+		wt = wt - 1
+		if wt >= 0 {
+			logging.Info(fmt.Sprintf("wait 10s, DepartmentDetail %d time again:", wt))
+			time.Sleep(time.Second * 10)
+			dt := DepartmentDetail(id, wt)
+			return dt
+		} else {
+			return nil
+		}
 	}
 	err := json.Unmarshal([]byte(body), &department)
 	if err != nil {
 		if strings.Contains(body, "<") {
+			logging.Info(fmt.Sprintf("wait 10s, DepartmentDetail %d time again:", wt))
 			wt = wt - 1
 			if wt >= 0 {
 				time.Sleep(time.Second * 10)
@@ -280,46 +302,55 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
-		return nil
-	} else {
-		err := json.Unmarshal([]byte(body), &userlist)
-		if err != nil {
-			if strings.Contains(body, "<") {
-				wt = wt - 1
-				if wt >= 0 {
-					time.Sleep(time.Second * 10)
-					dt := DepartmentUserDetail(id, pageNum, wt)
-					return dt
-				} else {
-					return nil
-				}
-			}
-			//log.Printf("unmarshall userlist info error_body is:%v", body)
-			log.Printf("unmarshall userlist info error:%v", err)
+		logging.Info(fmt.Sprintf("get department failed:", errs[0]))
+		wt = wt - 1
+		if wt >= 0 {
+			logging.Info(fmt.Sprintf("wait 10s, DepartmentUserDetail %d time again:", wt))
+			time.Sleep(time.Second * 10)
+			dt := DepartmentUserDetail(id, pageNum, wt)
+			return dt
+		} else {
 			return nil
 		}
-		if userlist["userlist"] != nil {
-			users := userlist["userlist"].([]interface{})
-			for _, v := range users {
-				vv := v.(map[string]interface{})
-				_ = mapstructure.Decode(vv, &user)
-				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-				for k, val := range vv {
-					if k == "department" {
-						var paramSlice []string
-						for _, d := range val.([]interface{}) {
-							v := strconv.Itoa(int(d.(float64)))
-							paramSlice = append(paramSlice, v)
-						}
-						deptIds := strings.Join(paramSlice, ",")
-						user.Department = deptIds
-					}
-				}
-				usersList = append(usersList, user)
+	}
+	err := json.Unmarshal([]byte(body), &userlist)
+	if err != nil {
+		if strings.Contains(body, "<") {
+			logging.Info(fmt.Sprintf("wait 10s, DepartmentUserDetail %d time again:", wt))
+			wt = wt - 1
+			if wt >= 0 {
+				time.Sleep(time.Second * 10)
+				dt := DepartmentUserDetail(id, pageNum, wt)
+				return dt
+			} else {
+				return nil
 			}
 		}
-		return &usersList
+		//log.Printf("unmarshall userlist info error_body is:%v", body)
+		log.Printf("unmarshall userlist info error:%v", err)
+		return nil
 	}
+	if userlist["userlist"] != nil {
+		users := userlist["userlist"].([]interface{})
+		for _, v := range users {
+			vv := v.(map[string]interface{})
+			_ = mapstructure.Decode(vv, &user)
+			user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+			for k, val := range vv {
+				if k == "department" {
+					var paramSlice []string
+					for _, d := range val.([]interface{}) {
+						v := strconv.Itoa(int(d.(float64)))
+						paramSlice = append(paramSlice, v)
+					}
+					deptIds := strings.Join(paramSlice, ",")
+					user.Department = deptIds
+				}
+			}
+			usersList = append(usersList, user)
+		}
+	}
+	return &usersList
 }
 
 //获取部门用户userid列表
@@ -335,32 +366,41 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get userids failed:", errs[0])
-		return nil
-	} else {
-		err := json.Unmarshal([]byte(body), &useridslist)
-		if err != nil {
-			if strings.Contains(body, "<") {
-				wt = wt - 1
-				if wt >= 0 {
-					time.Sleep(time.Second * 10)
-					dt := DepartmentUserIdsDetail(id, wt)
-					return dt
-				} else {
-					return nil
-				}
-			}
-			//log.Printf("unmarshall useridslist info error_body is:%v", body)
-			log.Printf("unmarshall useridslist info error:%v", err)
+		logging.Info(fmt.Sprintf("get userids failed:", errs[0]))
+		wt = wt - 1
+		if wt >= 0 {
+			logging.Info(fmt.Sprintf("wait 10s, DepartmentUserIdsDetail %d time again:", wt))
+			time.Sleep(time.Second * 10)
+			dt := DepartmentUserIdsDetail(id, wt)
+			return dt
+		} else {
 			return nil
 		}
-		if useridslist["userIds"] != nil {
-			userids := useridslist["userIds"].([]interface{})
-			for _, param := range userids {
-				useridslice = append(useridslice, param.(string))
+	}
+	err := json.Unmarshal([]byte(body), &useridslist)
+	if err != nil {
+		if strings.Contains(body, "<") {
+			wt = wt - 1
+			if wt >= 0 {
+				logging.Info(fmt.Sprintf("wait 10s, DepartmentUserIdsDetail %d time again:", wt))
+				time.Sleep(time.Second * 10)
+				dt := DepartmentUserIdsDetail(id, wt)
+				return dt
+			} else {
+				return nil
 			}
 		}
-		return useridslice
+		//log.Printf("unmarshall useridslist info error_body is:%v", body)
+		log.Printf("unmarshall useridslist info error:%v", err)
+		return nil
 	}
+	if useridslist["userIds"] != nil {
+		userids := useridslist["userIds"].([]interface{})
+		for _, param := range userids {
+			useridslice = append(useridslice, param.(string))
+		}
+	}
+	return useridslice
 }
 
 //获取用户详情
@@ -375,46 +415,52 @@ func UserDetail(userid string, wt int) *models.User {
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
-		return nil
-	} else {
-		errs := json.Unmarshal([]byte(body), &user)
-		if errs != nil {
-			if strings.Contains(body, "<") {
-				wt = wt - 1
-				if wt >= 0 {
-					time.Sleep(time.Second * 10)
-					u := UserDetail(userid, wt)
-					return u
-				} else {
-					return nil
-				}
-			}
-			log.Printf("convert struct error:%v", errs)
+		wt = wt - 1
+		if wt >= 0 {
+			time.Sleep(time.Second * 10)
+			u := UserDetail(userid, wt)
+			return u
+		} else {
 			return nil
 		}
-		user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-		err := json.Unmarshal([]byte(body), &userlist)
-		if err != nil {
-			log.Printf("unmarshall user info error_body is:%v", body)
-			log.Printf("unmarshall user info error:%v", err)
-			return nil
-		}
-		var deptIds string
-		if len(userlist) > 0 {
-			for k, val := range userlist {
-				if k == "department" {
-					var paramSlice []string
-					for _, d := range val.([]interface{}) {
-						v := strconv.Itoa(int(d.(float64)))
-						paramSlice = append(paramSlice, v)
-					}
-					deptIds = strings.Join(paramSlice, ",")
-					break
-				}
-			}
-			user.Department = deptIds
-		}
-		//log.Println(user)
-		return &user
 	}
+	err := json.Unmarshal([]byte(body), &user)
+	if err != nil {
+		if strings.Contains(body, "<") {
+			wt = wt - 1
+			if wt >= 0 {
+				time.Sleep(time.Second * 10)
+				u := UserDetail(userid, wt)
+				return u
+			} else {
+				return nil
+			}
+		}
+		log.Printf("convert struct error:%v", errs)
+		return nil
+	}
+	user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
+	err = json.Unmarshal([]byte(body), &userlist)
+	if err != nil {
+		log.Printf("unmarshall user info error_body is:%v", body)
+		log.Printf("unmarshall user info error:%v", err)
+		return nil
+	}
+	var deptIds string
+	if len(userlist) > 0 {
+		for k, val := range userlist {
+			if k == "department" {
+				var paramSlice []string
+				for _, d := range val.([]interface{}) {
+					v := strconv.Itoa(int(d.(float64)))
+					paramSlice = append(paramSlice, v)
+				}
+				deptIds = strings.Join(paramSlice, ",")
+				break
+			}
+		}
+		user.Department = deptIds
+	}
+	//log.Println(user)
+	return &user
 }

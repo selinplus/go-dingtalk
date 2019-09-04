@@ -55,7 +55,7 @@ func Sync() {
 	var (
 		t  = time.Now().Format("2006-01-02") + " 00:00:00"
 		sn = 30 //goroutine数量
-		wt = 20 //发生网页劫持后，发送递归请求的次数
+		wt = 20 //发送递归请求的次数
 	)
 	for i := 0; i < 10; i++ {
 		time.Sleep(time.Second * 90)
@@ -74,8 +74,10 @@ func Sync() {
 //同步一次部门和人员信息
 func DepartmentUserSync(wt, syncNum int) (int, int) {
 	var (
-		userIdsNum = 0
-		deptIdsNum = 0
+		cntChan    = make(chan int)
+		userIdsNum int
+		deptIdsNum int
+		num        int
 	)
 	deptIds, err := dingtalk.SubDepartmentList(wt)
 	if err != nil {
@@ -92,22 +94,40 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 		}
 		deptIdChan := make(chan int, 100) //部门id
 		for j := 0; j < 8; j++ {
-			segIds := deptIds[j*seg : (j+1)*seg]
-			var num int
+			beg := j * seg
+			if beg > deptIdsNum-1 {
+				break
+			}
+			var end int
+			if (j+1)*seg < deptIdsNum {
+				end = (j + 1) * seg
+			} else {
+				end = deptIdsNum
+			}
+			segIds := deptIds[beg:end]
 			go func() {
-				for _, deptId := range segIds {
+				for i, deptId := range segIds {
 					deptIdChan <- deptId
-					num++
+					cntChan <- i
 				}
 			}()
-			if num == deptIdsNum {
-				close(deptIdChan)
-			}
 		}
+		go func() {
+			for _ = range cntChan {
+				num++
+				if num == deptIdsNum {
+					close(deptIdChan)
+				}
+			}
+		}()
 		wg := &sync.WaitGroup{}
-		wg.Add(syncNum)
 		for k := 0; k < syncNum; k++ {
+			wg.Add(1)
 			go func() {
+				defer func() {
+					wg.Done()
+					logging.Info(fmt.Sprintf("the %d gorutine complete", k))
+				}()
 				for deptId := range deptIdChan {
 					if department := dingtalk.DepartmentDetail(deptId, wt); department != nil {
 						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
@@ -135,10 +155,10 @@ func DepartmentUserSync(wt, syncNum int) (int, int) {
 						}
 					}
 				}
-				wg.Done()
 			}()
 		}
 		wg.Wait()
 	}
+	log.Println(userIdsNum, deptIdsNum)
 	return userIdsNum, deptIdsNum
 }
