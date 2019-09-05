@@ -121,9 +121,10 @@ func DepartmentUserSync(wt, syncNum int) {
 			go func() {
 				defer wg.Done()
 				for deptId := range deptIdChan {
-					if department := dingtalk.DepartmentDetail(deptId, wt); department != nil {
-						department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
-						if department.ID != 0 {
+					t := time.Now().Format("2006-01-02") + " 00:00:00"
+					if flag := models.IsDeptExist(deptId, t); !flag {
+						if department := dingtalk.DepartmentDetail(deptId, wt); department != nil {
+							department.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 							if err := models.DepartmentSync(department); err != nil {
 								log.Printf("DepartmentSync err:%v", err)
 							}
@@ -138,9 +139,17 @@ func DepartmentUserSync(wt, syncNum int) {
 							pageNumTotal = cnt/100 + 1
 						}
 						for pageNum := 0; pageNum < pageNumTotal; pageNum++ {
-							if userlist := dingtalk.DepartmentUserDetail(deptId, pageNum, wt); userlist != nil {
-								if err := models.UserSync(userlist); err != nil {
-									log.Printf("UserSync err:%v", err)
+							userlist := dingtalk.DepartmentUserDetail(deptId, pageNum, wt)
+							if userlist != nil {
+								for _, user := range *userlist {
+									if user.UserID == "" {
+										continue
+									}
+									if flag := models.IsUserExist(user.UserID, t); !flag {
+										if err := models.UserSync(&user); err != nil {
+											log.Printf("UserSync err:%v", err)
+										}
+									}
 								}
 							}
 						}

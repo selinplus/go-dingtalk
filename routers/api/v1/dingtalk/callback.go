@@ -149,7 +149,6 @@ func GetCallbacks(c *gin.Context) {
 		logging.Info(fmt.Sprintf("GetDecryptMsg failed:%v", err))
 		return
 	}
-	//logging.Info(fmt.Sprintf("replyMsg is:%v", replyMsg))
 	errJson := json.Unmarshal([]byte(replyMsg), &reply)
 	//log.Printf("replyMsg is:%v", reply)
 	if errJson != nil {
@@ -160,30 +159,21 @@ func GetCallbacks(c *gin.Context) {
 	case "user_add_org", "user_modify_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
 			if user := dingtalk.UserDetail(userid.(string), 10); user != nil {
-				if err := models.UserDetailSync(user); err != nil {
-					log.Printf("UserSync err:%v", err)
-					return
+				if err := models.UserSync(user); err != nil {
+					logging.Info(fmt.Sprintf("sync %v err:%v", userid, err))
 				}
 			} else {
-				logging.Info(fmt.Sprintf("%v：获取用户详情失败", userid))
-				return
+				logging.Info(fmt.Sprintf("%v：get user detail failed!", userid))
 			}
 		}
 	case "user_leave_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
-			b, err := models.IsUseridExist(userid.(string))
-			if err != nil {
-				log.Printf("Get IsUseridExist err:%v", err)
-				return
-			} else {
-				if b {
-					if err := models.DeleteUser(userid.(string)); err != nil {
-						log.Printf("DeleteUser err:%v", err)
-						return
-					}
-				} else {
-					logging.Info(fmt.Sprintf("%v：用户不存在", userid))
+			if flag := models.IsUserExist(userid.(string), ""); flag {
+				if err := models.DeleteUser(userid.(string)); err != nil {
+					logging.Info(fmt.Sprintf("delete %v err:%v", userid, err))
 				}
+			} else {
+				logging.Info(fmt.Sprintf("%v：not exist!", userid))
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
@@ -191,30 +181,21 @@ func GetCallbacks(c *gin.Context) {
 			deptid := int(deptId.(float64))
 			if dt := dingtalk.DepartmentDetail(deptid, 10); dt != nil {
 				if err := models.DepartmentSync(dt); err != nil {
-					log.Printf("DepartmentSync err:%v", err)
-					return
+					logging.Info(fmt.Sprintf("sync %d err:%v", deptid, err))
 				}
 			} else {
-				logging.Info(fmt.Sprintf("%v：获取部门详情失败", deptId))
-				return
+				logging.Info(fmt.Sprintf("%v：get department detail failed!", deptId))
 			}
 		}
 	case "org_dept_remove":
 		for _, deptId := range reply["DeptId"].([]interface{}) {
 			deptid := int(deptId.(float64))
-			b, err := models.IsDeptIdExist(deptid)
-			if err != nil {
-				log.Printf("Get IsDeptIdExist err:%v", err)
-				return
-			} else {
-				if b {
-					if err := models.DeleteDepartment(deptid); err != nil {
-						log.Printf("DepartmentSync err:%v", err)
-						return
-					}
-				} else {
-					logging.Info(fmt.Sprintf("%v：部门不存在", deptId))
+			if flag := models.IsDeptExist(deptid, ""); flag {
+				if err := models.DeleteDepartment(deptid); err != nil {
+					logging.Info(fmt.Sprintf("delete %d err:%v", deptid, err))
 				}
+			} else {
+				logging.Info(fmt.Sprintf("%v：not exist!", deptId))
 			}
 		}
 	case "check_url":

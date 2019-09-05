@@ -1,9 +1,6 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-	"strings"
-)
+import "strings"
 
 type User struct {
 	UserID     string `json:"userid" gorm:"primary_key;column:userid;COMMENT:'用户标识'"`
@@ -17,13 +14,9 @@ type User struct {
 	SyncTime   string `json:"sync_time" gorm:"COMMENT:'同步时间'"`
 }
 
-func UserSync(users *[]User) error {
-	for _, user := range *users {
-		if user.UserID != "" {
-			if err := db.Model(&User{}).Save(&user).Error; err != nil {
-				return err
-			}
-		}
+func UserSync(user interface{}) error {
+	if err := db.Save(user).Error; err != nil {
+		return err
 	}
 	return nil
 }
@@ -62,26 +55,16 @@ func GetUserByMobile(mobile string) (*User, error) {
 	return &user, nil
 }
 
-func UserDetailSync(user interface{}) error {
-	if err := db.Save(user).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func IsUseridExist(userid string) (bool, error) {
+func IsUserExist(userid string, t string) bool {
 	var user User
-	err := db.Select("userid").Where("userid = ? ", userid).First(&user).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
+	if t == "" {
+		t = "2000-01-01 00:00:00"
 	}
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return false, err
+	if err := db.Select("userid").Where("userid =? and sync_time>=?", userid, t).
+		First(&user).Error; err != nil {
+		return false
 	}
-	if len(user.UserID) > 0 {
-		return true, nil
-	}
-	return false, nil
+	return true
 }
 
 func DeleteUser(userid string) error {

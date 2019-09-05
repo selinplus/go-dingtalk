@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/jinzhu/gorm"
-)
+import "github.com/jinzhu/gorm"
 
 type Department struct {
 	ID        int    `gorm:"primary_key;COMMENT:'部门id'"`
@@ -13,7 +11,7 @@ type Department struct {
 }
 
 func DepartmentSync(data interface{}) error {
-	if err := db.Model(&Department{}).Save(data).Error; err != nil {
+	if err := db.Save(data).Error; err != nil {
 		return err
 	}
 	return nil
@@ -63,19 +61,16 @@ func IsLeafDepartment(deptId int) bool {
 	return true
 }
 
-func IsDeptIdExist(deptId int) (bool, error) {
+func IsDeptExist(deptId int, t string) bool {
 	var dt Department
-	err := db.Select("id").Where("id =?", deptId).First(&dt).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
+	if t == "" {
+		t = "2000-01-01 00:00:00"
 	}
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return false, err
+	if err := db.Select("id").Where("id =? and sync_time>=?", deptId, t).
+		First(&dt).Error; err != nil {
+		return false
 	}
-	if dt.ID > 0 {
-		return true, nil
-	}
-	return false, nil
+	return true
 }
 
 func DeleteDepartment(deptId int) error {

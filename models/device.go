@@ -55,7 +55,7 @@ func IsXlhExist(xlh string) bool {
 }
 
 func AddDevice(data interface{}) error {
-	if err := db.Model(&Device{}).Save(data).Error; err != nil {
+	if err := db.Save(data).Error; err != nil {
 		return err
 	}
 	return nil
@@ -218,7 +218,7 @@ func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
 							log.Println(err)
 						}
 						d.QrUrl = qrcode.GetQrCodeFullUrl(name)
-						if err = db.Model(&Device{}).Save(&d).Error; err != nil {
+						if err = db.Save(&d).Error; err != nil {
 							errDev = append(errDev, dev)
 						}
 					}
