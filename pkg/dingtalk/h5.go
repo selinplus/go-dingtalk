@@ -2,11 +2,11 @@ package dingtalk
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/goinggo/mapstructure"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/models"
-	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -49,6 +49,7 @@ func GetAccessToken() string {
 	}
 	return Token.AccessToken
 }
+
 func GetUserId(code string) string {
 	type UserID struct {
 		UserID string `json:"userid"`
@@ -58,8 +59,8 @@ func GetUserId(code string) string {
 	_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/user/getuserinfo").
 		Query("code=" + code).
 		Query("access_token=" + GetAccessToken()).End()
-	log.Printf("access_token in getuserid is %s", GetAccessToken())
-	log.Printf("body in getuserid is %s", body)
+	//log.Printf("access_token in getuserid is %s", GetAccessToken())
+	//log.Printf("body in getuserid is %s", body)
 	if len(errs) > 0 {
 		util.ShowError("get userinfo", errs[0])
 		return ""
@@ -72,6 +73,7 @@ func GetUserId(code string) string {
 		return userId.UserID
 	}
 }
+
 func GetUserInfo(userId string) *UserInfo {
 	var userInfo = UserInfo{}
 	_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/user/get").
@@ -89,6 +91,7 @@ func GetUserInfo(userId string) *UserInfo {
 		return &userInfo
 	}
 }
+
 func getJsApiTicket() string {
 	type ApiTicket struct {
 		Ticket string `json:"ticket"`
@@ -96,7 +99,7 @@ func getJsApiTicket() string {
 	var apiTicket = ApiTicket{}
 	_, body, errs := gorequest.New().
 		Get(setting.DingtalkSetting.OapiHost + "/get_jsapi_ticket?access_token=" + GetAccessToken()).End()
-	log.Printf("ticket body is %s\n", body)
+	//log.Printf("ticket body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("GetJsApiTicket:", errs[0])
 		return ""
@@ -118,13 +121,13 @@ func genJsApiSign(ticket string, nonceStr string, timeStamp string, url string) 
 func GetJsApiConfig(url string) string {
 	var config map[string]string
 	ticket := getJsApiTicket()
-	log.Printf("ticket is :%s\n", ticket)
+	//log.Printf("ticket is :%s\n", ticket)
 	if ticket != "" {
 		nonceStr := "dingtalk"
 		timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
 		sign := genJsApiSign(ticket, nonceStr, timeStamp, url)
-		log.Printf("timeStamp is %s\n", timeStamp)
-		log.Printf("sign is %s\n", sign)
+		//log.Printf("timeStamp is %s\n", timeStamp)
+		//log.Printf("sign is %s\n", sign)
 		config = map[string]string{
 			"url":       url,
 			"nonceStr":  nonceStr,
@@ -169,7 +172,7 @@ func MseesageToDingding(msg *models.Msg) string {
 type AsyncsendReturn struct {
 	Errcode int    `json:"errcode"`
 	Errmsg  string `json:"errmsg"`
-	Task_id int    `json:"task_id"`
+	TaskId  int    `json:"task_id"`
 }
 
 // 企业会话消息异步发送
@@ -204,10 +207,8 @@ func SubDepartmentList(wt int) ([]int, error) {
 		Get(setting.DingtalkSetting.OapiHost + "/department/list?access_token=" + GetAccessToken()).End()
 	if len(errs) > 0 {
 		util.ShowError("get department list_ids failed:", errs[0])
-		logging.Info(fmt.Sprintf("get department list_ids failed:", errs[0]))
 		wt = wt - 1
 		if wt >= 0 {
-			logging.Info(fmt.Sprintf("wait 10s, SubDepartmentList %d time again:", wt))
 			time.Sleep(time.Second * 10)
 			deptIds, err = SubDepartmentList(wt)
 			return deptIds, err
@@ -220,7 +221,6 @@ func SubDepartmentList(wt int) ([]int, error) {
 		if strings.Contains(body, "<") {
 			wt = wt - 1
 			if wt >= 0 {
-				logging.Info(fmt.Sprintf("wait 10s, SubDepartmentList %d time again:", wt))
 				time.Sleep(time.Second * 10)
 				deptIds, err = SubDepartmentList(wt)
 				return deptIds, err
@@ -228,8 +228,7 @@ func SubDepartmentList(wt int) ([]int, error) {
 				return nil, err
 			}
 		}
-		//log.Printf("unmarshall SubDeptIdList info error_body is:%v", body)
-		log.Printf("unmarshall SubDeptIdList info error:%v", err)
+		log.Printf("unmarshall SubDeptIdList error:%v", err)
 		return nil, err
 	}
 	if subDeptIdList["department"] != nil {
@@ -243,7 +242,7 @@ func SubDepartmentList(wt int) ([]int, error) {
 				}
 			}
 		}
-		logging.Info(fmt.Sprintf("deptIds length is %d", len(deptIds)))
+		//logging.Info(fmt.Sprintf("deptIds length is %d", len(deptIds)))
 	}
 	return deptIds, nil
 }
@@ -256,10 +255,8 @@ func DepartmentDetail(id, wt int) *models.Department {
 		Get(setting.DingtalkSetting.OapiHost + "/department/get?access_token=" + GetAccessToken() + "&id=" + deptId).End()
 	if len(errs) > 0 {
 		util.ShowError("get department failed:", errs[0])
-		logging.Info(fmt.Sprintf("get department failed:", errs[0]))
 		wt = wt - 1
 		if wt >= 0 {
-			logging.Info(fmt.Sprintf("wait 10s, DepartmentDetail %d time again:", wt))
 			time.Sleep(time.Second * 10)
 			dt := DepartmentDetail(id, wt)
 			return dt
@@ -270,7 +267,6 @@ func DepartmentDetail(id, wt int) *models.Department {
 	err := json.Unmarshal([]byte(body), &department)
 	if err != nil {
 		if strings.Contains(body, "<") {
-			logging.Info(fmt.Sprintf("wait 10s, DepartmentDetail %d time again:", wt))
 			wt = wt - 1
 			if wt >= 0 {
 				time.Sleep(time.Second * 10)
@@ -280,7 +276,6 @@ func DepartmentDetail(id, wt int) *models.Department {
 				return nil
 			}
 		}
-		//log.Printf("unmarshall department info error_body is:%v", body)
 		log.Printf("unmarshall department info error:%v", err)
 	}
 	return &department
@@ -302,10 +297,8 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get user failed:", errs[0])
-		logging.Info(fmt.Sprintf("get department failed:", errs[0]))
 		wt = wt - 1
 		if wt >= 0 {
-			logging.Info(fmt.Sprintf("wait 10s, DepartmentUserDetail %d time again:", wt))
 			time.Sleep(time.Second * 10)
 			dt := DepartmentUserDetail(id, pageNum, wt)
 			return dt
@@ -316,7 +309,6 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 	err := json.Unmarshal([]byte(body), &userlist)
 	if err != nil {
 		if strings.Contains(body, "<") {
-			logging.Info(fmt.Sprintf("wait 10s, DepartmentUserDetail %d time again:", wt))
 			wt = wt - 1
 			if wt >= 0 {
 				time.Sleep(time.Second * 10)
@@ -326,8 +318,7 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 				return nil
 			}
 		}
-		//log.Printf("unmarshall userlist info error_body is:%v", body)
-		log.Printf("unmarshall userlist info error:%v", err)
+		log.Printf("unmarshall userlist error:%v", err)
 		return nil
 	}
 	if userlist["userlist"] != nil {
@@ -366,10 +357,8 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 		End()
 	if len(errs) > 0 {
 		util.ShowError("get userids failed:", errs[0])
-		logging.Info(fmt.Sprintf("get userids failed:", errs[0]))
 		wt = wt - 1
 		if wt >= 0 {
-			logging.Info(fmt.Sprintf("wait 10s, DepartmentUserIdsDetail %d time again:", wt))
 			time.Sleep(time.Second * 10)
 			dt := DepartmentUserIdsDetail(id, wt)
 			return dt
@@ -382,7 +371,6 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 		if strings.Contains(body, "<") {
 			wt = wt - 1
 			if wt >= 0 {
-				logging.Info(fmt.Sprintf("wait 10s, DepartmentUserIdsDetail %d time again:", wt))
 				time.Sleep(time.Second * 10)
 				dt := DepartmentUserIdsDetail(id, wt)
 				return dt
@@ -390,8 +378,7 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 				return nil
 			}
 		}
-		//log.Printf("unmarshall useridslist info error_body is:%v", body)
-		log.Printf("unmarshall useridslist info error:%v", err)
+		log.Printf("unmarshall useridslist error:%v", err)
 		return nil
 	}
 	if useridslist["userIds"] != nil {
@@ -442,7 +429,6 @@ func UserDetail(userid string, wt int) *models.User {
 	user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 	err = json.Unmarshal([]byte(body), &userlist)
 	if err != nil {
-		log.Printf("unmarshall user info error_body is:%v", body)
 		log.Printf("unmarshall user info error:%v", err)
 		return nil
 	}
@@ -461,6 +447,41 @@ func UserDetail(userid string, wt int) *models.User {
 		}
 		user.Department = deptIds
 	}
-	//log.Println(user)
 	return &user
+}
+
+// 获取企业员工人数
+func OrgUserCount(wt int) (int, error) {
+	var data map[string]interface{}
+	_, body, errs := gorequest.New().
+		Get(setting.DingtalkSetting.OapiHost + "/user/get_org_user_count?access_token=" + GetAccessToken() + "&onlyActive=0").End()
+	if len(errs) > 0 {
+		util.ShowError("get user count failed:", errs[0])
+		wt = wt - 1
+		if wt >= 0 {
+			time.Sleep(time.Second * 10)
+			count, err := OrgUserCount(wt)
+			return count, err
+		} else {
+			return 0, errs[0]
+		}
+	}
+	err := json.Unmarshal([]byte(body), &data)
+	if err != nil {
+		if strings.Contains(body, "<") {
+			wt = wt - 1
+			if wt >= 0 {
+				time.Sleep(time.Second * 10)
+				count, e := OrgUserCount(wt)
+				return count, e
+			} else {
+				return 0, err
+			}
+		}
+		log.Printf("unmarshall OrgUserCount error:%v", err)
+	}
+	if int(data["errcode"].(float64)) != 0 {
+		return 0, errors.New(fmt.Sprintf("%v", data["errmsg"]))
+	}
+	return int(data["count"].(float64)), nil
 }

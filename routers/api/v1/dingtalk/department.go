@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/cron"
+	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
@@ -72,16 +73,12 @@ func GetDepartmentByParentID(c *gin.Context) {
 
 //同步一次部门用户信息
 func DepartmentUserSync(c *gin.Context) {
-	var (
-		appG    = app.Gin{C: c}
-		wt      = 20 //发生网页劫持后，发送递归请求的次数
-		syncNum = 30 //goroutine数量
-	)
-	go cron.DepartmentUserSync(wt, syncNum)
+	var appG = app.Gin{C: c}
+	go cron.DepartmentUserSync(20, 30)
 	appG.Response(http.StatusOK, e.SUCCESS, "同步请求发送成功")
 }
 
-//获取部门用户信息同步条数
+//获取当日部门用户信息同步条数
 func DepartmentUserSyncNum(c *gin.Context) {
 	appG := app.Gin{C: c}
 	t := time.Now().Format("2006-01-02") + " 00:00:00"
@@ -100,4 +97,15 @@ func DepartmentUserSyncNum(c *gin.Context) {
 	data["depNum"] = depNum
 	data["userNum"] = userNum
 	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//获取企业员工人数
+func OrgUserCount(c *gin.Context) {
+	appG := app.Gin{C: c}
+	cnt, err := dingtalk.OrgUserCount(20)
+	if err != nil {
+		appG.Response(http.StatusOK, e.SUCCESS, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, cnt)
 }

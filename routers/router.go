@@ -106,8 +106,10 @@ func InitRouter() *gin.Engine {
 
 		//同步一次部门用户信息
 		apiv2.GET("/sync", dingtalk.DepartmentUserSync)
-		//获取部门用户信息同步条数
+		//获取当日部门用户信息同步条数
 		apiv2.GET("/syncnum", dingtalk.DepartmentUserSyncNum)
+		//获取企业员工人数
+		apiv2.GET("/usercount", dingtalk.OrgUserCount)
 
 		//获取部门详情
 		apiv2.GET("/department/detail", dingtalk.GetDepartmentByID)
@@ -125,10 +127,10 @@ func InitRouter() *gin.Engine {
 		//删除消息
 		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
 
-		//查询设备信息及当前使用状态详情
-		apiv2.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//获取当前用户设备列表
 		apiv2.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
+		//查询设备信息及当前使用状态详情
+		apiv2.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//设备流水记录查询
 		apiv2.GET("/devmod/list", dingtalk.GetDevModList)
 	}

@@ -144,8 +144,9 @@ func SendMsgMobile(c *gin.Context) {
 //获取消息列表
 func GetMsgs(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
-		msgs []*models.Msg
+		session = sessions.Default(c)
+		appG    = app.Gin{C: c}
+		msgs    []*models.Msg
 	)
 	tag, _ := strconv.Atoi(c.Query("tag"))
 	pageNum, _ := strconv.Atoi(c.Query("start"))
@@ -167,9 +168,7 @@ func GetMsgs(c *gin.Context) {
 			msg.FromID = mobile
 		}
 	} else {
-		session := sessions.Default(c)
-		v := session.Get("userid")
-		userID := fmt.Sprintf("%v", v)
+		userID := fmt.Sprintf("%v", session.Get("userid"))
 		msgs, err = models.GetMsgs(userID, uint(tag), pageNum, pageSize)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
@@ -184,8 +183,9 @@ func GetMsgs(c *gin.Context) {
 //获取消息详情
 func GetMsgByID(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
-		msg  *models.Msg
+		session = sessions.Default(c)
+		appG    = app.Gin{C: c}
+		msg     *models.Msg
 	)
 	id, _ := strconv.Atoi(c.Query("id"))
 	tag, _ := strconv.Atoi(c.Query("tag"))
@@ -204,9 +204,7 @@ func GetMsgByID(c *gin.Context) {
 		}
 		msg.FromID = mobile
 	} else {
-		session := sessions.Default(c)
-		v := session.Get("userid")
-		userID := fmt.Sprintf("%v", v)
+		userID := fmt.Sprintf("%v", session.Get("userid"))
 		msg, err = models.GetMsgByID(uint(id), uint(tag), userID)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
@@ -223,8 +221,9 @@ func GetMsgByID(c *gin.Context) {
 //删除消息
 func DeleteMsg(c *gin.Context) {
 	var (
-		appG   = app.Gin{C: c}
-		userID string
+		session = sessions.Default(c)
+		appG    = app.Gin{C: c}
+		userID  string
 	)
 	ids := c.Query("id")
 	tag, _ := strconv.Atoi(c.Query("tag"))
@@ -238,9 +237,7 @@ func DeleteMsg(c *gin.Context) {
 		}
 		userID = user.UserID
 	} else {
-		session := sessions.Default(c)
-		v := session.Get("userid")
-		userID = fmt.Sprintf("%v", v)
+		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	for _, id := range strings.Split(ids, ",") {
 		i, _ := strconv.Atoi(id)
