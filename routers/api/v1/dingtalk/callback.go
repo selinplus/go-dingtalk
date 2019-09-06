@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type Callbacks struct {
@@ -159,8 +160,9 @@ func GetCallbacks(c *gin.Context) {
 	case "user_add_org", "user_modify_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
 			if user := dingtalk.UserDetail(userid.(string), 10); user != nil {
+				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				if err := models.UserSync(user); err != nil {
-					logging.Info(fmt.Sprintf("sync %v err:%v", userid, err))
+					logging.Info(fmt.Sprintf("sync userid:%v err:%v", userid, err))
 				}
 			} else {
 				logging.Info(fmt.Sprintf("%v：get user detail failed!", userid))
@@ -169,15 +171,16 @@ func GetCallbacks(c *gin.Context) {
 	case "user_leave_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
 			if err := models.DeleteUser(userid.(string)); err != nil {
-				logging.Info(fmt.Sprintf("delete %v err:%v", userid, err))
+				logging.Info(fmt.Sprintf("delete userid:%v err:%v", userid, err))
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
 		for _, deptId := range reply["DeptId"].([]interface{}) {
 			deptid := int(deptId.(float64))
 			if dt := dingtalk.DepartmentDetail(deptid, 10); dt != nil {
+				dt.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				if err := models.DepartmentSync(dt); err != nil {
-					logging.Info(fmt.Sprintf("sync %d err:%v", deptid, err))
+					logging.Info(fmt.Sprintf("sync deptid:%v err:%v", deptid, err))
 				}
 			} else {
 				logging.Info(fmt.Sprintf("%v：get department detail failed!", deptId))
@@ -187,7 +190,7 @@ func GetCallbacks(c *gin.Context) {
 		for _, deptId := range reply["DeptId"].([]interface{}) {
 			deptid := int(deptId.(float64))
 			if err := models.DeleteDepartment(deptid); err != nil {
-				logging.Info(fmt.Sprintf("delete %d err:%v", deptid, err))
+				logging.Info(fmt.Sprintf("delete deptid:%v err:%v", deptid, err))
 			}
 		}
 	case "check_url":
