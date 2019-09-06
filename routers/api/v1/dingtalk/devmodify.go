@@ -79,10 +79,22 @@ func AddDeviceMod(c *gin.Context) {
 
 //设备流水记录查询
 func GetDevModList(c *gin.Context) {
-	appG := app.Gin{C: c}
+	var (
+		appG     = app.Gin{C: c}
+		pageNo   int
+		pageSize int
+	)
 	devid := c.Query("devid")
-	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
-	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	if c.Query("pageNo") != "" {
+		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
+	} else {
+		pageNo = 1
+	}
+	if c.Query("pageSize") != "" {
+		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
+	} else {
+		pageSize = 10000
+	}
 	total, er := models.GetDevModCount(devid)
 	if er != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)

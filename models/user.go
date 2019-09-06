@@ -57,9 +57,6 @@ func GetUserByMobile(mobile string) (*User, error) {
 
 func IsUserExist(userid string, t string) bool {
 	var user User
-	if t == "" {
-		t = "2000-01-01 00:00:00"
-	}
 	if err := db.Select("userid").Where("userid =? and sync_time>=?", userid, t).
 		First(&user).Error; err != nil {
 		return false

@@ -168,12 +168,8 @@ func GetCallbacks(c *gin.Context) {
 		}
 	case "user_leave_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
-			if flag := models.IsUserExist(userid.(string), ""); flag {
-				if err := models.DeleteUser(userid.(string)); err != nil {
-					logging.Info(fmt.Sprintf("delete %v err:%v", userid, err))
-				}
-			} else {
-				logging.Info(fmt.Sprintf("%v：not exist!", userid))
+			if err := models.DeleteUser(userid.(string)); err != nil {
+				logging.Info(fmt.Sprintf("delete %v err:%v", userid, err))
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
@@ -190,12 +186,8 @@ func GetCallbacks(c *gin.Context) {
 	case "org_dept_remove":
 		for _, deptId := range reply["DeptId"].([]interface{}) {
 			deptid := int(deptId.(float64))
-			if flag := models.IsDeptExist(deptid, ""); flag {
-				if err := models.DeleteDepartment(deptid); err != nil {
-					logging.Info(fmt.Sprintf("delete %d err:%v", deptid, err))
-				}
-			} else {
-				logging.Info(fmt.Sprintf("%v：not exist!", deptId))
+			if err := models.DeleteDepartment(deptid); err != nil {
+				logging.Info(fmt.Sprintf("delete %d err:%v", deptid, err))
 			}
 		}
 	case "check_url":

@@ -62,7 +62,7 @@ func Sync() {
 	for i := 0; i < 10; i++ {
 		time.Sleep(time.Second * 90)
 		DepartmentUserSync(wt, sn)
-		if userNum, err := models.CountUserSyncNum(t); err == nil && userNum == count {
+		if userNum, err := models.CountUserSyncNum(t); err == nil && count-userNum < 5 {
 			break
 		}
 	}

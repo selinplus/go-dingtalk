@@ -63,9 +63,6 @@ func IsLeafDepartment(deptId int) bool {
 
 func IsDeptExist(deptId int, t string) bool {
 	var dt Department
-	if t == "" {
-		t = "2000-01-01 00:00:00"
-	}
 	if err := db.Select("id").Where("id =? and sync_time>=?", deptId, t).
 		First(&dt).Error; err != nil {
 		return false
