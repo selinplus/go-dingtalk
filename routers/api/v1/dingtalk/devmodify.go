@@ -41,7 +41,7 @@ func AddDeviceMod(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 		return
 	}
-	t := time.Now().Format("2006-01-02 15:04:05")
+	t := time.Now().Format("2006-01-02")
 	d := models.Devmodify{
 		DevID: form.DevID,
 		Czlx:  form.Czlx,
