@@ -229,13 +229,15 @@ func GetDeviceModByDevID(c *gin.Context) {
 	id := c.Query("id")
 	dev, err := models.GetDeviceModByDevID(id)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEV_FAIL, nil)
 		return
 	}
 	if len(dev.ID) > 0 {
+		user, _ := models.GetUserByMobile(dev.Czr)
+		dev.Czr = user.Name
 		appG.Response(http.StatusOK, e.SUCCESS, dev)
 	} else {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEV_FAIL, nil)
 	}
 }
 
