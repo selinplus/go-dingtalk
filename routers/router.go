@@ -61,14 +61,14 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/add", dingtalk.AddDevice)
 		//批量导入
 		apiv1.POST("/dev/imp", dingtalk.ImpDevices)
-		//获取设备列表
-		apiv1.GET("/dev/list", dingtalk.GetDevices)
 		//更新设备信息
 		apiv1.POST("/dev/update", dingtalk.UpdateDevice)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dingtalk.GetDeviceByID)
 		//查询设备信息及当前使用状态详情
 		apiv1.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
+		//获取设备列表
+		apiv1.GET("/dev/list", dingtalk.GetDevices)
 		//流转登记
 		apiv1.POST("/devmod/add", dingtalk.AddDeviceMod)
 		//设备流水记录查询
@@ -133,6 +133,26 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//设备流水记录查询
 		apiv2.GET("/devmod/list", dingtalk.GetDevModList)
+
+		//提报事项保存&&提交
+		apiv2.POST("/proc/save", dingtalk.AddProc)
+		//未提交事项修改&&提交
+		apiv2.POST("/proc/update", dingtalk.UpdateProc)
+		//查询提报事项详情
+		apiv2.GET("/proc/detail", dingtalk.GetProcDetail)
+		//获取待办列表
+		apiv2.GET("/proc/todolist", dingtalk.GetProcTodoList)
+		//获取已办列表
+		apiv2.GET("/proc/donelist", dingtalk.GetProcDoneList)
+		//事件处理(退回&&通过)
+		apiv2.POST("/proc/deal", dingtalk.DealProc)
+		//事件处理流水记录查询
+		apiv2.GET("/proc/list", dingtalk.GetProcModList)
+
+		//获取下一节点操作人
+		apiv2.GET("/proc/czr", dingtalk.GetProcCzr)
+		//查询提报类型代码
+		apiv2.GET("/proc/type", dingtalk.GetProcType)
 	}
 	return r
 }

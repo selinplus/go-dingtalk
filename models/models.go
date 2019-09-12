@@ -86,6 +86,31 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Devtype{})
 	}
+	if !db.HasTable("process") {
+		db.CreateTable(Process{})
+	} else {
+		db.AutoMigrate(Process{})
+	}
+	if !db.HasTable("procmodify") {
+		db.CreateTable(Procmodify{})
+	} else {
+		db.AutoMigrate(Procmodify{})
+	}
+	if !db.HasTable("procnode") {
+		db.CreateTable(Procnode{})
+	} else {
+		db.AutoMigrate(Procnode{})
+	}
+	if !db.HasTable("procstate") {
+		db.CreateTable(Procstate{})
+	} else {
+		db.AutoMigrate(Procstate{})
+	}
+	if !db.HasTable("proctype") {
+		db.CreateTable(Proctype{})
+	} else {
+		db.AutoMigrate(Proctype{})
+	}
 }
 
 func InitDb() {

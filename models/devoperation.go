@@ -1,9 +1,9 @@
 package models
 
 type Devoperation struct {
-	ID uint   `gorm:"primary_key;"`
-	Dm string `json:"dm" gorm:"COMMENT:'操作类型代码';"`
-	Mc string `json:"mc" gorm:"COMMENT:'操作类型';"`
+	ID uint   `gorm:"primary_key"`
+	Dm string `json:"dm" gorm:"COMMENT:'操作类型代码'"`
+	Mc string `json:"mc" gorm:"COMMENT:'操作类型'"`
 }
 
 func GetDevOp() ([]*Devoperation, error) {

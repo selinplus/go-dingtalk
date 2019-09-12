@@ -4,7 +4,7 @@
 *.log
 .pem
 runtime/*
-!runtime/qrcode/bg.jpg
 !runtime/fonts
 !runtime/export/device.xlsx
 !runtime/bg.jpg
+!runtime/proctype.xlsx

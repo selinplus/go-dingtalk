@@ -1,9 +1,9 @@
 package models
 
 type Devtype struct {
-	ID uint   `gorm:"primary_key;"`
-	Dm string `json:"dm" gorm:"COMMENT:'设备类型代码';"`
-	Mc string `json:"mc" gorm:"COMMENT:'设备类型';"`
+	ID uint   `gorm:"primary_key"`
+	Dm string `json:"dm" gorm:"COMMENT:'设备类型代码'"`
+	Mc string `json:"mc" gorm:"COMMENT:'设备类型'"`
 }
 
 func GetDevtype() ([]*Devtype, error) {
