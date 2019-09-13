@@ -14,121 +14,138 @@ type DealForm struct {
 	ID   uint
 	Spyj string `json:"spyj"`
 	Czr  string `json:"czr"`
-	Flag string `json:"flag"`
 }
 
 //事件处理(退回&&通过)
 func DealProc(c *gin.Context) {
 	var (
-		appG   = app.Gin{C: c}
-		form   DealForm
-		node   *models.Procnode
-		t, Czr string
+		appG = app.Gin{C: c}
+		flag = c.Query("flag")
+		form DealForm
+		node *models.Procnode
+		t    string
 	)
-	pm, err := models.GetProcMod(form.ID)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	if form.Flag == "yes" {
+	t = time.Now().Format("2006-01-02 15:04:05")
+	pm, err := models.GetProcMod(form.ID)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_PROCMOD_FAIL, nil)
+		return
+	}
+	pm.Spyj = form.Spyj
+	pm.Czrq = t
+	if err := models.UpdateProcMod(pm); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+		return
+	}
+	if flag == "yes" {
 		node, err = models.GetNextNode(pm.Dm, pm.Node)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 			return
 		}
-		if node.Flag == "1" {
-			t = time.Now().Format("2006-01-02 15:04:05")
-		}
 		procMod := models.Procmodify{
 			ProcID: pm.ProcID,
 			Node:   node.Node,
+			Dm:     pm.Dm,
 			Tsr:    pm.Czr,
 			Czr:    form.Czr,
-			Czrq:   t,
-		}
-		if err := models.AddProcMod(&procMod); err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
-			return
 		}
 		for {
 			if node.Flag == "0" {
-				break
-			}
-			if node.Flag == "1" {
-				next, err := models.GetNextNode(node.Dm, node.Node)
-				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
-					return
+				if node.Next == "-1" {
+					procMod.Czr = procMod.Tsr
+					procMod.Czrq = t
+					procMod.Spyj = COMPLETE
 				}
-				procMod.Node = next.Node
-				procMod.Czr = next.Rname
 				if err := models.AddProcMod(&procMod); err != nil {
 					appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
 					return
 				}
+				appG.Response(http.StatusOK, e.SUCCESS, nil)
+				return
+			}
+			if node.Flag == "1" {
+				procMod.Spyj = AGREE
+				procMod.Czrq = t
+			}
+			if err := models.AddProcMod(&procMod); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
+				return
+			}
+			node, err = models.GetNextNode(node.Dm, node.Node)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
+				return
 			}
 		}
-	} else {
-		node, err = models.GetLastNode(pm.Dm, pm.Node)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
-			return
+	}
+	node, err = models.GetNode(pm.Dm, pm.Node)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	procMod := models.Procmodify{
+		Czr: node.Rname,
+	}
+	for {
+		pmd := models.Procmodify{
+			ProcID: pm.ProcID,
+			Dm:     pm.Dm,
+			Tsr:    procMod.Czr,
 		}
-		if node.Flag == "1" {
-			t = time.Now().Format("2006-01-02 15:04:05")
-		}
-		if node.Last == "0" {
+		pmd.Node = node.Last
+		if node.Node == "1" {
 			p, err := models.GetProcDetail(pm.ProcID)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_PROC_FAIL, nil)
 				return
 			}
-			Czr = p.Mobile
-		} else {
-			Czr = node.Rname
-		}
-		procMod := models.Procmodify{
-			ProcID: pm.ProcID,
-			Node:   node.Node,
-			Tsr:    pm.Czr,
-			Czr:    Czr,
-			Czrq:   t,
-		}
-		if err := models.AddProcMod(&procMod); err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
+			pmd.Czr = p.Mobile
+			if err = models.AddProcMod(&pmd); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
 			return
 		}
-		for {
-			if node.Last != "0" {
-				if node.Flag == "0" {
-					break
-				}
-				if node.Flag == "1" {
-					last, err := models.GetLastNode(node.Dm, node.Node)
-					if err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
-						return
-					}
-					procMod.Node = last.Node
-					if last.Last == "0" {
-						p, err := models.GetProcDetail(pm.ProcID)
-						if err != nil {
-							appG.Response(http.StatusInternalServerError, e.ERROR_GET_PROC_FAIL, nil)
-							return
-						}
-						procMod.Czr = p.Mobile
-					} else {
-						procMod.Czr = last.Rname
-					}
-					if err := models.AddProcMod(&procMod); err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
-						return
-					}
+		node, err = models.GetLastNode(node.Dm, node.Node)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+			return
+		}
+		pmd.Czr = node.Rname
+		if node.Flag == "0" {
+			if err := models.AddProcMod(&pmd); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
+			return
+		}
+		if node.Flag == "1" {
+			procMod.Czr = pmd.Czr
+			pmd.Spyj = form.Spyj
+			pmd.Czrq = t
+			if err := models.AddProcMod(&pmd); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			if node.Last == "0" {
+				continue
+			} else {
+				node, err = models.GetLastNode(node.Dm, node.Node)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+					return
 				}
 			}
 		}
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //事件处理流水记录查询

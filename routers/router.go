@@ -135,9 +135,11 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/devmod/list", dingtalk.GetDevModList)
 
 		//提报事项保存&&提交
-		apiv2.POST("/proc/save", dingtalk.AddProc)
-		//未提交事项修改&&提交
+		apiv2.POST("/proc/add", dingtalk.AddProc)
+		//(未)提交事项修改&&提交
 		apiv2.POST("/proc/update", dingtalk.UpdateProc)
+		//作废&&删除提报事项
+		apiv2.GET("/proc/delete", dingtalk.DeleteProc)
 		//查询提报事项详情
 		apiv2.GET("/proc/detail", dingtalk.GetProcDetail)
 		//获取待办列表

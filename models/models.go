@@ -101,11 +101,6 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Procnode{})
 	}
-	if !db.HasTable("procstate") {
-		db.CreateTable(Procstate{})
-	} else {
-		db.AutoMigrate(Procstate{})
-	}
 	if !db.HasTable("proctype") {
 		db.CreateTable(Proctype{})
 	} else {
@@ -140,6 +135,22 @@ func InitDb() {
 	if cnt == 0 {
 		AddOpera()
 	}
+	err = db.Select("id").Model(&Procnode{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init db error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		AddProcNode()
+	}
+	err = db.Select("id").Model(&Proctype{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init db error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		AddProcType()
+	}
 }
 
 func AddType() {
@@ -157,6 +168,16 @@ func AddOpera() {
 	InsertOpera(devOpera)
 }
 
+func AddProcNode() {
+	procNode := readXmlToStructProcNode()
+	InsertNode(procNode)
+}
+
+func AddProcType() {
+	procType := readXmlToMapProcType()
+	InsertProcType(procType)
+}
+
 func readXmlToMapType() []map[string]string {
 	res := make([]map[string]string, 0)
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
@@ -168,13 +189,11 @@ func readXmlToMapType() []map[string]string {
 	for k, sheet := range xlFile.Sheets {
 		if k == 1 {
 			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
-			//遍历行读取
 			for r, row := range sheet.Rows {
 				if r == 0 {
 					continue
 				}
 				m := make(map[string]string, 0)
-				// 遍历每行的列读取
 				for i, cell := range row.Cells {
 					text := cell.String()
 					switch {
@@ -202,7 +221,6 @@ func readXmlToMapState() []map[string]string {
 	for k, sheet := range xlFile.Sheets {
 		if k == 2 {
 			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
-			//遍历行读取
 			for r, row := range sheet.Rows {
 				if r == 0 {
 					continue
@@ -236,13 +254,87 @@ func readXmlToMapOpera() []map[string]string {
 	for k, sheet := range xlFile.Sheets {
 		if k == 3 {
 			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
-			//遍历行读取
 			for r, row := range sheet.Rows {
 				if r == 0 {
 					continue
 				}
 				m := make(map[string]string, 0)
 				// 遍历每行的列读取
+				for i, cell := range row.Cells {
+					text := cell.String()
+					switch {
+					case i == 0:
+						m["dm"] = text
+					case i == 1:
+						m["mc"] = text
+					}
+				}
+				res = append(res, m)
+			}
+		}
+	}
+	return res
+}
+
+func readXmlToStructProcNode() []*Procnode {
+	pns := make([]*Procnode, 0)
+	inFile := setting.AppSetting.RuntimeRootPath + "submit.xlsx"
+	xlFile, err := xlsx.OpenFile(inFile)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	for k, sheet := range xlFile.Sheets {
+		if k == 0 {
+			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+			for r, row := range sheet.Rows {
+				if r == 0 {
+					continue
+				}
+				pn := Procnode{}
+				for i, cell := range row.Cells {
+					text := cell.String()
+					switch {
+					case i == 0:
+						pn.Dm = text
+					case i == 1:
+						pn.Node = text
+					case i == 2:
+						pn.Last = text
+					case i == 3:
+						pn.Next = text
+					case i == 4:
+						pn.Rname = text
+					case i == 5:
+						pn.Role = text
+					case i == 6:
+						pn.Flag = text
+					}
+				}
+				logging.Debug(fmt.Sprintf("*: %+v", pn))
+				pns = append(pns, &pn)
+			}
+		}
+	}
+	return pns
+}
+
+func readXmlToMapProcType() []map[string]string {
+	res := make([]map[string]string, 0)
+	inFile := setting.AppSetting.RuntimeRootPath + "submit.xlsx"
+	xlFile, err := xlsx.OpenFile(inFile)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	for k, sheet := range xlFile.Sheets {
+		if k == 1 {
+			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+			for r, row := range sheet.Rows {
+				if r == 0 {
+					continue
+				}
+				m := make(map[string]string, 0)
 				for i, cell := range row.Cells {
 					text := cell.String()
 					switch {
@@ -315,6 +407,55 @@ func InsertOpera(devOpera []map[string]string) {
 			err := db.Model(Devoperation{}).Create(&dev).Error
 			if err != nil {
 				er = append(er, dev)
+			}
+		}
+	}
+	if len(er) > 0 {
+		for _, e := range er {
+			logging.Info(fmt.Sprintf("%+v", e))
+		}
+	}
+}
+
+func InsertNode(pns []*Procnode) {
+	er := make([]*Procnode, 0)
+	logging.Debug(fmt.Sprintf("------------------%d------", len(pns)))
+	if len(pns) > 0 {
+		for _, pnx := range pns {
+			pn := Procnode{
+				Dm:    pnx.Dm,
+				Node:  pnx.Node,
+				Last:  pnx.Last,
+				Next:  pnx.Next,
+				Rname: pnx.Rname,
+				Role:  pnx.Role,
+				Flag:  pnx.Flag,
+			}
+			err := db.Model(Procnode{}).Create(&pn).Error
+			if err != nil {
+				er = append(er, pnx)
+			}
+		}
+	}
+	if len(er) > 0 {
+		for _, e := range er {
+			logging.Info(fmt.Sprintf("%+v", e))
+		}
+	}
+}
+
+func InsertProcType(procType []map[string]string) {
+	er := make([]Proctype, 0)
+	logging.Debug(fmt.Sprintf("------------------%d------", len(procType)))
+	if len(procType) > 0 {
+		for _, d := range procType {
+			pt := Proctype{
+				Dm: d["dm"],
+				Mc: d["mc"],
+			}
+			err := db.Model(Proctype{}).Create(&pt).Error
+			if err != nil {
+				er = append(er, pt)
 			}
 		}
 	}

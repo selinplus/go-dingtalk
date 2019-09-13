@@ -1,10 +1,13 @@
 package dingtalk
 
 import (
+	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -57,19 +60,24 @@ func GetDevOp(c *gin.Context) {
 //获取下一节点操作人
 func GetProcCzr(c *gin.Context) {
 	var (
-		appG  = app.Gin{C: c}
-		data  []map[string]string
-		czrmp = map[string]string{}
-		dm    = c.Query("dm")
-		node  = c.Query("node")
+		appG = app.Gin{C: c}
+		data []map[string]string
+		dm   = c.Query("dm")
+		node = c.Query("node")
 	)
 	nodes, err := models.GetNextNode(dm, node)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
+	if strings.Contains(nodes.Rname, "-1") {
+		appG.Response(http.StatusOK, e.SUCCESS, "处理完成")
+		return
+	}
 	cs := strings.Split(nodes.Rname, ",")
+	log.Println(cs)
 	for _, mobile := range cs {
+		czrmp := map[string]string{}
 		czr, uerr := models.GetUserByMobile(mobile)
 		if uerr != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
@@ -85,14 +93,15 @@ func GetProcCzr(c *gin.Context) {
 //查询提报类型代码
 func GetProcType(c *gin.Context) {
 	var (
-		appG   = app.Gin{C: c}
-		mobile = c.Query("mobile")
-		pt     []*models.Proctype
-		err    error
+		appG    = app.Gin{C: c}
+		session = sessions.Default(c)
+		pt      []*models.Proctype
+		err     error
 	)
-	user, err := models.GetUserByMobile(mobile)
+	userid := fmt.Sprintf("%v", session.Get("userid"))
+	user, err := models.GetUserByUserid(userid)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 		return
 	}
 	if strings.Contains(user.Department, "70280083") {

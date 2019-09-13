@@ -7,4 +7,4 @@ runtime/*
 !runtime/fonts
 !runtime/export/device.xlsx
 !runtime/bg.jpg
-!runtime/proctype.xlsx
+!runtime/submit.xlsx

@@ -49,6 +49,7 @@ var MsgFlags = map[int]string{
 	ERROR_GET_PROCLIST_DONE_FAIL: "获取已办列表失败",
 	ERROR_GET_PROC_FAIL:          "获取提报事项失败",
 	ERROR_GET_PROCMOD_FAIL:       "获取审批流水记录失败",
+	ERROR_ADD_PROCMOD_FAIL:       "审批失败",
 }
 
 // GetMsg get error information based on Code

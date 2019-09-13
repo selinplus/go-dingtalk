@@ -3,8 +3,8 @@ package models
 type Procmodify struct {
 	ID     uint   `gorm:"primary_key;AUTO_INCREMENT"`
 	ProcID uint   `json:"procid" gorm:"COMMENT:'流程实例ID';column:procid"`
-	Node   string `json:"node" gorm:"COMMENT:'当前节点代码'"`
 	Dm     string `json:"dm" gorm:"COMMENT:'提报类型代码'"`
+	Node   string `json:"node" gorm:"COMMENT:'当前节点代码'"`
 	Tsr    string `json:"node" gorm:"COMMENT:'推送人'"`
 	Czr    string `json:"czr" gorm:"COMMENT:'操作人'"`
 	Spyj   string `json:"spyj" gorm:"COMMENT:'审批意见'"`
@@ -13,6 +13,13 @@ type Procmodify struct {
 
 func AddProcMod(data interface{}) error {
 	if err := db.Create(data).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateProcMod(pm *Procmodify) error {
+	if err := db.Table("procmodify").Where("id=?", pm.ID).Updates(&pm).Error; err != nil {
 		return err
 	}
 	return nil
@@ -28,7 +35,7 @@ func GetProcMod(id uint) (*Procmodify, error) {
 
 func GetProcMods(procid uint) ([]*Procmodify, error) {
 	var pms []*Procmodify
-	if err := db.Where("procid=?", procid).Find(&pms).Error; err != nil {
+	if err := db.Where("procid=?", procid).Order("id desc").Find(&pms).Error; err != nil {
 		return nil, err
 	}
 	return pms, nil
