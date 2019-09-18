@@ -293,6 +293,14 @@ func GetProcDetail(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
 		return
 	}
+	if proc.Syr != "" {
+		syr, err := models.GetUserByMobile(proc.Syr)
+		if err != nil {
+			appG.Response(http.StatusOK, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		proc.Syr = syr.Name
+	}
 	if proc.Node == "" {
 		proc.Zt = SAVENOTSUB
 		appG.Response(http.StatusOK, e.SUCCESS, proc)

@@ -8,8 +8,10 @@ type Process struct {
 	Tbr    string `json:"tbr" gorm:"COMMENT:'提报人'"`
 	Mobile string `json:"mobile" gorm:"COMMENT:'提报人员电话'"`
 	DevID  string `json:"devid" gorm:"COMMENT:'设备编号';column:devid"`
-	Xq     string `json:"xq" gorm:"COMMENT:'详细描述'"`
 	Zp     string `json:"zp" gorm:"COMMENT:'设备照片'"`
+	Syr    string `json:"syr" gorm:"COMMENT:'使用人'"`
+	Cfwz   string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
+	Xq     string `json:"xq" gorm:"COMMENT:'详细描述'"`
 	Tbsj   string `json:"tbsj" gorm:"COMMENT:'提报日期'"`
 	Zfbz   string `json:"zfbz" gorm:"COMMENT:'作废标志,0:未作废,1:作废';default:'0'"`
 }
@@ -54,8 +56,10 @@ type ProcResponse struct {
 	Tbr      string `json:"tbr"`
 	Mobile   string `json:"mobile"`
 	Devid    string `json:"devid"`
-	Xq       string `json:"xq"`
+	Syr      string `json:"syr"`
+	Cfwz     string `json:"cfwz"`
 	Zp       string `json:"zp"`
+	Xq       string `json:"xq"`
 	Tbsj     string `json:"tbsj"`
 	Modifyid uint   `json:"modifyid"`
 	Node     string `json:"node"`
@@ -65,7 +69,7 @@ type ProcResponse struct {
 
 func GetProcDetail(procid uint) (*ProcResponse, error) {
 	var pr ProcResponse
-	if err := db.Raw("select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.xq,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr from process left join procmodify on process.id=procmodify.procid left join proctype on process.dm=proctype.dm left join user on user.mobile=procmodify.czr where process.id = ?", procid).
+	if err := db.Raw("select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.syr,process.cfwz,process.zp,process.xq,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr from process left join procmodify on process.id=procmodify.procid left join proctype on process.dm=proctype.dm left join user on user.mobile=procmodify.czr where process.id = ?", procid).
 		Order("procmodify.id desc").Limit(1).Scan(&pr).Error; err != nil {
 		return nil, err
 	}
