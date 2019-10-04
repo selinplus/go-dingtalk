@@ -156,10 +156,18 @@ func GetProcModList(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-	proMods, err := models.GetProcMods(uint(procid))
+	procMods, err := models.GetProcMods(uint(procid))
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_PROCMOD_FAIL, nil)
 		return
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, proMods)
+	for _, procMod := range procMods {
+		u, err := models.GetUserByMobile(procMod.Czr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		procMod.Czr = u.Name
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, procMods)
 }
