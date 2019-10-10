@@ -60,7 +60,7 @@ func GetUserId(code string) string {
 		Query("code=" + code).
 		Query("access_token=" + GetAccessToken()).End()
 	//log.Printf("access_token in getuserid is %s", GetAccessToken())
-	//log.Printf("body in getuserid is %s", body)
+	log.Printf("body in getuserid is %s", body)
 	if len(errs) > 0 {
 		util.ShowError("get userinfo", errs[0])
 		return ""
@@ -124,7 +124,7 @@ func GetJsApiConfig(url string) string {
 	//log.Printf("ticket is :%s\n", ticket)
 	if ticket != "" {
 		nonceStr := "dingtalk"
-		timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+		timeStamp := fmt.Sprintf("%d", time.Now().Unix())
 		sign := genJsApiSign(ticket, nonceStr, timeStamp, url)
 		//log.Printf("timeStamp is %s\n", timeStamp)
 		//log.Printf("sign is %s\n", sign)
@@ -138,6 +138,7 @@ func GetJsApiConfig(url string) string {
 			"signature": sign,
 		}
 		bytes, _ := json.Marshal(&config)
+		log.Printf("%v", config)
 		return string(bytes)
 	} else {
 		return ""
