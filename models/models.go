@@ -36,6 +36,11 @@ func Setup() {
 }
 
 func CheckTable() {
+	if !db.HasTable("token") {
+		db.CreateTable(Token{})
+	} else {
+		db.AutoMigrate(Token{})
+	}
 	if !db.HasTable("attachment") {
 		db.CreateTable(Attachment{})
 	} else {

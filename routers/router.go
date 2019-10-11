@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/middleware/cors"
 	"github.com/selinplus/go-dingtalk/middleware/jwt"
+	"github.com/selinplus/go-dingtalk/middleware/ot"
+	"github.com/selinplus/go-dingtalk/middleware/sec"
 	"github.com/selinplus/go-dingtalk/pkg/export"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
@@ -83,9 +85,14 @@ func InitRouter() *gin.Engine {
 	}
 	//外网
 	apiv2 := r.Group("/api/v2")
+	apiv2.Use(sec.Sec())
+	apiv2.Use(ot.OT())
 	{
 		//上传文件
 		apiv2.POST("/file/upload", api.UploadFile)
+		//文件下载
+		r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
+
 		//免登
 		apiv2.POST("/login", dingtalk.Login)
 		//鉴权

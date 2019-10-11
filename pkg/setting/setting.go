@@ -8,9 +8,10 @@ import (
 )
 
 type App struct {
-	JwtSecret string
-	PageSize  int
-	PrefixUrl string
+	JwtSecret    string
+	PageSize     int
+	PrefixUrl    string
+	TokenTimeout int64
 
 	RuntimeRootPath string
 
