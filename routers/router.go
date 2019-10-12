@@ -91,7 +91,7 @@ func InitRouter() *gin.Engine {
 		//上传文件
 		apiv2.POST("/file/upload", api.UploadFile)
 		//文件下载
-		r.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
+		apiv2.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
 
 		//免登
 		apiv2.POST("/login", dingtalk.Login)
