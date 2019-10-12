@@ -48,6 +48,7 @@ func OT() gin.HandlerFunc {
 						if t.IsTokenExist(tokenMsg) {
 							code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 						} else {
+							code = e.SUCCESS
 							t.AddToken(tokenMsg)
 							t.DeleteToken()
 						}
@@ -72,7 +73,7 @@ func OT() gin.HandlerFunc {
 }
 
 type TokenVertify struct {
-	Lock   *sync.Mutex
+	Lock   sync.Mutex
 	Tokens []string
 }
 
