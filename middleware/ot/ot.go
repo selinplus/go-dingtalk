@@ -45,10 +45,11 @@ func OT() gin.HandlerFunc {
 							code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 						} else {
 							t.AddToken(tokenMsg)
+							t.DeleteToken()
 						}
 					} else {
 						code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
-						t.DeleteToken()
+
 					}
 				}
 			}
@@ -91,10 +92,12 @@ func (t *TokenVertify) DeleteToken() {
 	t.Lock.Lock()
 	defer t.Lock.Unlock()
 	var tokens []string
-	for _, tk := range t.Tokens {
-		timeSmap, _ := strconv.Atoi(strings.Split(tk, ".")[1])
-		if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
-			tokens = append(tokens, tk)
+	n := time.Now().Unix()
+	for i := 0; i < len(t.Tokens); i++ {
+		timeSmap, _ := strconv.Atoi(strings.Split(t.Tokens[i], ".")[1])
+		if n-int64(timeSmap) > setting.AppSetting.TokenTimeout {
+			t.Tokens = append(t.Tokens[:i], t.Tokens[i+1:]...)
+			i--
 		}
 	}
 	t.Tokens = tokens
