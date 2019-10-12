@@ -20,6 +20,7 @@ type Attachments struct {
 	FileSize int    `json:"size" form:"size"`
 	FileType string `json:"type" form:"type"`
 }
+
 type MsgSendForm struct {
 	ToID        string        `json:"to_id" form:"to_id"`
 	ToName      string        `json:"to_name" form:"to_name"`
@@ -164,8 +165,15 @@ func GetMsgs(c *gin.Context) {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
 			return
 		}
-		for _, msg := range msgs {
-			msg.FromID = mobile
+		if len(msgs) > 0 {
+			for _, msg := range msgs {
+				if msg.ToName == user.Name {
+					msg.ToID = mobile
+				}
+				if msg.FromName == user.Name {
+					msg.FromID = mobile
+				}
+			}
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
@@ -202,13 +210,26 @@ func GetMsgByID(c *gin.Context) {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 			return
 		}
-		msg.FromID = mobile
+		if msg.ID > 0 {
+			if msg.ToName == user.Name {
+				msg.ToID = mobile
+			}
+			if msg.FromName == user.Name {
+				msg.FromID = mobile
+			}
+		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
 		msg, err = models.GetMsgByID(uint(id), uint(tag), userID)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 			return
+		}
+		if msg.ID > 0 {
+			if msg.FromID != userID && msg.ToID != userID {
+				appG.Response(http.StatusUnauthorized, e.ERROR_GET_MSG_FAIL, nil)
+				return
+			}
 		}
 	}
 	if msg.ID > 0 {

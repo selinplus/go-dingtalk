@@ -3,6 +3,7 @@ package sec
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strings"
 )
@@ -17,9 +18,10 @@ func Sec() gin.HandlerFunc {
 			c.Next()
 		} else {
 			if userID == nil {
+				code := e.ERROR_AUTH_CHECK_TOKEN_FAIL
 				c.JSON(http.StatusOK, gin.H{
-					"code": 401,
-					"msg":  "鉴权失败，请联系管理员",
+					"code": code,
+					"msg":  e.GetMsg(code),
 					"data": nil,
 				})
 				c.Abort()
