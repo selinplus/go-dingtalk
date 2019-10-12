@@ -24,6 +24,10 @@ func OT() gin.HandlerFunc {
 		session := sessions.Default(c)
 		userID := fmt.Sprintf("%v", session.Get("userid"))
 		token := c.GetHeader("X-Access-Token")
+		auth := c.Query("token")
+		if len(auth) > 0 {
+			token = auth
+		}
 		ts := strings.Split(token, ".")
 
 		u := c.Request.URL.Path
