@@ -49,7 +49,6 @@ func OT() gin.HandlerFunc {
 						}
 					} else {
 						code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
-
 					}
 				}
 			}
