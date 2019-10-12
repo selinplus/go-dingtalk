@@ -1,7 +1,9 @@
 package api
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"net/http"
 
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -52,8 +54,16 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
+	session := sessions.Default(c)
+	var url string
+	if session.Get("userid") != nil {
+		url = setting.AppSetting.PrefixUrl + "/api/v2/" + upload.GetImagePath() + imageName
+	} else {
+		url = upload.GetImageFullUrl(imageName)
+	}
+
 	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
 		"name": image.Filename,
-		"url":  upload.GetImageFullUrl(imageName),
+		"url":  url,
 	})
 }
