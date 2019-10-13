@@ -21,6 +21,11 @@ func GetImageFullUrl(name string) string {
 	return setting.AppSetting.PrefixUrl + "/" + GetImagePath() + name
 }
 
+// GetAppImageFullUrl get the full access path for internet app
+func GetAppImageFullUrl(name string) string {
+	return setting.AppSetting.AppPrefixUrl + "/api/v2/" + GetImagePath() + name
+}
+
 // GetImageName get image name
 func GetImageName(name string) string {
 	ext := path.Ext(name)

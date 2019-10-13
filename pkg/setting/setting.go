@@ -11,6 +11,7 @@ type App struct {
 	JwtSecret    string
 	PageSize     int
 	PrefixUrl    string
+	AppPrefixUrl string
 	TokenTimeout int64
 
 	RuntimeRootPath string

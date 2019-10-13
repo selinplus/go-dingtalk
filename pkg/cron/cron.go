@@ -40,7 +40,7 @@ func MessageDingding() {
 	for _, msg := range msgs {
 		tcmprJson := dingtalk.MseesageToDingding(msg)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
-		log.Printf("asyncsendReturn is :%v", asyncsendReturn)
+		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateMsgFlag(msg.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update msg_flag err:%v", msg.ID, err))

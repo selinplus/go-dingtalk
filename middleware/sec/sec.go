@@ -4,7 +4,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/pkg/e"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -13,10 +12,11 @@ func Sec() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		userID := session.Get("userid")
-		log.Printf("session userid is :%v", userID)
+		//log.Printf("session userid is :%v", userID)
 		u := c.Request.URL.Path
 
-		if strings.Index(u, "login") != -1 || strings.Index(u, "js_api_config") != -1 {
+		if strings.Index(u, "login") != -1 || strings.Index(u, "js_api_config") != -1 ||
+			strings.Index(u, "callback/detail") != -1 {
 			c.Next()
 		} else {
 			if userID == nil {
