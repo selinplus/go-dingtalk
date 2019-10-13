@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/labstack/gommon/log"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
@@ -28,6 +29,7 @@ func OT() gin.HandlerFunc {
 		if len(auth) > 0 {
 			token = auth
 		}
+		log.Printf("token is: %s", token)
 		ts := strings.Split(token, ".")
 
 		u := c.Request.URL.Path
