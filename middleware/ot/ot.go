@@ -1,28 +1,26 @@
 package ot
 
 import (
-	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/middleware/sec"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
 //judge if token is overtime
 func OT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var t = &TokenVertify{}
-		var rkey = "E5DOFhZl"
-		var code int
+		var (
+			t    = &sec.TokenVertify{}
+			rkey = "E5DOFhZl"
+			code int
+		)
 
-		session := sessions.Default(c)
-		userID := fmt.Sprintf("%v", session.Get("userid"))
 		token := c.GetHeader("Authorization")
 		auth := c.Query("token")
 		if len(auth) > 0 {
@@ -30,33 +28,28 @@ func OT() gin.HandlerFunc {
 		}
 		//log.Printf("token is: %s", token)
 		ts := strings.Split(token, ".")
+		userID := ts[3]
 
-		u := c.Request.URL.Path
-		if strings.Index(u, "login") != -1 || strings.Index(u, "js_api_config") != -1 ||
-			strings.Index(u, "callback/detail") != -1 {
-			code = e.SUCCESS
+		if token == "" {
+			code = e.INVALID_PARAMS
 		} else {
-			if token == "" {
-				code = e.INVALID_PARAMS
+			sign := ts[0] + rkey + ts[1] + userID
+			vertify := util.EncodeMD5(sign)
+			if vertify != ts[2] {
+				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 			} else {
-				sign := ts[0] + rkey + ts[1]
-				vertify := util.EncodeMD5(sign)
-				if vertify != ts[2] {
-					code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-				} else {
-					tokenMsg := userID + "." + ts[0] + "." + ts[1]
-					timeSmap, _ := strconv.Atoi(ts[0])
-					if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
-						if t.IsTokenExist(tokenMsg) {
-							code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-						} else {
-							code = e.SUCCESS
-							t.AddToken(tokenMsg)
-							t.DeleteToken()
-						}
+				tokenMsg := userID + "." + ts[0] + "." + ts[1]
+				timeSmap, _ := strconv.Atoi(ts[0])
+				if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
+					if t.IsTokenExist(tokenMsg) {
+						code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 					} else {
-						code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
+						code = e.SUCCESS
+						t.AddToken(tokenMsg)
+						t.DeleteToken()
 					}
+				} else {
+					code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
 				}
 			}
 		}
@@ -72,39 +65,4 @@ func OT() gin.HandlerFunc {
 		}
 		c.Next()
 	}
-}
-
-type TokenVertify struct {
-	Lock   sync.Mutex
-	Tokens []string
-}
-
-func (t *TokenVertify) IsTokenExist(tokenMsg string) bool {
-	for _, tk := range t.Tokens {
-		if tk == tokenMsg {
-			return true
-		}
-	}
-	return false
-}
-
-func (t *TokenVertify) AddToken(tokenMsg string) {
-	t.Lock.Lock()
-	defer t.Lock.Unlock()
-	t.Tokens = append(t.Tokens, tokenMsg)
-}
-
-func (t *TokenVertify) DeleteToken() {
-	t.Lock.Lock()
-	defer t.Lock.Unlock()
-	var tokens []string
-	n := time.Now().Unix()
-	for i := 0; i < len(t.Tokens); i++ {
-		timeSmap, _ := strconv.Atoi(strings.Split(t.Tokens[i], ".")[1])
-		if n-int64(timeSmap) > setting.AppSetting.TokenTimeout {
-			t.Tokens = append(t.Tokens[:i], t.Tokens[i+1:]...)
-			i--
-		}
-	}
-	t.Tokens = tokens
 }

@@ -86,7 +86,6 @@ func InitRouter() *gin.Engine {
 	//外网
 	apiv2 := r.Group("/api/v2")
 	apiv2.Use(sec.Sec())
-	apiv2.Use(ot.OT())
 	{
 		//上传文件
 		apiv2.POST("/file/upload", api.UploadFile)
@@ -133,35 +132,56 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
 		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
+	}
+	//外网----设备管理
+	apiv3 := r.Group("/api/v3")
+	apiv3.Use(ot.OT())
+	{
+		//上传文件
+		apiv3.POST("/file/upload", api.UploadFile)
+		//文件下载
+		apiv3.StaticFS("/upload/images", http.Dir(upload.GetImageFullPath()))
+
+		//免登
+		apiv3.POST("/login", dingtalk.Login)
+		//鉴权
+		apiv3.GET("/js_api_config", dingtalk.JsApiConfig)
+
+		//获取部门详情
+		apiv3.GET("/department/detail", dingtalk.GetDepartmentByID)
+		//获取部门列表
+		apiv3.GET("/department/list", dingtalk.GetDepartmentByParentID)
+		//获取部门用户列表
+		apiv3.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
 		//获取当前用户设备列表
-		apiv2.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
+		apiv3.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
 		//查询设备信息及当前使用状态详情
-		apiv2.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
+		apiv3.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//设备流水记录查询
-		apiv2.GET("/devmod/list", dingtalk.GetDevModList)
+		apiv3.GET("/devmod/list", dingtalk.GetDevModList)
 
 		//提报事项保存&&提交
-		apiv2.POST("/proc/add", dingtalk.AddProc)
+		apiv3.POST("/proc/add", dingtalk.AddProc)
 		//(未)提交事项修改&&提交
-		apiv2.POST("/proc/update", dingtalk.UpdateProc)
+		apiv3.POST("/proc/update", dingtalk.UpdateProc)
 		//作废&&删除提报事项
-		apiv2.GET("/proc/delete", dingtalk.DeleteProc)
+		apiv3.GET("/proc/delete", dingtalk.DeleteProc)
 		//查询提报事项详情
-		apiv2.GET("/proc/detail", dingtalk.GetProcDetail)
+		apiv3.GET("/proc/detail", dingtalk.GetProcDetail)
 		//获取待办列表
-		apiv2.GET("/proc/todolist", dingtalk.GetProcTodoList)
+		apiv3.GET("/proc/todolist", dingtalk.GetProcTodoList)
 		//获取已办列表
-		apiv2.GET("/proc/donelist", dingtalk.GetProcDoneList)
+		apiv3.GET("/proc/donelist", dingtalk.GetProcDoneList)
 		//事件处理(退回&&通过)
-		apiv2.POST("/proc/deal", dingtalk.DealProc)
+		apiv3.POST("/proc/deal", dingtalk.DealProc)
 		//事件处理流水记录查询
-		apiv2.GET("/proc/list", dingtalk.GetProcModList)
+		apiv3.GET("/proc/list", dingtalk.GetProcModList)
 
 		//获取下一节点操作人
-		apiv2.GET("/proc/czr", dingtalk.GetProcCzr)
+		apiv3.GET("/proc/czr", dingtalk.GetProcCzr)
 		//查询提报类型代码
-		apiv2.GET("/proc/type", dingtalk.GetProcType)
+		apiv3.GET("/proc/type", dingtalk.GetProcType)
 	}
 	return r
 }
