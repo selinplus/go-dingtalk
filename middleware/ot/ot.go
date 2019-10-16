@@ -12,26 +12,24 @@ import (
 	"time"
 )
 
+var t = &sec.TokenVertify{}
+
 //judge if token is overtime
 func OT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var (
-			t    = &sec.TokenVertify{}
-			rkey = "E5DOFhZl"
-			code int
-		)
+		var rkey = "E5DOFhZl"
+		var code int
 
 		token := c.GetHeader("Authorization")
 		auth := c.Query("token")
 		if len(auth) > 0 {
 			token = auth
 		}
-		//log.Printf("token is: %s", token)
 		ts := strings.Split(token, ".")
 		userID := ts[3]
 
 		if token == "" {
-			code = e.INVALID_PARAMS
+			code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 		} else {
 			sign := ts[0] + rkey + ts[1] + userID
 			vertify := util.EncodeMD5(sign)

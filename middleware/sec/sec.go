@@ -14,11 +14,12 @@ import (
 	"time"
 )
 
+var t = &TokenVertify{}
+
 func Sec() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
 			session = sessions.Default(c)
-			t       = &TokenVertify{}
 			rkey    = "E5DOFhZl"
 			userID  string
 			code    int
@@ -29,7 +30,6 @@ func Sec() gin.HandlerFunc {
 		if len(auth) > 0 {
 			token = auth
 		}
-		//log.Printf("token is: %s", token)
 		ts := strings.Split(token, ".")
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 
@@ -39,7 +39,7 @@ func Sec() gin.HandlerFunc {
 			code = e.SUCCESS
 		} else {
 			if userID == "" || token == "" {
-				code = e.INVALID_PARAMS
+				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 			} else { //judge if token is overtime
 				sign := ts[0] + rkey + ts[1]
 				vertify := util.EncodeMD5(sign)
@@ -99,7 +99,6 @@ func (t *TokenVertify) AddToken(tokenMsg string) {
 func (t *TokenVertify) DeleteToken() {
 	t.Lock.Lock()
 	defer t.Lock.Unlock()
-	var tokens []string
 	n := time.Now().Unix()
 	for i := 0; i < len(t.Tokens); i++ {
 		timeSmap, _ := strconv.Atoi(strings.Split(t.Tokens[i], ".")[1])
@@ -108,5 +107,4 @@ func (t *TokenVertify) DeleteToken() {
 			i--
 		}
 	}
-	t.Tokens = tokens
 }

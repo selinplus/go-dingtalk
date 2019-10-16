@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"log"
@@ -9,8 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/gredis"
