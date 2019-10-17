@@ -3,6 +3,7 @@
 .exe
 *.log
 .pem
+.ini
 runtime/*
 !runtime/fonts
 !runtime/export/device.xlsx

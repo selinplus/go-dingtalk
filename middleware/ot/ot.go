@@ -14,7 +14,6 @@ import (
 
 var t = &sec.TokenVertify{}
 
-//judge if token is overtime
 func OT() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var rkey = "E5DOFhZl"
@@ -35,7 +34,7 @@ func OT() gin.HandlerFunc {
 			vertify := util.EncodeMD5(sign)
 			if vertify != ts[2] {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-			} else {
+			} else { //judge if token is overtime
 				tokenMsg := userID + "." + ts[0] + "." + ts[1]
 				timeSmap, _ := strconv.Atoi(ts[0])
 				if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
