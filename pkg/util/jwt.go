@@ -3,7 +3,6 @@ package util
 import (
 	"fmt"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
-	"log"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -45,14 +44,15 @@ func ParseToken(token string) (interface{}, error) {
 		return secret, nil
 	})
 	if tokenClaims != nil {
-		if claims, ok := tokenClaims.Claims.(jwt.MapClaims); ok && tokenClaims.Valid {
-			for k, v := range claims {
-				log.Printf("key is : %v, val is %v \n", k, v)
+		if claims, ok := tokenClaims.Claims.(jwt.MapClaims); ok {
+			if tokenClaims.Valid {
+				return claims, nil
+			} else {
+				if err.(*jwt.ValidationError).Errors == jwt.ValidationErrorExpired {
+					return claims, err
+				}
 			}
-			//log.Printf("username is %v, Expired at %v", claims["username"], claims["expires_at"])
-			return claims, nil
 		}
 	}
-
 	return nil, err
 }
