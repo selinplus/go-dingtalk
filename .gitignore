@@ -1,9 +1,9 @@
 .idea/
 .DS_Store
-.exe
+*.exe
 *.log
-.pem
-.ini
+*.pem
+*.ini
 runtime/*
 !runtime/fonts
 !runtime/export/device.xlsx
