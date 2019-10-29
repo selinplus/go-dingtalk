@@ -8,11 +8,12 @@ import (
 )
 
 type App struct {
-	JwtSecret    string
-	PageSize     int
-	PrefixUrl    string
-	AppPrefixUrl string
-	TokenTimeout int64
+	JwtSecret      string
+	PageSize       int
+	PrefixUrl      string
+	AppPrefixUrl   string
+	TokenTimeout   int64
+	DingtalkMsgUrl string
 
 	RuntimeRootPath string
 

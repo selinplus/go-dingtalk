@@ -8,6 +8,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"net/http"
 	"strconv"
 	"strings"
@@ -45,9 +46,11 @@ func SendMsg(c *gin.Context) {
 	t := time.Now().Format("2006-01-02 15:04:05")
 	var ats = make([]models.Attachment, 0)
 	for _, at := range form.Attachments {
+		i := strings.LastIndex(at.FileUrl, "/")
+		fileUrl := at.FileUrl[i+1:]
 		a := models.Attachment{
 			FileName: at.FileName,
-			FileUrl:  at.FileUrl,
+			FileUrl:  fileUrl,
 			FileSize: at.FileSize,
 			FileType: at.FileType,
 			Time:     t,
@@ -98,9 +101,11 @@ func SendMsgMobile(c *gin.Context) {
 	t := time.Now().Format("2006-01-02 15:04:05")
 	var ats = make([]models.Attachment, 0)
 	for _, at := range form.Attachments {
+		i := strings.LastIndex(at.FileUrl, "/")
+		fileUrl := at.FileUrl[i+1:]
 		a := models.Attachment{
 			FileName: at.FileName,
-			FileUrl:  at.FileUrl,
+			FileUrl:  fileUrl,
 			FileSize: at.FileSize,
 			FileType: at.FileType,
 			Time:     t,
@@ -167,6 +172,9 @@ func GetMsgs(c *gin.Context) {
 		}
 		if len(msgs) > 0 {
 			for _, msg := range msgs {
+				for _, at := range msg.Attachments {
+					at.FileUrl = upload.GetImageFullUrl(at.FileUrl)
+				}
 				if msg.ToName == user.Name {
 					msg.ToID = mobile
 				}
@@ -181,6 +189,13 @@ func GetMsgs(c *gin.Context) {
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
 			return
+		}
+		if len(msgs) > 0 {
+			for _, msg := range msgs {
+				for _, at := range msg.Attachments {
+					at.FileUrl = upload.GetAppImageFullUrl(at.FileUrl)
+				}
+			}
 		}
 	}
 	data := make(map[string]interface{})
@@ -211,6 +226,9 @@ func GetMsgByID(c *gin.Context) {
 			return
 		}
 		if msg.ID > 0 {
+			for _, at := range msg.Attachments {
+				at.FileUrl = upload.GetImageFullUrl(at.FileUrl)
+			}
 			if msg.ToName == user.Name {
 				msg.ToID = mobile
 			}
@@ -229,6 +247,9 @@ func GetMsgByID(c *gin.Context) {
 			if msg.FromID != userID && msg.ToID != userID {
 				appG.Response(http.StatusUnauthorized, e.ERROR_GET_MSG_FAIL, nil)
 				return
+			}
+			for _, at := range msg.Attachments {
+				at.FileUrl = upload.GetAppImageFullUrl(at.FileUrl)
 			}
 		}
 	}

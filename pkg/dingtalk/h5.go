@@ -149,7 +149,7 @@ func GetJsApiConfig(url string) string {
 func MseesageToDingding(msg *models.Msg) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
 	link := map[string]interface{}{
-		"messageUrl": setting.DingtalkSetting.CallBackHost + "/xxzs/detail/id/" + strconv.Itoa(int(msg.ID)) + "/tag/1",
+		"messageUrl": setting.AppSetting.DingtalkMsgUrl,
 		"picUrl":     "@lALOACZwe2Rk",
 		"title":      msg.Title,
 		"text":       msg.Content,
