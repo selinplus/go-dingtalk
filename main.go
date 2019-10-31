@@ -3,20 +3,19 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
-	"log"
-	"net/http"
-	"os"
-	"path/filepath"
-	"time"
-
-	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/gredis"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"github.com/selinplus/go-dingtalk/routers"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 func init() {

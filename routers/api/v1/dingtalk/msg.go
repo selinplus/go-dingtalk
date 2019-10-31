@@ -9,6 +9,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -172,9 +173,12 @@ func GetMsgs(c *gin.Context) {
 		}
 		if len(msgs) > 0 {
 			for _, msg := range msgs {
+				var ats []models.Attachment
 				for _, at := range msg.Attachments {
 					at.FileUrl = upload.GetImageFullUrl(at.FileUrl)
+					ats = append(ats, at)
 				}
+				msg.Attachments = ats
 				if msg.ToName == user.Name {
 					msg.ToID = mobile
 				}
@@ -192,8 +196,10 @@ func GetMsgs(c *gin.Context) {
 		}
 		if len(msgs) > 0 {
 			for _, msg := range msgs {
+				var ats []models.Attachment
 				for _, at := range msg.Attachments {
 					at.FileUrl = upload.GetAppImageFullUrl(at.FileUrl)
+					ats = append(ats, at)
 				}
 			}
 		}
@@ -226,9 +232,12 @@ func GetMsgByID(c *gin.Context) {
 			return
 		}
 		if msg.ID > 0 {
+			var ats []models.Attachment
 			for _, at := range msg.Attachments {
 				at.FileUrl = upload.GetImageFullUrl(at.FileUrl)
+				ats = append(ats, at)
 			}
+			msg.Attachments = ats
 			if msg.ToName == user.Name {
 				msg.ToID = mobile
 			}
@@ -248,12 +257,16 @@ func GetMsgByID(c *gin.Context) {
 				appG.Response(http.StatusUnauthorized, e.ERROR_GET_MSG_FAIL, nil)
 				return
 			}
+			var ats []models.Attachment
 			for _, at := range msg.Attachments {
 				at.FileUrl = upload.GetAppImageFullUrl(at.FileUrl)
+				ats = append(ats, at)
 			}
+			msg.Attachments = ats
 		}
 	}
 	if msg.ID > 0 {
+		log.Println(msg)
 		appG.Response(http.StatusOK, e.SUCCESS, msg)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
