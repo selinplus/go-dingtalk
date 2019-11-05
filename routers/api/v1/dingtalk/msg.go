@@ -9,7 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -148,12 +147,19 @@ func SendMsgMobile(c *gin.Context) {
 	}
 }
 
+type MsgResp struct {
+	models.Msg
+	DeptName string `json:"dept_name"`
+}
+
 //获取消息列表
 func GetMsgs(c *gin.Context) {
 	var (
-		session = sessions.Default(c)
-		appG    = app.Gin{C: c}
-		msgs    []*models.Msg
+		data     = make(map[string]interface{})
+		session  = sessions.Default(c)
+		appG     = app.Gin{C: c}
+		msgs     []*models.Msg
+		msgResps []*MsgResp
 	)
 	tag, _ := strconv.Atoi(c.Query("tag"))
 	pageNum, _ := strconv.Atoi(c.Query("start"))
@@ -186,6 +192,10 @@ func GetMsgs(c *gin.Context) {
 					msg.FromID = mobile
 				}
 			}
+			data["lists"] = msgs
+			appG.Response(http.StatusOK, e.SUCCESS, data)
+		} else {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
@@ -201,12 +211,32 @@ func GetMsgs(c *gin.Context) {
 					at.FileUrl = upload.GetAppImageFullUrl(at.FileUrl)
 					ats = append(ats, at)
 				}
+				msg.Attachments = ats
+				//add deptName
+				fromUser, err := models.GetUserByUserid(msg.FromID)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+					return
+				}
+				deptids := strings.Split(fromUser.Department, ",")
+				id, _ := strconv.Atoi(deptids[0])
+				department, err := models.GetDepartmentByID(id)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+					return
+				}
+				msgResp := MsgResp{
+					Msg:      *msg,
+					DeptName: department.Name,
+				}
+				msgResps = append(msgResps, &msgResp)
 			}
+			data["lists"] = msgResps
+			appG.Response(http.StatusOK, e.SUCCESS, data)
+		} else {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
 		}
 	}
-	data := make(map[string]interface{})
-	data["lists"] = msgs
-	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 //获取消息详情
@@ -244,6 +274,9 @@ func GetMsgByID(c *gin.Context) {
 			if msg.FromName == user.Name {
 				msg.FromID = mobile
 			}
+			appG.Response(http.StatusOK, e.SUCCESS, msg)
+		} else {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
@@ -263,13 +296,27 @@ func GetMsgByID(c *gin.Context) {
 				ats = append(ats, at)
 			}
 			msg.Attachments = ats
+			//add deptName
+			fromUser, err := models.GetUserByUserid(msg.FromID)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				return
+			}
+			deptids := strings.Split(fromUser.Department, ",")
+			id, _ := strconv.Atoi(deptids[0])
+			department, err := models.GetDepartmentByID(id)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+				return
+			}
+			msgResp := MsgResp{
+				Msg:      *msg,
+				DeptName: department.Name,
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, msgResp)
+		} else {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 		}
-	}
-	if msg.ID > 0 {
-		log.Println(msg)
-		appG.Response(http.StatusOK, e.SUCCESS, msg)
-	} else {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
 	}
 }
 
