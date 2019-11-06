@@ -28,7 +28,9 @@ func OT() gin.HandlerFunc {
 			token = auth
 		}
 		ts := strings.Split(token, ".")
-		userID = ts[3]
+		if len(ts) == 4 {
+			userID = ts[3]
+		}
 
 		u := c.Request.URL.Path
 		if strings.Index(u, "login") != -1 || strings.Index(u, "js_api_config") != -1 {
