@@ -40,12 +40,12 @@ func Sec() gin.HandlerFunc {
 		} else {
 			if userID == "" || token == "" {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-			} else { //judge if token is overtime
+			} else { //check token
 				sign := ts[0] + rkey + ts[1]
 				vertify := util.EncodeMD5(sign)
 				if vertify != ts[2] {
 					code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-				} else {
+				} else { //judge if token is overtime
 					tokenMsg := userID + "." + ts[0] + "." + ts[1]
 					timeSmap, _ := strconv.Atoi(ts[0])
 					if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {

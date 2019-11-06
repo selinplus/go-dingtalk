@@ -1,8 +1,6 @@
 package dingtalk
 
 import (
-	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -12,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -245,8 +244,6 @@ func GetDeviceModByDevID(c *gin.Context) {
 func GetDevicesByUser(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
-		session  = sessions.Default(c)
-		userid   = fmt.Sprintf("%v", session.Get("userid"))
 		rkrqq    = c.Query("rkrqq")
 		rkrqz    = c.Query("rkrqz")
 		sbbh     = c.Query("sbbh")
@@ -255,6 +252,14 @@ func GetDevicesByUser(c *gin.Context) {
 		pageNo   int
 		pageSize int
 	)
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
+
 	if rkrqq == "" {
 		rkrqq = "2000-01-01 00:00:00"
 	}

@@ -1,8 +1,6 @@
 package dingtalk
 
 import (
-	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -93,12 +91,17 @@ func GetProcCzr(c *gin.Context) {
 //查询提报类型代码
 func GetProcType(c *gin.Context) {
 	var (
-		appG    = app.Gin{C: c}
-		session = sessions.Default(c)
-		pt      []*models.Proctype
-		err     error
+		appG = app.Gin{C: c}
+		pt   []*models.Proctype
+		err  error
 	)
-	userid := fmt.Sprintf("%v", session.Get("userid"))
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
 	user, err := models.GetUserByUserid(userid)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)

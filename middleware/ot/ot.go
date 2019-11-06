@@ -16,8 +16,11 @@ var t = &sec.TokenVertify{}
 
 func OT() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var rkey = "E5DOFhZl"
-		var code int
+		var (
+			rkey   = "E5DOFhZl"
+			userID string
+			code   int
+		)
 
 		token := c.GetHeader("Authorization")
 		auth := c.Query("token")
@@ -25,28 +28,33 @@ func OT() gin.HandlerFunc {
 			token = auth
 		}
 		ts := strings.Split(token, ".")
-		userID := ts[3]
+		userID = ts[3]
 
-		if token == "" {
-			code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+		u := c.Request.URL.Path
+		if strings.Index(u, "login") != -1 || strings.Index(u, "js_api_config") != -1 {
+			code = e.SUCCESS
 		} else {
-			sign := ts[0] + rkey + ts[1] + userID
-			vertify := util.EncodeMD5(sign)
-			if vertify != ts[2] {
+			if userID == "" || token == "" {
 				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
-			} else { //judge if token is overtime
-				tokenMsg := userID + "." + ts[0] + "." + ts[1]
-				timeSmap, _ := strconv.Atoi(ts[0])
-				if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
-					if t.IsTokenExist(tokenMsg) {
-						code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+			} else { //check token
+				sign := ts[0] + rkey + ts[1] + userID
+				vertify := util.EncodeMD5(sign)
+				if vertify != ts[2] {
+					code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+				} else { //judge if token is overtime
+					tokenMsg := userID + "." + ts[0] + "." + ts[1]
+					timeSmap, _ := strconv.Atoi(ts[0])
+					if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
+						if t.IsTokenExist(tokenMsg) {
+							code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+						} else {
+							code = e.SUCCESS
+							t.AddToken(tokenMsg)
+							t.DeleteToken()
+						}
 					} else {
-						code = e.SUCCESS
-						t.AddToken(tokenMsg)
-						t.DeleteToken()
+						code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
 					}
-				} else {
-					code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
 				}
 			}
 		}

@@ -109,3 +109,15 @@ func Sha1Sign(s string) string {
 	// a hash results to a hex string.
 	return fmt.Sprintf("%x", bs)
 }
+
+//计算秒数差
+func TimeDifference(timeNow, timePast string) int {
+	var timeLayoutStr = "2006-01-02 15:04:05"
+	stNow, _ := time.Parse(timeLayoutStr, timeNow)   //string转time
+	stPast, _ := time.Parse(timeLayoutStr, timePast) //string转time
+	if stNow.Before(stPast) {
+		stNow, stPast = stPast, stNow
+	}
+	dif := int(stNow.Sub(stPast).Seconds())
+	return dif
+}

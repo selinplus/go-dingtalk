@@ -1,14 +1,13 @@
 package dingtalk
 
 import (
-	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -327,8 +326,13 @@ func GetProcDetail(c *gin.Context) {
 //获取待办列表
 func GetProcTodoList(c *gin.Context) {
 	appG := app.Gin{C: c}
-	session := sessions.Default(c)
-	userid := fmt.Sprintf("%v", session.Get("userid"))
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
 	czr, uerr := models.GetUserByUserid(userid)
 	if uerr != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
@@ -355,8 +359,13 @@ func GetProcTodoList(c *gin.Context) {
 func GetProcDoneList(c *gin.Context) {
 	var data []interface{}
 	appG := app.Gin{C: c}
-	session := sessions.Default(c)
-	userid := fmt.Sprintf("%v", session.Get("userid"))
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
 	czr, uerr := models.GetUserByUserid(userid)
 	if uerr != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
