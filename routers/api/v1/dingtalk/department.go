@@ -18,15 +18,12 @@ func GetDepartmentByIDs(c *gin.Context) {
 	var (
 		appG       = app.Gin{C: c}
 		ids        = c.Query("ids")
+		err        error
 		department *models.Department
 	)
 	ss := strings.Split(ids, ",")
 	for _, s := range ss {
-		id, err := strconv.Atoi(s)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
-			return
-		}
+		id, _ := strconv.Atoi(s)
 		department, err = models.GetDepartmentByID(id)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)

@@ -195,7 +195,7 @@ func GetMsgs(c *gin.Context) {
 			data["lists"] = msgs
 			appG.Response(http.StatusOK, e.SUCCESS, data)
 		} else {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
@@ -234,7 +234,7 @@ func GetMsgs(c *gin.Context) {
 			data["lists"] = msgResps
 			appG.Response(http.StatusOK, e.SUCCESS, data)
 		} else {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
 		}
 	}
 }
@@ -276,7 +276,7 @@ func GetMsgByID(c *gin.Context) {
 			}
 			appG.Response(http.StatusOK, e.SUCCESS, msg)
 		} else {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
@@ -315,7 +315,7 @@ func GetMsgByID(c *gin.Context) {
 			}
 			appG.Response(http.StatusOK, e.SUCCESS, msgResp)
 		} else {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSG_FAIL, nil)
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
 		}
 	}
 }
