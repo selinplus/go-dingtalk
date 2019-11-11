@@ -7,7 +7,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/cron"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -32,11 +31,9 @@ func GetDepartmentByIDs(c *gin.Context) {
 		}
 		if !department.OuterDept {
 			appG.Response(http.StatusOK, e.SUCCESS, department)
-			log.Println(department)
 			return
 		}
 	}
-	log.Println("=====", department)
 	appG.Response(http.StatusOK, e.SUCCESS, department)
 }
 
