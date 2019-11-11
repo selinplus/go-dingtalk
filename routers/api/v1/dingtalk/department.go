@@ -9,8 +9,36 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
+
+//获取多部门详情时，排除outer属性
+func GetDepartmentByIDs(c *gin.Context) {
+	var (
+		appG       = app.Gin{C: c}
+		ids        = c.Query("ids")
+		department *models.Department
+	)
+	ss := strings.Split(ids, ",")
+	for _, s := range ss {
+		id, err := strconv.Atoi(s)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+			return
+		}
+		department, err = models.GetDepartmentByID(id)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+			return
+		}
+		if !department.OuterDept {
+			appG.Response(http.StatusOK, e.SUCCESS, department)
+			return
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, department)
+}
 
 //获取部门详情
 func GetDepartmentByID(c *gin.Context) {

@@ -117,6 +117,8 @@ func InitRouter() *gin.Engine {
 		//获取企业员工人数
 		apiv2.GET("/usercount", dingtalk.OrgUserCount)
 
+		//获取多部门详情时，排除outer属性
+		apiv2.GET("/department/outer", dingtalk.GetDepartmentByIDs)
 		//获取部门详情
 		apiv2.GET("/department/detail", dingtalk.GetDepartmentByID)
 		//获取部门列表
