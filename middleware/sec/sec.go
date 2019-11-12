@@ -35,7 +35,7 @@ func Sec() gin.HandlerFunc {
 
 		u := c.Request.URL.Path
 		if strings.Index(u, "login") != -1 || strings.Index(u, "js_api_config") != -1 ||
-			strings.Index(u, "callback/detail") != -1 {
+			strings.Index(u, "callback/detail") != -1 || strings.LastIndex(u, "sync") != -1 {
 			code = e.SUCCESS
 		} else {
 			if userID == "" || token == "" {

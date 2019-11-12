@@ -9,6 +9,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -199,6 +200,7 @@ func GetMsgs(c *gin.Context) {
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
+		log.Println("userid is ", userID)
 		msgs, err = models.GetMsgs(userID, uint(tag), pageNum, pageSize)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
@@ -286,7 +288,7 @@ func GetMsgByID(c *gin.Context) {
 			return
 		}
 		if msg.ID > 0 {
-			if msg.FromID != userID && msg.ToID != userID {
+			if !strings.Contains(msg.FromID, userID) && !strings.Contains(msg.ToID, userID) {
 				appG.Response(http.StatusUnauthorized, e.ERROR_GET_MSG_FAIL, nil)
 				return
 			}
