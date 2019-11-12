@@ -233,7 +233,7 @@ func GetMsgs(c *gin.Context) {
 				msgResps = append(msgResps, &msgResp)
 			}
 			data["lists"] = msgResps
-			log.Println(data)
+			log.Println(*msgResps[0])
 			appG.Response(http.StatusOK, e.SUCCESS, data)
 		} else {
 			appG.Response(http.StatusOK, e.SUCCESS, nil)
