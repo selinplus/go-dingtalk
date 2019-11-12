@@ -10,6 +10,14 @@ type Note struct {
 	Xgrq    string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
 }
 
+func IsSameTitle(userid, title string) bool {
+	var note Note
+	if err := db.Where("userid =? and title=?", userid, title).First(&note).Error; err != nil {
+		return false
+	}
+	return true
+}
+
 func AddNote(data interface{}) error {
 	if err := db.Create(data).Error; err != nil {
 		return err

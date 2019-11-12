@@ -18,7 +18,6 @@ type NoteForm struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
 	Mobile  string `json:"mobile"` //inner useable
-	Xgrq    string `json:"xgrq"`
 }
 
 //新建记事本
@@ -36,6 +35,7 @@ func AddNote(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	t := time.Now().Format("2006-01-02 15:04:05")
 	mobile = form.Mobile
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
@@ -47,7 +47,9 @@ func AddNote(c *gin.Context) {
 	} else {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
-	t := time.Now().Format("2006-01-02 15:04:05")
+	if models.IsSameTitle(userID, form.Title) {
+		form.Title = form.Title + t
+	}
 	note := models.Note{
 		Title:   form.Title,
 		Content: form.Content,
