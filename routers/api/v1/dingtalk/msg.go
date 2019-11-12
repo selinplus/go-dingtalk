@@ -200,8 +200,8 @@ func GetMsgs(c *gin.Context) {
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
-		log.Println("userid is ", userID)
 		msgs, err = models.GetMsgs(userID, uint(tag), pageNum, pageSize)
+		log.Println(len(msgs))
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
 			return
