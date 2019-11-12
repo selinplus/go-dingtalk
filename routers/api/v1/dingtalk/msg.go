@@ -9,7 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -233,7 +232,6 @@ func GetMsgs(c *gin.Context) {
 				msgResps = append(msgResps, &msgResp)
 			}
 			data["lists"] = msgResps
-			log.Println(*msgResps[0])
 			appG.Response(http.StatusOK, e.SUCCESS, data)
 		} else {
 			appG.Response(http.StatusOK, e.SUCCESS, nil)

@@ -31,6 +31,11 @@ var MsgFlags = map[int]string{
 	ERROR_GET_MSG_FAIL:     "获取消息失败",
 	ERROR_DELETE_MSG_FAIL:  "删除消息失败",
 
+	ERROR_ADD_NOTE_FAIL:     "新建记事本失败",
+	ERROR_GET_NOTELIST_FAIL: "获取记事本列表失败",
+	ERROR_GET_NOTE_FAIL:     "查看记事本失败",
+	ERROR_DELETE_NOTE_FAIL:  "删除记事本失败",
+
 	ERROR_GET_DEPARTMENT_NUMBER_FAIL: "获取部门同步条数失败",
 	ERROR_GET_USER_NUMBER_FAIL:       "获取用户同步条数失败",
 	ERROR_GET_DEPARTMENT_FAIL:        "获取部门列表失败",

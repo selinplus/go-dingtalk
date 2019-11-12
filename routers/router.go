@@ -59,6 +59,17 @@ func InitRouter() *gin.Engine {
 		//删除消息
 		apiv1.GET("/msg/delete", dingtalk.DeleteMsg)
 
+		//新建记事本
+		apiv1.POST("/note/add", dingtalk.AddNote)
+		//删除记事本
+		apiv1.GET("/note/delete", dingtalk.DeleteNote)
+		//修改记事本内容
+		apiv1.POST("/note/update", dingtalk.UpdateNote)
+		//获取记事本列表
+		apiv1.GET("/note/list", dingtalk.GetNoteList)
+		//查询记事本详情
+		apiv1.GET("/note/detail", dingtalk.GetNoteDetail)
+
 		//单项录入
 		apiv1.POST("/dev/add", dingtalk.AddDevice)
 		//批量导入
@@ -134,6 +145,17 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
 		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
+
+		//新建记事本
+		apiv2.POST("/note/add", dingtalk.AddNote)
+		//删除记事本
+		apiv2.GET("/note/delete", dingtalk.DeleteNote)
+		//修改记事本内容
+		apiv2.POST("/note/update", dingtalk.UpdateNote)
+		//获取记事本列表
+		apiv2.GET("/note/list", dingtalk.GetNoteList)
+		//查询记事本详情
+		apiv2.GET("/note/detail", dingtalk.GetNoteDetail)
 	}
 	//外网----设备管理
 	apiv3 := r.Group("/api/v3")
