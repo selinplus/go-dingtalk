@@ -18,6 +18,15 @@ func IsSameTitle(userid, title string) bool {
 	return true
 }
 
+func SimilarTitle(userid, title string) *Note {
+	var note Note
+	if err := db.Where("userid =? and title like '?%'", userid, title).Order("id desc").
+		First(&note).Error; err != nil {
+		return nil
+	}
+	return &note
+}
+
 func AddNote(data interface{}) error {
 	if err := db.Create(data).Error; err != nil {
 		return err

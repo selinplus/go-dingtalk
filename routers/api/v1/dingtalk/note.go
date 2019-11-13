@@ -48,7 +48,8 @@ func AddNote(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	if models.IsSameTitle(userID, form.Title) {
-		if strings.Contains(form.Title, ")") {
+		n := models.SimilarTitle(userID, form.Title)
+		if strings.Contains(n.Title, ")") {
 			beg := strings.Index(form.Title, "(")
 			end := strings.LastIndex(form.Title, ")")
 			i, _ := strconv.Atoi(form.Title[beg+1 : end])

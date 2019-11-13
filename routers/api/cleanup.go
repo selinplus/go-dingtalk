@@ -2,15 +2,14 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/selinplus/go-dingtalk/pkg/app"
+	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"golang.org/x/exp/errors/fmt"
 	"net/http"
 	"os"
-
-	"github.com/selinplus/go-dingtalk/pkg/app"
-	"github.com/selinplus/go-dingtalk/pkg/e"
 )
 
 func CleanUpFile(c *gin.Context) {
@@ -19,7 +18,7 @@ func CleanUpFile(c *gin.Context) {
 		fNum int
 	)
 	dirpath := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ImageSavePath
-	files, err := file.FindFilesOlderThanOneYear(dirpath)
+	files, err := file.FindFilesOlderThanDate(dirpath, int64(365))
 	errNotExist := "open : The system cannot find the file specified."
 	if err != nil && err.Error() != errNotExist {
 		appG.Response(http.StatusOK, e.ERROR, err.Error())
