@@ -1,10 +1,10 @@
 package api
 
 import (
-	"NULL/data-encrption/pkg/setting"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"golang.org/x/exp/errors/fmt"
 	"net/http"
 	"os"
