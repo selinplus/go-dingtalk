@@ -49,13 +49,15 @@ func AddNote(c *gin.Context) {
 	}
 	if models.IsSameTitle(userID, form.Title) {
 		n := models.SimilarTitle(userID, form.Title)
-		if strings.Contains(n.Title, ")") {
-			beg := strings.Index(form.Title, "(")
-			end := strings.LastIndex(form.Title, ")")
-			i, _ := strconv.Atoi(form.Title[beg+1 : end])
-			form.Title = form.Title[:beg+1] + strconv.Itoa(i+1) + ")"
-		} else {
-			form.Title = form.Title + "(1)"
+		if n != nil {
+			if strings.Contains(n.Title, ")") {
+				beg := strings.Index(form.Title, "(")
+				end := strings.LastIndex(form.Title, ")")
+				i, _ := strconv.Atoi(form.Title[beg+1 : end])
+				form.Title = form.Title[:beg+1] + strconv.Itoa(i+1) + ")"
+			} else {
+				form.Title = form.Title + "(1)"
+			}
 		}
 	}
 	note := models.Note{
@@ -135,7 +137,6 @@ func GetNoteList(c *gin.Context) {
 	var (
 		session = sessions.Default(c)
 		appG    = app.Gin{C: c}
-		notes   []*models.Note
 		userID  string
 	)
 	pageNum, _ := strconv.Atoi(c.Query("start"))
@@ -152,7 +153,7 @@ func GetNoteList(c *gin.Context) {
 	} else {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
-	notes, err = models.GetNoteList(userID, pageNum, pageSize)
+	notes, err := models.GetNoteList(userID, pageNum, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_NOTELIST_FAIL, nil)
 		return
@@ -172,13 +173,11 @@ func GetNoteDetail(c *gin.Context) {
 	var (
 		session = sessions.Default(c)
 		appG    = app.Gin{C: c}
-		note    *models.Note
 	)
 	id, _ := strconv.Atoi(c.Query("id"))
 	mobile := c.Query("mobile")
-	var err error
 	if len(mobile) > 0 {
-		note, err = models.GetNoteDetail(uint(id))
+		note, err := models.GetNoteDetail(uint(id))
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_NOTE_FAIL, nil)
 			return
@@ -190,7 +189,7 @@ func GetNoteDetail(c *gin.Context) {
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
-		note, err = models.GetNoteDetail(uint(id))
+		note, err := models.GetNoteDetail(uint(id))
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_NOTE_FAIL, nil)
 			return
