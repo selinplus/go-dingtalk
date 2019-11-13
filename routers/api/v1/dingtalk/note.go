@@ -51,12 +51,12 @@ func AddNote(c *gin.Context) {
 		n := models.SimilarTitle(userID, form.Title)
 		if n != nil {
 			if strings.Contains(n.Title, ")") {
-				beg := strings.Index(form.Title, "(")
-				end := strings.LastIndex(form.Title, ")")
-				i, _ := strconv.Atoi(form.Title[beg+1 : end])
-				form.Title = form.Title[:beg+1] + strconv.Itoa(i+1) + ")"
+				beg := strings.Index(n.Title, "(")
+				end := strings.LastIndex(n.Title, ")")
+				i, _ := strconv.Atoi(n.Title[beg+1 : end])
+				form.Title = n.Title[:beg+1] + strconv.Itoa(i+1) + ")"
 			} else {
-				form.Title = form.Title + "(1)"
+				form.Title = n.Title + "(1)"
 			}
 		}
 	}

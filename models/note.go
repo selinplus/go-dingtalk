@@ -12,7 +12,7 @@ type Note struct {
 
 func IsSameTitle(userid, title string) bool {
 	var note Note
-	if err := db.Where("userid ='?' and title='?'", userid, title).First(&note).Error; err != nil {
+	if err := db.Where("userid =? and title=?", userid, title).First(&note).Error; err != nil {
 		return false
 	}
 	return true
@@ -20,7 +20,7 @@ func IsSameTitle(userid, title string) bool {
 
 func SimilarTitle(userid, title string) *Note {
 	var note Note
-	if err := db.Where("userid ='?' and title like '?'", userid, title+"%").Order("id desc").
+	if err := db.Where("userid =? and title like ?", userid, title+"%").Order("id desc").
 		First(&note).Error; err != nil {
 		return nil
 	}
@@ -57,7 +57,7 @@ func GetNoteList(userid string, pageNum, pageSize int) ([]*NoteResp, error) {
 	var notes []*NoteResp
 	sql := `SELECT note.id,note.title,note.content,note.userid,user.name,note.xgrq
 			FROM note LEFT JOIN user ON note.userid=user.userid
-			WHERE note.userid = '?' 
+			WHERE note.userid = ? 
 			ORDER BY note.xgrq DESC LIMIT ?,?`
 	err := db.Raw(sql, userid, pageNum, pageSize).Scan(&notes).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
