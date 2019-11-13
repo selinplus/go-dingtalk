@@ -41,7 +41,7 @@ func UpdateNote(note *Note) error {
 
 func GetNoteList(userid string, pageNum, pageSize int) ([]*Note, error) {
 	var notes []*Note
-	sql := `SELECT note.id,note.title,note.content,user.name,note.xgrq
+	sql := `SELECT note.id,note.title,note.content,user.name userid,note.xgrq
 			FROM note LEFT JOIN user ON note.userid=user.userid
 			WHERE note.userid = ? 
 			ORDER BY note.xgrq DESC LIMIT ?,?`
@@ -57,7 +57,7 @@ func GetNoteList(userid string, pageNum, pageSize int) ([]*Note, error) {
 
 func GetNoteDetail(id uint) (*Note, error) {
 	var note Note
-	sql := `SELECT note.id,note.title,note.content,user.name,note.xgrq
+	sql := `SELECT note.id,note.title,note.content,user.name userid,note.xgrq
 			FROM note LEFT JOIN user ON note.userid=user.userid
 			WHERE note.id = ?`
 	err := db.Raw(sql, id).Scan(&note).Error
