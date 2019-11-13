@@ -17,7 +17,7 @@ type NoteForm struct {
 	ID      uint   `json:"id"`
 	Title   string `json:"title"`
 	Content string `json:"content"`
-	Mobile  string `json:"mobile"` //inner useable
+	Mobile  string `json:"mobile"` //inner useful
 }
 
 //新建记事本
@@ -173,35 +173,32 @@ func GetNoteDetail(c *gin.Context) {
 	var (
 		session = sessions.Default(c)
 		appG    = app.Gin{C: c}
+		userID  string
 	)
 	id, _ := strconv.Atoi(c.Query("id"))
 	mobile := c.Query("mobile")
 	if len(mobile) > 0 {
-		note, err := models.GetNoteDetail(uint(id))
+		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_NOTE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 			return
 		}
-		if note.ID > 0 {
-			appG.Response(http.StatusOK, e.SUCCESS, note)
-		} else {
-			appG.Response(http.StatusOK, e.SUCCESS, nil)
-		}
+		userID = user.UserID
 	} else {
-		userID := fmt.Sprintf("%v", session.Get("userid"))
-		note, err := models.GetNoteDetail(uint(id))
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_NOTE_FAIL, nil)
+		userID = fmt.Sprintf("%v", session.Get("userid"))
+	}
+	note, err := models.GetNoteDetail(uint(id))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_NOTE_FAIL, nil)
+		return
+	}
+	if note.ID > 0 {
+		if !strings.Contains(note.UserID, userID) {
+			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
 			return
 		}
-		if note.ID > 0 {
-			if !strings.Contains(note.UserID, userID) {
-				appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
-				return
-			}
-			appG.Response(http.StatusOK, e.SUCCESS, note)
-		} else {
-			appG.Response(http.StatusOK, e.SUCCESS, nil)
-		}
+		appG.Response(http.StatusOK, e.SUCCESS, note)
+	} else {
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	}
 }
