@@ -11,12 +11,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 )
 
-// @Summary Import Image
-// @Produce  json
-// @Param image formData file true "Image File"
-// @Success 200 {object} app.Response
-// @Failure 500 {object} app.Response
-// @Router /api/v1/tags/import [post]
 func UploadFile(c *gin.Context) {
 	appG := app.Gin{C: c}
 	file, image, err := c.Request.FormFile("file")

@@ -34,6 +34,8 @@ func InitRouter() *gin.Engine {
 
 	//上传文件
 	r.POST("/file/upload", api.UploadFile)
+	//清理文件
+	r.GET("/file/cleanup", api.CleanUpFile)
 
 	//内网
 	apiv1 := r.Group("/api/v1")
