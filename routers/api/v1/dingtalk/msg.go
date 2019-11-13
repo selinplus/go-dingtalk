@@ -213,12 +213,26 @@ func GetMsgs(c *gin.Context) {
 				}
 				msg.Attachments = ats
 				//add deptName
-				fromUser, err := models.GetUserByUserid(msg.FromID)
+				var userid string
+				switch tag {
+				case 0:
+					if userID == msg.FromID {
+						userid = msg.ToID
+					}
+					if userID == msg.ToID {
+						userid = msg.FromID
+					}
+				case 1:
+					userid = msg.FromID
+				case 2:
+					userid = msg.ToID
+				}
+				usr, err := models.GetUserByUserid(userid)
 				if err != nil {
 					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
 					return
 				}
-				deptids := strings.Split(fromUser.Department, ",")
+				deptids := strings.Split(usr.Department, ",")
 				id, _ := strconv.Atoi(deptids[0])
 				department, err := models.GetDepartmentByID(id)
 				if err != nil {
@@ -297,12 +311,26 @@ func GetMsgByID(c *gin.Context) {
 			}
 			msg.Attachments = ats
 			//add deptName
-			fromUser, err := models.GetUserByUserid(msg.FromID)
+			var userid string
+			switch tag {
+			case 0:
+				if userID == msg.FromID {
+					userid = msg.ToID
+				}
+				if userID == msg.ToID {
+					userid = msg.FromID
+				}
+			case 1:
+				userid = msg.FromID
+			case 2:
+				userid = msg.ToID
+			}
+			usr, err := models.GetUserByUserid(userid)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
 				return
 			}
-			deptids := strings.Split(fromUser.Department, ",")
+			deptids := strings.Split(usr.Department, ",")
 			id, _ := strconv.Atoi(deptids[0])
 			department, err := models.GetDepartmentByID(id)
 			if err != nil {

@@ -5,7 +5,7 @@ import "github.com/jinzhu/gorm"
 type Note struct {
 	ID      uint   `gorm:"primary_key;size:11;AUTO_INCREMENT"`
 	Title   string `json:"title" gorm:"COMMENT:'标题'"`
-	Content string `json:"content" gorm:"COMMENT:'内容';size:1000"`
+	Content string `json:"content" gorm:"COMMENT:'内容';size:65535"`
 	UserID  string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 	Xgrq    string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
 }
