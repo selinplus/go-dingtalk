@@ -7,7 +7,9 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -51,7 +53,7 @@ func AddNetdiskFile(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	i := strings.LastIndex(form.FileUrl, "/")
-	fileUrl := form.FileUrl[i+1:]
+	fileUrl := "netdisk" + form.FileUrl[i+1:]
 	nd := models.Netdisk{
 		UserID:   userID,
 		TreeID:   form.TreeID,
@@ -114,35 +116,86 @@ func GetFileListByDir(c *gin.Context) {
 }
 
 //移动到回收站
-func MoveToTrash(c *gin.Context) {}
+func MoveToTrash(c *gin.Context) {
+	var (
+		session = sessions.Default(c)
+		appG    = app.Gin{C: c}
+		userID  string
+	)
+	ids := c.Query("ids")
+	mobile := c.Query("mobile")
+	var err error
+	if len(mobile) > 0 {
+		user, err := models.GetUserByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		userID = user.UserID
+	} else {
+		userID = fmt.Sprintf("%v", session.Get("userid"))
+	}
+	fail := make([]string, 0)
+	for _, id := range strings.Split(ids, ",") {
+		i, _ := strconv.Atoi(id)
+		file, _ := models.GetNetdiskFileDetail(i)
+		if !strings.Contains(file.UserID, userID) {
+			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
+			return
+		}
+		file.Tag = 0
+		err = models.UpdateNetdiskFile(file)
+		if err != nil {
+			fail = append(fail, file.FileName+"删除失败")
+		}
+	}
+	data := map[string]interface{}{
+		"success":   len(ids) - len(fail),
+		"failed":    len(fail),
+		"fail_list": fail,
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
 
 //删除文件
 func DeleteNetdiskFile(c *gin.Context) {
 	var (
-		//session = sessions.Default(c)
-		appG = app.Gin{C: c}
-		//userID  string
+		session = sessions.Default(c)
+		appG    = app.Gin{C: c}
+		userID  string
 	)
-	ids := c.Query("id")
-	//mobile := c.Query("mobile")
+	ids := c.Query("ids")
+	mobile := c.Query("mobile")
 	var err error
-	//if len(mobile) > 0 {
-	//	user, err := models.GetUserByMobile(mobile)
-	//	if err != nil {
-	//		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
-	//		return
-	//	}
-	//	userID = user.UserID
-	//} else {
-	//	userID = fmt.Sprintf("%v", session.Get("userid"))
-	//}
-	for _, id := range strings.Split(ids, ",") {
-		i, _ := strconv.Atoi(id)
-		err = models.DeleteNetdiskFile(uint(i))
+	if len(mobile) > 0 {
+		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_MSG_FAIL, id+"删除失败")
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
 			return
 		}
+		userID = user.UserID
+	} else {
+		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	fail := make([]string, 0)
+	for _, id := range strings.Split(ids, ",") {
+		i, _ := strconv.Atoi(id)
+		file, _ := models.GetNetdiskFileDetail(i)
+		if !strings.Contains(file.UserID, userID) {
+			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
+			return
+		}
+		err = os.Remove(upload.GetImageFullPath() + file.FileName)
+		if err != nil {
+			fail = append(fail, file.FileName+"删除失败")
+		} else {
+			_ = models.DeleteNetdiskFile(i)
+		}
+	}
+	data := map[string]interface{}{
+		"success":   len(ids) - len(fail),
+		"failed":    len(fail),
+		"fail_list": fail,
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }

@@ -28,7 +28,7 @@ func AddNetdiskFile(data interface{}) error {
 	return nil
 }
 
-func DeleteNetdiskFile(id uint) error {
+func DeleteNetdiskFile(id int) error {
 	if err := db.Where("id=?", id).Delete(Netdisk{}).Error; err != nil {
 		return err
 	}

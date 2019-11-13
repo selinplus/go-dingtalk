@@ -5,8 +5,12 @@ import (
 	"github.com/robfig/cron"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
+	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
+	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"log"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,6 +24,10 @@ func Setup() {
 		if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
+		// 每个月执行一遍网盘回收站清理
+		//if err := c.AddFunc("@monthly", CleanUpNetdiskFile); err != nil {
+		//	logging.Info(fmt.Sprintf("CleanUp NetdiskFile failed：%v", err))
+		//}
 		// 每天半夜同步一次部门和人员信息
 		//if err := c.AddFunc("0 */10 * * * *", Sync); err != nil {//test定时任务，10分钟一次
 		if err := c.AddFunc("@midnight", Sync); err != nil {
@@ -28,6 +36,25 @@ func Setup() {
 		// 开始
 		c.Run()
 	}()
+}
+
+//清理网盘回收站30天以上文件
+func CleanUpNetdiskFile() {
+	dirpath := upload.GetImageFullPath()
+	files, err := file.FindFilesOlderThanDate(dirpath, int64(30))
+	errNotExist := "open : The system cannot find the file specified."
+	if err != nil && err.Error() != errNotExist {
+		logging.Error(fmt.Sprintf("clean up files err:%v", err))
+		return
+	}
+	for _, fileInfo := range files {
+		if strings.Contains(fileInfo.Name(), "netdisk") { //clean up netdisk files
+			err = os.Remove(dirpath + fileInfo.Name())
+			if err != nil {
+				logging.Error(fmt.Sprintf("clean up files err:%v", err))
+			}
+		}
+	}
 }
 
 //遍历一遍发送标志为0的信息，通知钉钉发送工作通知
