@@ -1,16 +1,16 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
-	"golang.org/x/exp/errors/fmt"
-	"golang.org/x/tools/go/ssa/interp/testdata/src/strings"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func CleanUpFile(c *gin.Context) {
