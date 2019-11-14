@@ -5,7 +5,7 @@ import "github.com/jinzhu/gorm"
 type Netdisk struct {
 	ID       int    `gorm:"primary_key;size:11;AUTO_INCREMENT"`
 	UserID   string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
-	TreeID   int    `json:"tree_id" gorm:"primary_key;COMMENT:'文件夹id，回收站0，网盘>0'"`
+	TreeID   int    `json:"tree_id" gorm:"COMMENT:'文件夹id，回收站0，网盘>0'"`
 	FileName string `json:"file_name" gorm:"COMMENT:'文件原始名'"`
 	FileUrl  string `json:"file_url" gorm:"COMMENT:'文件真实文件名'"`
 	FileSize int    `json:"file_size" gorm:"COMMENT:'文件大小';size:20"`

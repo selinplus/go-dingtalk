@@ -86,7 +86,7 @@ func InitRouter() *gin.Engine {
 		//新建网盘文件夹
 		apiv1.POST("/netdisk/mkdir", dingtalk.AddNetdiskDir)
 		//修改文件夹
-		apiv1.GET("/netdisk/updatedir", dingtalk.UpdateNetdiskDir)
+		apiv1.POST("/netdisk/updatedir", dingtalk.UpdateNetdiskDir)
 		//删除文件夹
 		apiv1.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
 
@@ -191,7 +191,7 @@ func InitRouter() *gin.Engine {
 		//新建网盘文件夹
 		apiv2.POST("/netdisk/mkdir", dingtalk.AddNetdiskDir)
 		//修改网盘文件夹
-		apiv2.GET("/netdisk/updatedir", dingtalk.UpdateNetdiskDir)
+		apiv2.POST("/netdisk/updatedir", dingtalk.UpdateNetdiskDir)
 		//删除网盘文件夹
 		apiv2.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
 	}

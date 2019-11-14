@@ -1,7 +1,7 @@
 package models
 
 type NetdiskTree struct {
-	ID     int    `gorm:"primary_key;COMMENT:'节点id，表示文件夹层级'"`
+	ID     int    `gorm:"primary_key;size:11;AUTO_INCREMENT"`
 	PId    int    `json:"pid" gorm:"column:pId;COMMENT:'父部门id，根节点为1,回收站为0'"`
 	Name   string `json:"name" gorm:"COMMENT:'文件夹名称'"`
 	UserID string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
