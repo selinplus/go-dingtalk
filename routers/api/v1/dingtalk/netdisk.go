@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"net/http"
 	"os"
@@ -20,7 +21,7 @@ type NetdiskForm struct {
 	Mobile   string `json:"mobile"` //inner useful
 	TreeID   int    `json:"tree_id"`
 	FileName string `json:"file_name"`
-	FileUrl  string `json:"url" form:"url"`
+	FileUrl  string `json:"url"`
 	FileSize int    `json:"file_size"`
 }
 
@@ -44,12 +45,30 @@ func AddNetdiskFile(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 			return
 		}
 		userID = user.UserID
 	} else {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
+	}
+	spareCap, err := models.GetNetdiskSpareCap(userID)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, err)
+		return
+	}
+	if spareCap == -1 { //Initialize the capacity of the Netdisk
+		if err = models.ModNetdiskCap(userID, 2048); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
+		}
+	}
+	if form.FileSize > spareCap {
+		dirpath := upload.GetImageFullPath()
+		if err = os.Remove(dirpath + form.FileUrl); err != nil {
+			logging.Error(fmt.Sprintf("delete files:[%v] err:%v", form.FileUrl, err))
+		}
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, "空间不足!")
+		return
 	}
 	i := strings.LastIndex(form.FileUrl, "/")
 	fileUrl := "netdisk" + form.FileUrl[i+1:]
@@ -63,13 +82,18 @@ func AddNetdiskFile(c *gin.Context) {
 	}
 	err = models.AddNetdiskFile(&nd)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, err)
 		return
 	}
 	if nd.ID > 0 {
+		if err = models.ModNetdiskCap(userID, spareCap-form.FileSize); err != nil {
+			msg := fmt.Sprintf("上传成功，网盘容量大小修改失败：%v", err)
+			appG.Response(http.StatusOK, e.ERROR, msg)
+			return
+		}
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	} else {
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		appG.Response(http.StatusOK, e.ERROR, nil)
 	}
 }
 
@@ -89,7 +113,7 @@ func GetFileListByDir(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 			return
 		}
 		userID = user.UserID
@@ -98,14 +122,14 @@ func GetFileListByDir(c *gin.Context) {
 	}
 	nds, err := models.GetNetdiskFileList(userID, treeid, pageNum, pageSize)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_NDFILELIST_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_NDFILELIST_FAIL, err)
 		return
 	}
 	if len(nds) > 0 {
 		data["lists"] = nds
 		appG.Response(http.StatusOK, e.SUCCESS, data)
 	} else {
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		appG.Response(http.StatusOK, e.ERROR, nil)
 	}
 }
 
@@ -122,7 +146,7 @@ func MoveToTrash(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 			return
 		}
 		userID = user.UserID
@@ -158,14 +182,14 @@ func DeleteNetdiskFile(c *gin.Context) {
 		session = sessions.Default(c)
 		appG    = app.Gin{C: c}
 		userID  string
+		err     error
 	)
 	ids := c.Query("ids")
 	mobile := c.Query("mobile")
-	var err error
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 			return
 		}
 		userID = user.UserID
@@ -180,11 +204,20 @@ func DeleteNetdiskFile(c *gin.Context) {
 			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 			return
 		}
-		err = os.Remove(upload.GetImageFullPath() + file.FileName)
-		if err != nil {
+		if err = os.Remove(upload.GetImageFullPath() + file.FileName); err != nil {
 			fail = append(fail, file.FileName+"删除失败")
 		} else {
-			_ = models.DeleteNetdiskFile(i)
+			if err = models.DeleteNetdiskFile(i); err != nil {
+				appG.Response(http.StatusOK, e.ERROR_DELETE_NDFILE_FAIL, err)
+				return
+			}
+			var spareCap int
+			spareCap, err = models.GetNetdiskSpareCap(file.UserID)
+			if err = models.ModNetdiskCap(file.UserID, spareCap+file.FileSize); err != nil {
+				msg := fmt.Sprintf("文件删除成功，网盘容量大小修改失败：%v", err)
+				appG.Response(http.StatusOK, e.ERROR, msg)
+				return
+			}
 		}
 	}
 	data := map[string]interface{}{

@@ -126,7 +126,7 @@ func DeleteNetdiskDir(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR_DELETE_DIR_HAS_FILE, nil)
 		return
 	}
-	err := models.DeleteNetdiskDir(id)
+	err := models.DeleteNetdiskDir(userID, id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DIR_FAIL, nil)
 		return

@@ -56,6 +56,11 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Netdisk{})
 	}
+	if !db.HasTable("netdisk_cap") {
+		db.CreateTable(NetdiskCap{})
+	} else {
+		db.AutoMigrate(NetdiskCap{})
+	}
 	if !db.HasTable("netdisk_tree") {
 		db.CreateTable(NetdiskTree{})
 	} else {

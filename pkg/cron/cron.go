@@ -44,12 +44,10 @@ func CleanUpNetdiskFile() {
 		return
 	}
 	for _, fileInfo := range files {
-		err = os.Remove(dirpath + fileInfo.FileUrl)
-		if err != nil {
+		if err = os.Remove(dirpath + fileInfo.FileUrl); err != nil {
 			logging.Error(fmt.Sprintf("delete trash files err:%v", err))
 		} else { //delete table column
-			err = models.DeleteNetdiskFile(fileInfo.ID)
-			if err != nil {
+			if err = models.DeleteNetdiskFile(fileInfo.ID); err != nil {
 				logging.Error(fmt.Sprintf("delete column err:%v", err))
 			}
 		}

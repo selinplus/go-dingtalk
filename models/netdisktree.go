@@ -22,8 +22,8 @@ func IsParentDir(userid string, id int) bool {
 	return true
 }
 
-func DeleteNetdiskDir(id int) error {
-	if err := db.Where("id=?", id).Delete(Netdisk{}).Error; err != nil {
+func DeleteNetdiskDir(userid string, id int) error {
+	if err := db.Where("userid =? and id=?", userid, id).Delete(Netdisk{}).Error; err != nil {
 		return err
 	}
 	return nil
