@@ -178,22 +178,22 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/note/detail", dingtalk.GetNoteDetail)
 
 		//上传网盘文件
-		apiv1.POST("/netdisk/upload", dingtalk.AddNetdiskFile)
+		apiv2.POST("/netdisk/upload", dingtalk.AddNetdiskFile)
 		//获取当前文件夹文件列表
-		apiv1.GET("/netdisk/list", dingtalk.GetFileListByDir)
+		apiv2.GET("/netdisk/list", dingtalk.GetFileListByDir)
 		//移动到回收站
-		apiv1.GET("/netdisk/trash", dingtalk.MoveToTrash)
+		apiv2.GET("/netdisk/trash", dingtalk.MoveToTrash)
 		//删除文件
-		apiv1.GET("/netdisk/delete", dingtalk.DeleteNetdiskFile)
+		apiv2.GET("/netdisk/delete", dingtalk.DeleteNetdiskFile)
 
 		//获取用户网盘文件夹列表
-		apiv1.GET("/netdisk/tree", dingtalk.GetNetdiskDirTree)
+		apiv2.GET("/netdisk/tree", dingtalk.GetNetdiskDirTree)
 		//新建网盘文件夹
-		apiv1.POST("/netdisk/mkdir", dingtalk.AddNetdiskDir)
+		apiv2.POST("/netdisk/mkdir", dingtalk.AddNetdiskDir)
 		//修改网盘文件夹
-		apiv1.GET("/netdisk/updatedir", dingtalk.UpdateNetdiskDir)
+		apiv2.GET("/netdisk/updatedir", dingtalk.UpdateNetdiskDir)
 		//删除网盘文件夹
-		apiv1.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
+		apiv2.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
 	}
 	//外网----设备管理
 	apiv3 := r.Group("/api/v3")
