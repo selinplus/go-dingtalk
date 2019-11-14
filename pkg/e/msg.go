@@ -36,6 +36,17 @@ var MsgFlags = map[int]string{
 	ERROR_GET_NOTE_FAIL:     "查看记事本失败",
 	ERROR_DELETE_NOTE_FAIL:  "删除记事本失败",
 
+	ERROR_UPLOAD_NDFILE_FAIL:   "上传文件失败",
+	ERROR_GET_NDFILELIST_FAIL:  "获取文件列表失败",
+	ERROR_MOVE_TO_TRASH_FAIL:   "移动到回收站失败",
+	ERROR_DELETE_NDFILE_FAIL:   "删除文件失败",
+	ERROR_GET_DIR_LIST_FAIL:    "获取文件夹列表失败",
+	ERROR_ADD_DIRL_FAIL:        "新建文件夹失败",
+	ERROR_UPDATE_DIR_FAIL:      "修改文件夹失败",
+	ERROR_DELETE_DIR_FAIL:      "删除文件夹失败",
+	ERROR_DELETE_DIR_IS_PARENT: "删除失败,文件夹含子文件夹",
+	ERROR_DELETE_DIR_HAS_FILE:  "删除失败,文件夹非空",
+
 	ERROR_GET_DEPARTMENT_NUMBER_FAIL: "获取部门同步条数失败",
 	ERROR_GET_USER_NUMBER_FAIL:       "获取用户同步条数失败",
 	ERROR_GET_DEPARTMENT_FAIL:        "获取部门列表失败",

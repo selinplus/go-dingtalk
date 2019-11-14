@@ -194,7 +194,7 @@ func GetNoteDetail(c *gin.Context) {
 	}
 	if note.ID > 0 {
 		if !strings.Contains(note.UserID, userID) {
-			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
+			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 			return
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, note)

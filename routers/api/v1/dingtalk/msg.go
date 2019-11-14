@@ -200,6 +200,7 @@ func GetMsgs(c *gin.Context) {
 		}
 	} else {
 		userID := fmt.Sprintf("%v", session.Get("userid"))
+		log.Println("userID==>", userID)
 		msgs, err = models.GetMsgs(userID, uint(tag), pageNum, pageSize)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
@@ -247,8 +248,10 @@ func GetMsgs(c *gin.Context) {
 				msgResps = append(msgResps, &msgResp)
 			}
 			data["lists"] = msgResps
-			log.Println("=============", len(msgResps))
-			log.Println("-------", msgResps)
+			log.Println("=============>", len(msgResps))
+			for _, m := range msgResps {
+				log.Printf("userID==>%v", *m)
+			}
 			appG.Response(http.StatusOK, e.SUCCESS, data)
 		} else {
 			appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -304,7 +307,7 @@ func GetMsgByID(c *gin.Context) {
 		}
 		if msg.ID > 0 {
 			if !strings.Contains(msg.FromID, userID) && !strings.Contains(msg.ToID, userID) {
-				appG.Response(http.StatusUnauthorized, e.ERROR_GET_MSG_FAIL, nil)
+				appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 				return
 			}
 			var ats []models.Attachment

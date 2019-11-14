@@ -51,17 +51,13 @@ func AddNetdiskDir(c *gin.Context) {
 	}
 	err = models.AddNetdiskDir(&nd)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
-		return
-	}
-	if nd.ID == 0 {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DIRL_FAIL, nil)
 		return
 	}
 	if nd.ID > 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	} else {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_ADD_DIRL_FAIL, nil)
 	}
 }
 
@@ -97,7 +93,7 @@ func UpdateNetdiskDir(c *gin.Context) {
 	}
 	err := models.UpdateNetdiskDir(&dir)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DIR_FAIL, nil)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -123,16 +119,16 @@ func DeleteNetdiskDir(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	if models.IsParentDir(userID, id) {
-		appG.Response(http.StatusOK, e.ERROR_GET_NOTE_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_DELETE_DIR_IS_PARENT, nil)
 		return
 	}
 	if models.IsDirContainFile(userID, id) {
-		appG.Response(http.StatusOK, e.ERROR_GET_NOTE_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_DELETE_DIR_HAS_FILE, nil)
 		return
 	}
 	err := models.DeleteNetdiskDir(id)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DIR_FAIL, nil)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -159,7 +155,7 @@ func GetNetdiskDirTree(c *gin.Context) {
 	}
 	tree, err := models.GetNetdiskTree(userID)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DIR_LIST_FAIL, nil)
 		return
 	}
 	if len(tree) > 0 {

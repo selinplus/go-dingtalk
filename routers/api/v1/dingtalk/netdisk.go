@@ -63,17 +63,13 @@ func AddNetdiskFile(c *gin.Context) {
 	}
 	err = models.AddNetdiskFile(&nd)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
-		return
-	}
-	if nd.ID == 0 {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, nil)
 		return
 	}
 	if nd.ID > 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	} else {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	}
 }
 
@@ -102,7 +98,7 @@ func GetFileListByDir(c *gin.Context) {
 	}
 	nds, err := models.GetNetdiskFileList(userID, treeid, pageNum, pageSize)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_NDFILELIST_FAIL, nil)
 		return
 	}
 	if len(nds) > 0 {
@@ -138,7 +134,7 @@ func MoveToTrash(c *gin.Context) {
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
-			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
+			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 			return
 		}
 		file.TreeID = 0 //回收站id=0
@@ -181,7 +177,7 @@ func DeleteNetdiskFile(c *gin.Context) {
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
-			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
+			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 			return
 		}
 		err = os.Remove(upload.GetImageFullPath() + file.FileName)

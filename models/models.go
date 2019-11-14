@@ -51,6 +51,16 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Note{})
 	}
+	if !db.HasTable("netdisk") {
+		db.CreateTable(Netdisk{})
+	} else {
+		db.AutoMigrate(Netdisk{})
+	}
+	if !db.HasTable("netdisk_tree") {
+		db.CreateTable(NetdiskTree{})
+	} else {
+		db.AutoMigrate(NetdiskTree{})
+	}
 	if !db.HasTable("msg_tag") {
 		db.CreateTable(MsgTag{})
 	} else {
