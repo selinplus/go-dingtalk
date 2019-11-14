@@ -22,10 +22,9 @@ type NetdiskForm struct {
 	FileName string `json:"file_name"`
 	FileUrl  string `json:"url" form:"url"`
 	FileSize int    `json:"file_size"`
-	Tag      int    `json:"tag"`
 }
 
-//上传文件
+//上传网盘文件
 func AddNetdiskFile(c *gin.Context) {
 	var (
 		session = sessions.Default(c)
@@ -87,7 +86,6 @@ func GetFileListByDir(c *gin.Context) {
 		userID  string
 		err     error
 	)
-	tag, _ := strconv.Atoi(c.Query("tag"))
 	treeid, _ := strconv.Atoi(c.Query("treeid"))
 	pageNum, _ := strconv.Atoi(c.Query("start"))
 	pageSize, _ := strconv.Atoi(c.Query("size"))
@@ -102,7 +100,7 @@ func GetFileListByDir(c *gin.Context) {
 	} else {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
-	nds, err := models.GetNetdiskFileList(userID, tag, treeid, pageNum, pageSize)
+	nds, err := models.GetNetdiskFileList(userID, treeid, pageNum, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_MSGLIST_FAIL, nil)
 		return
@@ -143,7 +141,8 @@ func MoveToTrash(c *gin.Context) {
 			appG.Response(http.StatusUnauthorized, e.ERROR_GET_NOTE_FAIL, nil)
 			return
 		}
-		file.Tag = 0
+		file.TreeID = 0 //回收站id=0
+		file.Xgrq = time.Now().Format("2006-01-02 15:04:05")
 		err = models.UpdateNetdiskFile(file)
 		if err != nil {
 			fail = append(fail, file.FileName+"删除失败")
