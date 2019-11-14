@@ -37,8 +37,8 @@ func DeleteNetdiskFile(id int) error {
 	return nil
 }
 
-func UpdateNetdiskFile(netdisk *Netdisk) error {
-	if err := db.Table("netdisk").Where("id=?", netdisk.ID).Updates(netdisk).Error; err != nil {
+func MoveNetdiskFileToTrash(netdisk *Netdisk) error {
+	if err := db.Save(netdisk).Error; err != nil {
 		return err
 	}
 	return nil
@@ -51,8 +51,7 @@ type NetdiskResp struct {
 
 func GetNetdiskFileList(userid string, treeid, pageNum, pageSize int) ([]*NetdiskResp, error) {
 	var netdisks []*NetdiskResp
-	sql := `SELECT netdisk.id,netdisk.userid,netdisk.file_name,netdisk.file_url,
-					netdisk.file_url,user.name,netdisk.xgrq,netdisk.tag
+	sql := `SELECT netdisk.*,user.name
 			FROM netdisk LEFT JOIN user ON netdisk.userid=user.userid
 			WHERE netdisk.userid = ? and netdisk.tree_id=?
 			ORDER BY netdisk.xgrq DESC LIMIT ?,?`
@@ -68,8 +67,7 @@ func GetNetdiskFileList(userid string, treeid, pageNum, pageSize int) ([]*Netdis
 
 func GetNetdiskFileDetail(id int) (*Netdisk, error) {
 	var netdisk Netdisk
-	sql := `SELECT netdisk.id,netdisk.userid,netdisk.file_name,netdisk.file_url,
-					netdisk.file_url,user.name,netdisk.xgrq,netdisk.tag
+	sql := `SELECT netdisk.*,user.name
 			FROM netdisk LEFT JOIN user ON netdisk.userid=user.userid
 			WHERE netdisk.id = ?`
 	err := db.Raw(sql, id).Scan(&netdisk).Error
@@ -81,7 +79,7 @@ func GetNetdiskFileDetail(id int) (*Netdisk, error) {
 
 func GetTrashFiles() ([]*Netdisk, error) {
 	var netdisks []*Netdisk
-	err := db.Where("tree_id=0 and DATEDIFF(NOW(),xgrq)>30").Scan(&netdisks).Error
+	err := db.Where("tree_id=0 and DATEDIFF(NOW(),xgrq)>30").Find(&netdisks).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

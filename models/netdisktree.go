@@ -2,7 +2,7 @@ package models
 
 type NetdiskTree struct {
 	ID     int    `gorm:"primary_key;size:11;AUTO_INCREMENT"`
-	PId    int    `json:"pid" gorm:"column:pId;COMMENT:'父部门id，根节点为1,回收站为0'"`
+	PId    int    `json:"pId" gorm:"column:pId;COMMENT:'父部门id，根节点为1,回收站为0'"`
 	Name   string `json:"name" gorm:"COMMENT:'文件夹名称'"`
 	UserID string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 }
@@ -23,14 +23,14 @@ func IsParentDir(userid string, id int) bool {
 }
 
 func DeleteNetdiskDir(userid string, id int) error {
-	if err := db.Where("userid =? and id=?", userid, id).Delete(Netdisk{}).Error; err != nil {
+	if err := db.Where("userid=? and id=?", userid, id).Delete(NetdiskTree{}).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func UpdateNetdiskDir(netdisk *NetdiskTree) error {
-	if err := db.Table("netdisk").Where("id=?", netdisk.ID).Updates(netdisk).Error; err != nil {
+	if err := db.Table("netdisk_tree").Where("id=?", netdisk.ID).Updates(netdisk).Error; err != nil {
 		return err
 	}
 	return nil

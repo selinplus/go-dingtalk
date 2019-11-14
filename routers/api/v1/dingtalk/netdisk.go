@@ -53,7 +53,7 @@ func AddNetdiskFile(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	spareCap, err := models.GetNetdiskSpareCap(userID)
-	if err != nil {
+	if spareCap != -1 && err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, err)
 		return
 	}
@@ -104,7 +104,6 @@ func GetFileListByDir(c *gin.Context) {
 		session = sessions.Default(c)
 		appG    = app.Gin{C: c}
 		userID  string
-		err     error
 	)
 	treeid, _ := strconv.Atoi(c.Query("treeid"))
 	pageNum, _ := strconv.Atoi(c.Query("start"))
@@ -140,9 +139,8 @@ func MoveToTrash(c *gin.Context) {
 		appG    = app.Gin{C: c}
 		userID  string
 	)
-	ids := c.Query("ids")
+	ids := strings.Split(c.Query("ids"), ",")
 	mobile := c.Query("mobile")
-	var err error
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
@@ -154,7 +152,7 @@ func MoveToTrash(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	fail := make([]string, 0)
-	for _, id := range strings.Split(ids, ",") {
+	for _, id := range ids {
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
@@ -163,9 +161,9 @@ func MoveToTrash(c *gin.Context) {
 		}
 		file.TreeID = 0 //回收站id=0
 		file.Xgrq = time.Now().Format("2006-01-02 15:04:05")
-		err = models.UpdateNetdiskFile(file)
-		if err != nil {
-			fail = append(fail, file.FileName+"删除失败")
+		if err := models.MoveNetdiskFileToTrash(file); err != nil {
+			msg := fmt.Sprintf("%s删除失败,err:%v", file.FileName, err)
+			fail = append(fail, msg)
 		}
 	}
 	data := map[string]interface{}{
@@ -182,9 +180,8 @@ func DeleteNetdiskFile(c *gin.Context) {
 		session = sessions.Default(c)
 		appG    = app.Gin{C: c}
 		userID  string
-		err     error
 	)
-	ids := c.Query("ids")
+	ids := strings.Split(c.Query("ids"), ",")
 	mobile := c.Query("mobile")
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
@@ -197,15 +194,16 @@ func DeleteNetdiskFile(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	fail := make([]string, 0)
-	for _, id := range strings.Split(ids, ",") {
+	for _, id := range ids {
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
 			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 			return
 		}
-		if err = os.Remove(upload.GetImageFullPath() + file.FileName); err != nil {
-			fail = append(fail, file.FileName+"删除失败")
+		if err := os.Remove(upload.GetImageFullPath() + file.FileUrl); err != nil {
+			msg := fmt.Sprintf("%s删除失败,err:%v", file.FileName, err)
+			fail = append(fail, msg)
 		} else {
 			if err = models.DeleteNetdiskFile(i); err != nil {
 				appG.Response(http.StatusOK, e.ERROR_DELETE_NDFILE_FAIL, err)

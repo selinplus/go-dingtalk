@@ -49,13 +49,26 @@ func AddNetdiskDir(c *gin.Context) {
 		Name:   form.Name,
 		UserID: userID,
 	}
-	err = models.AddNetdiskDir(&nd)
-	if err != nil {
+	if err = models.AddNetdiskDir(&nd); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DIRL_FAIL, nil)
 		return
 	}
 	if nd.ID > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		if nd.ID == 1 { //treeid can not be 1
+			_ = models.DeleteNetdiskDir(nd.UserID, 1)
+			nd2 := models.NetdiskTree{
+				PId:    form.PId,
+				Name:   form.Name,
+				UserID: userID,
+			}
+			if err = models.AddNetdiskDir(&nd2); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DIRL_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nd2.ID)
+			return
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, nd.ID)
 	} else {
 		appG.Response(http.StatusOK, e.ERROR_ADD_DIRL_FAIL, nil)
 	}
