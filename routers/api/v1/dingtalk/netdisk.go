@@ -17,13 +17,13 @@ import (
 )
 
 type NetdiskForm struct {
-	ID       int     `json:"id"`
-	Mobile   string  `json:"mobile"` //inner useful
-	TreeID   int     `json:"tree_id"`
-	OrID     int     `json:"orid"`
-	FileName string  `json:"file_name"`
-	FileUrl  string  `json:"url"`
-	FileSize float64 `json:"file_size"`
+	ID       int    `json:"id"`
+	Mobile   string `json:"mobile"` //inner useful
+	TreeID   int    `json:"tree_id"`
+	OrID     int    `json:"orid"`
+	FileName string `json:"file_name"`
+	FileUrl  string `json:"url"`
+	FileSize int    `json:"file_size"`
 }
 
 //上传网盘文件
@@ -56,9 +56,11 @@ func AddNetdiskFile(c *gin.Context) {
 		return
 	}
 	if spareCap == -1 { //Initialize the capacity of the Netdisk
-		if err = models.ModNetdiskCap(userID, 2097152); err != nil {
+		capacity := 2 * 1024 * 1024 //KB
+		if err = models.ModNetdiskCap(userID, capacity); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		}
+		spareCap = capacity
 	}
 	if form.FileSize > spareCap {
 		dirpath := upload.GetImageFullPath()
