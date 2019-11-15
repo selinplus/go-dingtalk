@@ -17,13 +17,13 @@ import (
 )
 
 type NetdiskForm struct {
-	ID       int    `json:"id"`
-	Mobile   string `json:"mobile"` //inner useful
-	TreeID   int    `json:"tree_id"`
-	OrID     int    `json:"orid"`
-	FileName string `json:"file_name"`
-	FileUrl  string `json:"url"`
-	FileSize int    `json:"file_size"`
+	ID       int     `json:"id"`
+	Mobile   string  `json:"mobile"` //inner useful
+	TreeID   int     `json:"tree_id"`
+	OrID     int     `json:"orid"`
+	FileName string  `json:"file_name"`
+	FileUrl  string  `json:"url"`
+	FileSize float64 `json:"file_size"`
 }
 
 //上传网盘文件
@@ -56,7 +56,7 @@ func AddNetdiskFile(c *gin.Context) {
 		return
 	}
 	if spareCap == -1 { //Initialize the capacity of the Netdisk
-		if err = models.ModNetdiskCap(userID, 2048); err != nil {
+		if err = models.ModNetdiskCap(userID, 2097152); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		}
 	}
@@ -273,8 +273,7 @@ func DeleteNetdiskFile(c *gin.Context) {
 				appG.Response(http.StatusOK, e.ERROR_DELETE_NDFILE_FAIL, err)
 				return
 			}
-			var spareCap int
-			spareCap, err = models.GetNetdiskSpareCap(file.UserID)
+			spareCap, err := models.GetNetdiskSpareCap(file.UserID)
 			if err = models.ModNetdiskCap(file.UserID, spareCap+file.FileSize); err != nil {
 				msg := fmt.Sprintf("文件删除成功，网盘容量大小修改失败：%v", err)
 				appG.Response(http.StatusOK, e.ERROR, msg)
