@@ -1,10 +1,9 @@
 package models
 
 type Proctype struct {
-	ID      uint   `gorm:"primary_key"`
-	Dm      string `json:"dm" gorm:"COMMENT:'提报类型代码'"`
-	Mc      string `json:"mc" gorm:"COMMENT:'提报类型'"`
-	Checked string `json:"checked"`
+	ID uint   `gorm:"primary_key"`
+	Dm string `json:"dm" gorm:"COMMENT:'提报类型代码'"`
+	Mc string `json:"mc" gorm:"COMMENT:'提报类型'"`
 }
 
 //信息中心用，含手工提报
