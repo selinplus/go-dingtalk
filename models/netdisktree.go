@@ -14,6 +14,14 @@ func AddNetdiskDir(data interface{}) error {
 	return nil
 }
 
+func IsDirExist(userid string, id int) bool {
+	var nt NetdiskTree
+	if err := db.Where("userid =? and id=?", userid, id).First(&nt).Error; err != nil {
+		return false
+	}
+	return true
+}
+
 func IsParentDir(userid string, id int) bool {
 	var nt NetdiskTree
 	if err := db.Where("userid =? and pid=?", userid, id).First(&nt).Error; err != nil {

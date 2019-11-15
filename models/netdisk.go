@@ -6,6 +6,7 @@ type Netdisk struct {
 	ID       int    `gorm:"primary_key;size:11;AUTO_INCREMENT"`
 	UserID   string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 	TreeID   int    `json:"tree_id" gorm:"COMMENT:'文件夹id，回收站0，网盘>0'"`
+	OrID     int    `json:"orid" gorm:"column:userid;default:'9999';COMMENT:'源文件夹id，存储回收站内文件源位置id'"`
 	FileName string `json:"file_name" gorm:"COMMENT:'文件原始名'"`
 	FileUrl  string `json:"file_url" gorm:"COMMENT:'文件真实文件名'"`
 	FileSize int    `json:"file_size" gorm:"COMMENT:'文件大小';size:20"`
@@ -37,7 +38,7 @@ func DeleteNetdiskFile(id int) error {
 	return nil
 }
 
-func MoveNetdiskFileToTrash(netdisk *Netdisk) error {
+func UpdateNetdiskFile(netdisk *Netdisk) error {
 	if err := db.Save(netdisk).Error; err != nil {
 		return err
 	}
