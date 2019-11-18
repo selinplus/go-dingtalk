@@ -79,6 +79,20 @@ func AddProc(c *gin.Context) {
 		t = time.Now().Format("2006-01-02 15:04:05")
 	}
 	if t != "" {
+		if form.Dm == "0" { //if 手工提报
+			pm := models.Procmodify{
+				ProcID: procid,
+				Dm:     form.Dm,
+				Tsr:    form.Mobile,
+				Czr:    form.Czr,
+			}
+			if err := models.AddProcMod(&pm); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
+			return
+		}
 		procMod := models.Procmodify{
 			ProcID: procid,
 			Node:   "0",
@@ -90,20 +104,6 @@ func AddProc(c *gin.Context) {
 		}
 		if err := models.AddProcMod(&procMod); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
-			return
-		}
-		if form.Dm == "0" { //if 手工提报
-			pm := models.Procmodify{
-				ProcID: procMod.ProcID,
-				Dm:     procMod.Dm,
-				Tsr:    procMod.Czr,
-				Czr:    form.Czr,
-			}
-			if err := models.AddProcMod(&pm); err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
-				return
-			}
-			appG.Response(http.StatusOK, e.SUCCESS, nil)
 			return
 		}
 		next, err := models.GetNextNode(form.Dm, "0")

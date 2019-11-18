@@ -42,8 +42,12 @@ func DealProc(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 		return
 	}
+	if flag == "done" { //if 手工提报end
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		return
+	}
 	if flag == "yes" {
-		if pm.Dm == "0" { //if 手工提报
+		if pm.Dm == "0" {
 			pm := models.Procmodify{
 				ProcID: pm.ProcID,
 				Dm:     pm.Dm,
