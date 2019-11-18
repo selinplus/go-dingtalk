@@ -179,10 +179,12 @@ func InitRouter() *gin.Engine {
 		//查询记事本详情
 		apiv2.GET("/note/detail", dingtalk.GetNoteDetail)
 
-		//上传网盘文件
-		apiv2.POST("/netdisk/upload", dingtalk.AddNetdiskFile)
 		//获取当前文件夹文件列表
 		apiv2.GET("/netdisk/list", dingtalk.GetFileListByDir)
+		//上传网盘文件
+		apiv2.POST("/netdisk/upload", dingtalk.AddNetdiskFile)
+		//修改网盘文件&从回收站恢复
+		apiv1.POST("/netdisk/update", dingtalk.UpdateNetdiskFile)
 		//移动到回收站
 		apiv2.GET("/netdisk/trash", dingtalk.MoveToTrash)
 		//删除文件

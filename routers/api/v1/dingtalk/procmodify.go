@@ -92,60 +92,60 @@ func DealProc(c *gin.Context) {
 	procMod := models.Procmodify{
 		Czr: node.Rname,
 	}
-	for {
-		pmd := models.Procmodify{
-			ProcID: pm.ProcID,
-			Dm:     pm.Dm,
-			Tsr:    procMod.Czr,
-		}
-		pmd.Node = node.Last
-		if node.Node == "1" {
-			p, err := models.GetProcDetail(pm.ProcID)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_PROC_FAIL, nil)
-				return
-			}
-			pmd.Czr = p.Mobile
-			if err = models.AddProcMod(&pmd); err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
-				return
-			}
-			appG.Response(http.StatusOK, e.SUCCESS, nil)
-			return
-		}
-		node, err = models.GetLastNode(node.Dm, node.Node)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
-			return
-		}
-		pmd.Czr = node.Rname
-		if node.Flag == "0" {
-			if err := models.AddProcMod(&pmd); err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
-				return
-			}
-			appG.Response(http.StatusOK, e.SUCCESS, nil)
-			return
-		}
-		if node.Flag == "1" {
-			procMod.Czr = pmd.Czr
-			pmd.Spyj = form.Spyj
-			pmd.Czrq = t
-			if err := models.AddProcMod(&pmd); err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
-				return
-			}
-			if node.Last == "0" {
-				continue
-			} else {
-				node, err = models.GetLastNode(node.Dm, node.Node)
-				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR, nil)
-					return
-				}
-			}
-		}
+	//for {
+	pmd := models.Procmodify{
+		ProcID: pm.ProcID,
+		Dm:     pm.Dm,
+		Tsr:    procMod.Czr,
 	}
+	pmd.Node = node.Last
+	if node.Node == "1" {
+		p, err := models.GetProcDetail(pm.ProcID)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_PROC_FAIL, nil)
+			return
+		}
+		pmd.Czr = p.Mobile
+		if err = models.AddProcMod(&pmd); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
+			return
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		return
+	}
+	node, err = models.GetLastNode(node.Dm, node.Node)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	pmd.Czr = node.Rname
+	//if node.Flag == "0" {
+	if err := models.AddProcMod(&pmd); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	return
+	//}
+	//if node.Flag == "1" {
+	//	procMod.Czr = pmd.Czr
+	//	pmd.Spyj = form.Spyj
+	//	pmd.Czrq = t
+	//	if err := models.AddProcMod(&pmd); err != nil {
+	//		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+	//		return
+	//	}
+	//	if node.Last == "0" {
+	//		//continue
+	//	} else {
+	//		node, err = models.GetLastNode(node.Dm, node.Node)
+	//		if err != nil {
+	//			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+	//			return
+	//		}
+	//	}
+	//}
+	//}
 }
 
 //事件处理流水记录查询
