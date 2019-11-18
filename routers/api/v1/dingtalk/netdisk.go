@@ -62,16 +62,17 @@ func AddNetdiskFile(c *gin.Context) {
 		}
 		spareCap = capacity
 	}
+	i := strings.LastIndex(form.FileUrl, "/")
+	fileUrl := form.FileUrl[i+1:]
 	if form.FileSize > spareCap {
-		dirpath := upload.GetImageFullPath()
-		if err = os.Remove(dirpath + form.FileUrl); err != nil {
-			logging.Error(fmt.Sprintf("delete files:[%v] err:%v", form.FileUrl, err))
+		dirUrl := upload.GetImageFullPath() + fileUrl
+		if err = os.Remove(dirUrl); err != nil {
+			logging.Error(fmt.Sprintf("delete files:[%v] err:%v",
+				fileUrl, err))
 		}
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_NDFILE_FAIL, "空间不足!")
 		return
 	}
-	i := strings.LastIndex(form.FileUrl, "/")
-	fileUrl := "netdisk" + form.FileUrl[i+1:]
 	t := time.Now().Format("2006-01-02 15:04:05")
 	nd := models.Netdisk{
 		UserID:   userID,
@@ -123,7 +124,7 @@ func UpdateNetdiskFile(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	i := strings.LastIndex(form.FileUrl, "/")
-	fileUrl := "netdisk" + form.FileUrl[i+1:]
+	fileUrl := form.FileUrl[i+1:]
 	t := time.Now().Format("2006-01-02 15:04:05")
 	nd := models.Netdisk{
 		ID:       form.ID,
@@ -267,7 +268,8 @@ func DeleteNetdiskFile(c *gin.Context) {
 			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
 			return
 		}
-		if err := os.Remove(upload.GetImageFullPath() + file.FileUrl); err != nil {
+		dirUrl := upload.GetImageFullPath() + file.FileUrl
+		if err := os.Remove(dirUrl); err != nil {
 			msg := fmt.Sprintf("%s删除失败,err:%v", file.FileName, err)
 			fail = append(fail, msg)
 		} else {

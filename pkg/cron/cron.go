@@ -37,14 +37,14 @@ func Setup() {
 
 //清理网盘回收站30天以上文件
 func CleanUpNetdiskFile() {
-	dirpath := upload.GetImageFullPath()
 	files, err := models.GetTrashFiles()
 	if err != nil {
 		logging.Error(fmt.Sprintf("get trash files err:%v", err))
 		return
 	}
 	for _, fileInfo := range files {
-		if err = os.Remove(dirpath + fileInfo.FileUrl); err != nil {
+		dirUrl := upload.GetImageFullPath() + fileInfo.FileUrl
+		if err = os.Remove(dirUrl); err != nil {
 			logging.Error(fmt.Sprintf("delete trash files err:%v", err))
 		} else { //delete table column
 			if err = models.DeleteNetdiskFile(fileInfo.ID); err != nil {

@@ -10,7 +10,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"net/http"
 	"os"
-	"strings"
 )
 
 func CleanUpFile(c *gin.Context) {
@@ -26,12 +25,10 @@ func CleanUpFile(c *gin.Context) {
 		return
 	}
 	for _, fileInfo := range files {
-		if !strings.Contains(fileInfo.Name(), "netdisk") { //jump netdisk files
-			err = os.Remove(dirpath + fileInfo.Name())
-			if err != nil {
-				logging.Error(fmt.Sprintf("clean up files err:%v", err))
-				fNum++
-			}
+		err = os.Remove(dirpath + fileInfo.Name())
+		if err != nil {
+			logging.Error(fmt.Sprintf("clean up files err:%v", err))
+			fNum++
 		}
 	}
 	data := map[string]int{
