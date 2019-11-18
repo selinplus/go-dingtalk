@@ -5,7 +5,6 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -73,7 +72,6 @@ func GetProcCzr(c *gin.Context) {
 		return
 	}
 	cs := strings.Split(nodes.Rname, ",")
-	log.Println(cs)
 	for _, mobile := range cs {
 		czrmp := map[string]string{}
 		czr, uerr := models.GetUserByMobile(mobile)
@@ -83,6 +81,37 @@ func GetProcCzr(c *gin.Context) {
 		}
 		czrmp["name"] = czr.Name
 		czrmp["mobile"] = mobile
+		data = append(data, czrmp)
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//获取手工提报人员列表
+func GetProcCustomizeList(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		data []map[string]string
+	)
+	xxzxUsers, err := models.GetUserByDepartmentID("70280083")
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+		return
+	}
+	for _, user := range xxzxUsers {
+		czrmp := map[string]string{}
+		czrmp["name"] = user.Name
+		czrmp["mobile"] = user.Mobile
+		data = append(data, czrmp)
+	}
+	users, err := models.GetUserByDepartmentID("29464263")
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+		return
+	}
+	for _, user := range users {
+		czrmp := map[string]string{}
+		czrmp["name"] = user.Name
+		czrmp["mobile"] = user.Mobile
 		data = append(data, czrmp)
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, data)

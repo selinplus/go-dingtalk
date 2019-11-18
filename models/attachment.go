@@ -7,6 +7,6 @@ type Attachment struct {
 	FileName string `json:"file_name" gorm:"COMMENT:'文件原始名'"`
 	FileUrl  string `json:"file_url" gorm:"COMMENT:'文件真实路径'"`
 	FileSize int    `json:"file_size" gorm:"COMMENT:'文件大小';size:20"`
-	FileType string `json:"file_type" gorm:"COMMENT:'文件类型';size:20"`
+	FileType string `json:"file_type" gorm:"COMMENT:'文件类型'"`
 	Time     string `json:"time" gorm:"COMMENT:'插入时间'"`
 }

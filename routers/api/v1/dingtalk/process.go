@@ -15,7 +15,7 @@ const (
 	SAVENOTSUB = "已保存未提交"
 	COMPLETE   = "处理完成"
 	BACKTOBEG  = "退回发起人"
-	SUBMIT     = "提报事件"
+	SUBMIT     = "发起事件"
 	SUBAGAIN   = "重新上报"
 	AGREE      = "同意"
 	INVALID    = "作废"
@@ -90,6 +90,20 @@ func AddProc(c *gin.Context) {
 		}
 		if err := models.AddProcMod(&procMod); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+			return
+		}
+		if form.Dm == "0" { //if 手工提报
+			pm := models.Procmodify{
+				ProcID: procMod.ProcID,
+				Dm:     procMod.Dm,
+				Tsr:    procMod.Czr,
+				Czr:    form.Czr,
+			}
+			if err := models.AddProcMod(&pm); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
 			return
 		}
 		next, err := models.GetNextNode(form.Dm, "0")

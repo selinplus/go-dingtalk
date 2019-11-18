@@ -43,6 +43,20 @@ func DealProc(c *gin.Context) {
 		return
 	}
 	if flag == "yes" {
+		if pm.Dm == "0" { //if 手工提报
+			pm := models.Procmodify{
+				ProcID: pm.ProcID,
+				Dm:     pm.Dm,
+				Tsr:    pm.Czr,
+				Czr:    form.Czr,
+			}
+			if err := models.AddProcMod(&pm); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
+			return
+		}
 		node, err = models.GetNextNode(pm.Dm, pm.Node)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, nil)

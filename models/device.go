@@ -234,29 +234,30 @@ func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
 }
 
 type DevResponse struct {
-	ID    string
-	Zcbh  string `json:"zcbh"`
-	Lx    string `json:"lx"`
-	Mc    string `json:"mc"`
-	Xh    string `json:"xh"`
-	Xlh   string `json:"xlh"`
-	Ly    string `json:"ly"`
-	Scs   string `json:"scs"`
-	Scrq  string `json:"scrq"`
-	Grrq  string `json:"grrq"`
-	Bfnx  string `json:"bfnx"`
-	Jg    string `json:"jg"`
-	Zp    string `json:"zp"`
-	Gys   string `json:"gys"`
-	Rkrq  string `json:"rkrq"`
-	Czr   string `json:"czr"`
-	Qrurl string `json:"qrurl"`
-	Zt    string `json:"zt"`
-	Sydw  string `json:"sydw"`
-	Syks  string `json:"syks"`
-	Syr   string `json:"syr"`
-	Cfwz  string `json:"cfwz"`
-	Czrq  string `json:"czrq"`
+	ID      string
+	Zcbh    string `json:"zcbh"`
+	Lx      string `json:"lx"`
+	Mc      string `json:"mc"`
+	Xh      string `json:"xh"`
+	Xlh     string `json:"xlh"`
+	Ly      string `json:"ly"`
+	Scs     string `json:"scs"`
+	Scrq    string `json:"scrq"`
+	Grrq    string `json:"grrq"`
+	Bfnx    string `json:"bfnx"`
+	Jg      string `json:"jg"`
+	Zp      string `json:"zp"`
+	Gys     string `json:"gys"`
+	Rkrq    string `json:"rkrq"`
+	Czr     string `json:"czr"`
+	Qrurl   string `json:"qrurl"`
+	Zt      string `json:"zt"`
+	Sydw    string `json:"sydw"`
+	Syks    string `json:"syks"`
+	SyrName string `json:"syr_name"`
+	Syr     string `json:"syr"`
+	Cfwz    string `json:"cfwz"`
+	Czrq    string `json:"czrq"`
 }
 
 func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, error) {

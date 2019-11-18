@@ -244,6 +244,8 @@ func InitRouter() *gin.Engine {
 		//事件处理流水记录查询
 		apiv3.GET("/proc/list", dingtalk.GetProcModList)
 
+		//获取手工提报人员列表
+		apiv3.GET("/proc/custlist", dingtalk.GetProcCustomizeList)
 		//获取下一节点操作人
 		apiv3.GET("/proc/czr", dingtalk.GetProcCzr)
 		//查询提报类型代码
