@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -27,6 +28,7 @@ func OT() gin.HandlerFunc {
 		if len(auth) > 0 {
 			token = auth
 		}
+		log.Println("token=======", token)
 		ts := strings.Split(token, ".")
 		if len(ts) == 4 {
 			userID = ts[3]
