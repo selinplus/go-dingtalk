@@ -291,7 +291,7 @@ func GetDeviceByID(id string) (*Device, error) {
 
 func GetDeviceModByDevID(devid string) (*DevResponse, error) {
 	var dev DevResponse
-	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,device.ly,device.scs,device.scrq,device.grrq,device.bfnx,device.jg,device.zp,device.gys,device.rkrq,device.czr,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr,devmodify.cfwz,devmodify.czrq from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
+	if err := db.Raw("select device.id,device.zcbh,devtype.mc as lx,device.mc,device.xh,device.xlh,device.ly,device.scs,device.scrq,device.grrq,device.bfnx,device.jg,device.zp,device.gys,device.rkrq,device.czr,devstate.mc as zt,department.name as sydw,department.name as syks,user.name as syr_name,devmodify.syr,devmodify.cfwz,devmodify.czrq from device left join devmodify on device.id=devmodify.devid left join department on department.id=devmodify.sydw left join user on user.mobile=devmodify.syr left join devtype on devtype.dm=device.lx left join devstate on devstate.dm=device.zt where device.id = ? and (devmodify.zzrq ='' or devmodify.zzrq is null) ", devid).
 		Scan(&dev).Error; err != nil {
 		return nil, err
 	}

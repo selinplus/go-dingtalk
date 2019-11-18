@@ -32,6 +32,9 @@ type ProcForm struct {
 	Zp       string `json:"zp"`
 	Czr      string `json:"czr"`
 	Modifyid uint   `json:"modifyid"`
+	SyrName  string `json:"syr_name"`
+	Syr      string `json:"syr"`
+	Cfwz     string `json:"cfwz"`
 }
 
 //提报事项保存&&提交
@@ -49,13 +52,16 @@ func AddProc(c *gin.Context) {
 	}
 	sj := time.Now().Format("2006-01-02")
 	proc := models.Process{
-		Dm:     form.Dm,
-		Tbr:    form.Tbr,
-		Mobile: form.Mobile,
-		DevID:  form.DevID,
-		Xq:     form.Xq,
-		Zp:     form.Zp,
-		Tbsj:   sj,
+		Dm:      form.Dm,
+		Tbr:     form.Tbr,
+		Mobile:  form.Mobile,
+		DevID:   form.DevID,
+		Xq:      form.Xq,
+		Zp:      form.Zp,
+		Tbsj:    sj,
+		SyrName: form.SyrName,
+		Syr:     form.Syr,
+		Cfwz:    form.Cfwz,
 	}
 	b, procid, err := models.IsProcExist(proc)
 	if err != nil {
