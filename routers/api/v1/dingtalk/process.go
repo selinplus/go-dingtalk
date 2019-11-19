@@ -357,6 +357,7 @@ func GetProcDetail(c *gin.Context) {
 
 //获取待办列表
 func GetProcTodoList(c *gin.Context) {
+	var data []interface{}
 	appG := app.Gin{C: c}
 	token := c.GetHeader("Authorization")
 	auth := c.Query("token")
@@ -376,7 +377,29 @@ func GetProcTodoList(c *gin.Context) {
 		return
 	}
 	if len(procList) > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, procList)
+		for _, proc := range procList {
+			p, err := models.GetProcDetail(proc.ID)
+			if err != nil {
+				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+				return
+			}
+			if p.Node == "0" {
+				p.Zt = BACKTOBEG
+			} else {
+				node, err := models.GetNode(p.Dm, p.Node)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR, nil)
+					return
+				}
+				if node.Next == "-1" {
+					p.Zt = COMPLETE
+				} else {
+					p.Zt = "已提交至" + node.Role
+				}
+			}
+			data = append(data, p)
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, data)
 		return
 	}
 	//已保存未提交
@@ -384,6 +407,9 @@ func GetProcTodoList(c *gin.Context) {
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
 		return
+	}
+	for _, proc := range psList {
+		proc.Zt = "已保存未提交"
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, psList)
 }
