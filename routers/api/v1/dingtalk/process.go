@@ -84,9 +84,21 @@ func AddProc(c *gin.Context) {
 				ProcID: procid,
 				Dm:     form.Dm,
 				Tsr:    form.Mobile,
-				Czr:    form.Czr,
+				Czr:    form.Mobile,
+				Spyj:   SUBMIT,
+				Czrq:   t,
 			}
 			if err := models.AddProcMod(&pm); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			pmnext := models.Procmodify{
+				ProcID: procid,
+				Dm:     form.Dm,
+				Tsr:    form.Mobile,
+				Czr:    form.Czr,
+			}
+			if err := models.AddProcMod(&pmnext); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 				return
 			}
@@ -367,6 +379,7 @@ func GetProcTodoList(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, procList)
 		return
 	}
+	//已保存未提交
 	psList, err := models.GetProcSaveList(czr.Mobile)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
