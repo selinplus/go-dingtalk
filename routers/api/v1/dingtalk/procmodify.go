@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -107,8 +108,14 @@ func DealProc(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
+	var rname string
+	if strings.Contains(node.Rname, ",") {
+		rname = pm.Czr
+	} else {
+		rname = node.Rname
+	}
 	procMod := models.Procmodify{
-		Czr: node.Rname,
+		Czr: rname,
 	}
 	//for {
 	pmd := models.Procmodify{
