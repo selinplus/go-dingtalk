@@ -337,11 +337,6 @@ func GetProcDetail(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, proc)
 		return
 	}
-	if proc.Dm == "0" {
-		proc.Zt = "已提交至" + proc.Czr
-		appG.Response(http.StatusOK, e.SUCCESS, proc)
-		return
-	}
 	if proc.Node == "0" {
 		proc.Zt = BACKTOBEG
 		appG.Response(http.StatusOK, e.SUCCESS, proc)
@@ -383,23 +378,26 @@ func GetProcTodoList(c *gin.Context) {
 	}
 	if len(procList) > 0 {
 		for _, proc := range procList {
-			if proc.Dm == "0" {
-				proc.Zt = "已提交至" + proc.Czr
-			} else if proc.Node == "0" {
-				proc.Zt = BACKTOBEG
+			p, err := models.GetProcDetail(proc.ID)
+			if err != nil {
+				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+				return
+			}
+			if p.Node == "0" {
+				p.Zt = BACKTOBEG
 			} else {
-				node, err := models.GetNode(proc.Dm, proc.Node)
+				node, err := models.GetNode(p.Dm, p.Node)
 				if err != nil {
 					appG.Response(http.StatusOK, e.ERROR, nil)
 					return
 				}
 				if node.Next == "-1" {
-					proc.Zt = COMPLETE
+					p.Zt = COMPLETE
 				} else {
-					proc.Zt = "已提交至" + node.Role
+					p.Zt = "已提交至" + node.Role
 				}
 			}
-			data = append(data, proc)
+			data = append(data, p)
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, data)
 		return
@@ -439,23 +437,26 @@ func GetProcDoneList(c *gin.Context) {
 	}
 	if len(procList) > 0 {
 		for _, proc := range procList {
-			if proc.Dm == "0" {
-				proc.Zt = "已提交至" + proc.Czr
-			} else if proc.Node == "0" {
-				proc.Zt = BACKTOBEG
+			p, err := models.GetProcDetail(proc.ID)
+			if err != nil {
+				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+				return
+			}
+			if p.Node == "0" {
+				p.Zt = BACKTOBEG
 			} else {
-				node, err := models.GetNode(proc.Dm, proc.Node)
+				node, err := models.GetNode(p.Dm, p.Node)
 				if err != nil {
 					appG.Response(http.StatusOK, e.ERROR, nil)
 					return
 				}
 				if node.Next == "-1" {
-					proc.Zt = COMPLETE
+					p.Zt = COMPLETE
 				} else {
-					proc.Zt = "已提交至" + node.Role
+					p.Zt = "已提交至" + node.Role
 				}
 			}
-			data = append(data, proc)
+			data = append(data, p)
 		}
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, data)
