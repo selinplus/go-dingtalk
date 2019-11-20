@@ -203,9 +203,7 @@ func UpdateProc(c *gin.Context) {
 			ProcID: proc.ID,
 			Node:   "0",
 			Dm:     form.Dm,
-			Tsr:    form.Mobile,
 			Czr:    form.Mobile,
-			Spyj:   SUBMIT,
 			Czrq:   t,
 		}
 		if form.Modifyid > 0 {
