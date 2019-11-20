@@ -203,7 +203,9 @@ func UpdateProc(c *gin.Context) {
 			ProcID: proc.ID,
 			Node:   "0",
 			Dm:     form.Dm,
+			Tsr:    form.Mobile,
 			Czr:    form.Mobile,
+			Spyj:   SUBMIT,
 			Czrq:   t,
 		}
 		if form.Modifyid > 0 {
@@ -382,12 +384,7 @@ func GetProcTodoList(c *gin.Context) {
 		return
 	}
 	if len(procList) > 0 {
-		for _, proc := range procList {
-			p, err := models.GetProcDetail(proc.ID)
-			if err != nil {
-				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
-				return
-			}
+		for _, p := range procList {
 			if p.Dm == "0" {
 				p.Zt = "已提交至" + p.Czr
 			} else if p.Node == "0" {
@@ -443,12 +440,7 @@ func GetProcDoneList(c *gin.Context) {
 		return
 	}
 	if len(procList) > 0 {
-		for _, proc := range procList {
-			p, err := models.GetProcDetail(proc.ID)
-			if err != nil {
-				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
-				return
-			}
+		for _, p := range procList {
 			if p.Dm == "0" {
 				p.Zt = "已提交至" + p.Czr
 			} else if p.Node == "0" {

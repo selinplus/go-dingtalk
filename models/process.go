@@ -128,11 +128,13 @@ func GetProcSaveList(tbr string) ([]*ProcResponse, error) {
 
 func GetProcDoneList(czr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
-	sql := `select distinct process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,
-				   process.devid,process.xq,process.zp,process.tbsj,process.syr_name,process.syr,process.cfwz
-		  	from process
-          	left join procmodify on process.id = procmodify.procid
-          	left join proctype on process.dm = proctype.dm
+	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.xq,
+       			   process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
+				   process.syr_name,process.syr,process.cfwz
+			from process
+         	left join procmodify on process.id = procmodify.procid
+         	left join proctype on process.dm = proctype.dm
+         	left join user on user.mobile = procmodify.czr
  		  	where procmodify.czr = ? order by process.id desc`
 	err := db.Raw(sql, czr).Scan(&pr).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
