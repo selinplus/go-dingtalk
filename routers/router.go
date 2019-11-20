@@ -213,6 +213,8 @@ func InitRouter() *gin.Engine {
 		//鉴权
 		apiv3.GET("/js_api_config", dingtalk.JsApiConfig)
 
+		//获取多部门详情时，排除outer属性
+		apiv3.GET("/department/outer", dingtalk.GetDepartmentByIDs)
 		//获取部门详情
 		apiv3.GET("/department/detail", dingtalk.GetDepartmentByID)
 		//获取部门列表

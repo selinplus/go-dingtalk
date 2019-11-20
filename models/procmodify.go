@@ -41,3 +41,11 @@ func GetProcMods(procid uint) ([]*Procmodify, error) {
 	}
 	return pms, nil
 }
+
+func IsProcManualDone(procid uint) bool {
+	var p Procmodify
+	if err := db.Where("procid=? and (czrq = '' or czrq is null)", procid).First(&p).Error; err != nil {
+		return false
+	}
+	return true
+}

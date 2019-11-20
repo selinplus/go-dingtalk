@@ -82,6 +82,7 @@ func AddProc(c *gin.Context) {
 		if form.Dm == "0" { //if 手工提报
 			pm := models.Procmodify{
 				ProcID: procid,
+				Node:   "0",
 				Dm:     form.Dm,
 				Tsr:    form.Mobile,
 				Czr:    form.Mobile,
@@ -199,6 +200,33 @@ func UpdateProc(c *gin.Context) {
 		t = time.Now().Format("2006-01-02 15:04:05")
 	}
 	if t != "" {
+		if form.Dm == "0" { //if 手工提报
+			pm := models.Procmodify{
+				ProcID: proc.ID,
+				Node:   "0",
+				Dm:     form.Dm,
+				Tsr:    form.Mobile,
+				Czr:    form.Mobile,
+				Spyj:   SUBMIT,
+				Czrq:   t,
+			}
+			if err := models.AddProcMod(&pm); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			pmnext := models.Procmodify{
+				ProcID: proc.ID,
+				Dm:     form.Dm,
+				Tsr:    form.Mobile,
+				Czr:    form.Czr,
+			}
+			if err := models.AddProcMod(&pmnext); err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, nil)
+			return
+		}
 		procMod := models.Procmodify{
 			ProcID: proc.ID,
 			Node:   "0",
@@ -338,7 +366,11 @@ func GetProcDetail(c *gin.Context) {
 		return
 	}
 	if proc.Dm == "0" {
-		proc.Zt = "已提交至" + proc.Czr
+		if models.IsProcManualDone(proc.ID) {
+			proc.Zt = "已提交至" + proc.Czr + "处理"
+		} else {
+			proc.Zt = "已由" + proc.Czr + "办结"
+		}
 		appG.Response(http.StatusOK, e.SUCCESS, proc)
 		return
 	}
@@ -384,7 +416,11 @@ func GetProcTodoList(c *gin.Context) {
 	if len(procList) > 0 {
 		for _, p := range procList {
 			if p.Dm == "0" {
-				p.Zt = "已提交至" + p.Czr
+				if models.IsProcManualDone(p.ID) {
+					p.Zt = "已提交至" + p.Czr + "处理"
+				} else {
+					p.Zt = "已由" + p.Czr + "办结"
+				}
 			} else if p.Node == "0" {
 				p.Zt = BACKTOBEG
 			} else {
@@ -445,7 +481,11 @@ func GetProcDoneList(c *gin.Context) {
 				return
 			}
 			if p.Dm == "0" {
-				p.Zt = "已提交至" + p.Czr
+				if models.IsProcManualDone(p.ID) {
+					p.Zt = "已提交至" + p.Czr + "处理"
+				} else {
+					p.Zt = "已由" + p.Czr + "办结"
+				}
 			} else if p.Node == "0" {
 				p.Zt = BACKTOBEG
 			} else {
