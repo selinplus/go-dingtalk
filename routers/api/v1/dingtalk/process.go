@@ -337,6 +337,11 @@ func GetProcDetail(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, proc)
 		return
 	}
+	if proc.Dm == "0" {
+		proc.Zt = "已提交至" + proc.Czr
+		appG.Response(http.StatusOK, e.SUCCESS, proc)
+		return
+	}
 	if proc.Node == "0" {
 		proc.Zt = BACKTOBEG
 		appG.Response(http.StatusOK, e.SUCCESS, proc)
@@ -383,7 +388,9 @@ func GetProcTodoList(c *gin.Context) {
 				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
 				return
 			}
-			if p.Node == "0" {
+			if p.Dm == "0" {
+				p.Zt = "已提交至" + p.Czr
+			} else if p.Node == "0" {
 				p.Zt = BACKTOBEG
 			} else {
 				node, err := models.GetNode(p.Dm, p.Node)
@@ -442,7 +449,9 @@ func GetProcDoneList(c *gin.Context) {
 				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
 				return
 			}
-			if p.Node == "0" {
+			if p.Dm == "0" {
+				p.Zt = "已提交至" + p.Czr
+			} else if p.Node == "0" {
 				p.Zt = BACKTOBEG
 			} else {
 				node, err := models.GetNode(p.Dm, p.Node)
