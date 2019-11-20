@@ -438,7 +438,12 @@ func GetProcDoneList(c *gin.Context) {
 		return
 	}
 	if len(procList) > 0 {
-		for _, p := range procList {
+		for _, proc := range procList {
+			p, err := models.GetProcDetail(proc.ID)
+			if err != nil {
+				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+				return
+			}
 			if p.Dm == "0" {
 				p.Zt = "已提交至" + p.Czr
 			} else if p.Node == "0" {
