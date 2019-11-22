@@ -360,17 +360,22 @@ func GetProcDetail(c *gin.Context) {
 		}
 		proc.Syr = syr.Name
 	}
-	if proc.Node == "" {
-		proc.Zt = SAVENOTSUB
-		appG.Response(http.StatusOK, e.SUCCESS, proc)
-		return
-	}
 	if proc.Dm == "0" {
+		if proc.Czr == "" {
+			proc.Zt = SAVENOTSUB
+			appG.Response(http.StatusOK, e.SUCCESS, proc)
+			return
+		}
 		if models.IsProcManualDone(proc.ID) {
 			proc.Zt = "已提交至" + proc.Czr + "处理"
 		} else {
 			proc.Zt = "已由" + proc.Czr + "办结"
 		}
+		appG.Response(http.StatusOK, e.SUCCESS, proc)
+		return
+	}
+	if proc.Node == "" {
+		proc.Zt = SAVENOTSUB
 		appG.Response(http.StatusOK, e.SUCCESS, proc)
 		return
 	}
