@@ -49,8 +49,10 @@ func DealProc(c *gin.Context) {
 	}
 	if flag == "yes" {
 		if pm.Dm == "0" {
+			node, _ := strconv.Atoi(pm.Node)
 			pm := models.Procmodify{
 				ProcID: pm.ProcID,
+				Node:   strconv.Itoa(node + 1),
 				Dm:     pm.Dm,
 				Tsr:    pm.Czr,
 				Czr:    form.Czr,

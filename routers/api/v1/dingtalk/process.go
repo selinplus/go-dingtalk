@@ -95,6 +95,7 @@ func AddProc(c *gin.Context) {
 			}
 			pmnext := models.Procmodify{
 				ProcID: procid,
+				Node:   "1",
 				Dm:     form.Dm,
 				Tsr:    form.Mobile,
 				Czr:    form.Czr,
@@ -216,6 +217,7 @@ func UpdateProc(c *gin.Context) {
 			}
 			pmnext := models.Procmodify{
 				ProcID: proc.ID,
+				Node:   "1",
 				Dm:     form.Dm,
 				Tsr:    form.Mobile,
 				Czr:    form.Czr,
