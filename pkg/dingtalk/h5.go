@@ -145,7 +145,32 @@ func GetJsApiConfig(url string) string {
 	}
 }
 
-//发送工作通知
+//生成流程提报待办通知消息体
+func ProcessMseesageToDingding(p *models.ProcResponse) string {
+	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
+	link := map[string]interface{}{
+		"messageUrl": "",
+		"picUrl":     "@lALOACZwe2Rk",
+		"title":      p.Title,
+		"text":       p.Xq,
+	}
+	msgcotent := map[string]interface{}{
+		"msgtype": "link",
+		"link":    link,
+	}
+	userid, _ := models.GetUserByMobile(p.Czr)
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": userid,
+		"to_all_user": false,
+		"msg":         msgcotent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	return tcmprJson
+}
+
+//生成工作通知消息体
 func MseesageToDingding(msg *models.Msg) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
 	link := map[string]interface{}{

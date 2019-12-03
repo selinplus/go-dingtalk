@@ -28,6 +28,7 @@ type ProcForm struct {
 	Tsr      string `json:"tsr"`
 	Mobile   string `json:"mobile"`
 	DevID    string `json:"devid"`
+	Title    string `json:"title"`
 	Xq       string `json:"xq"`
 	Zp       string `json:"zp"`
 	Czr      string `json:"czr"`
@@ -56,6 +57,7 @@ func AddProc(c *gin.Context) {
 		Tbr:     form.Tbr,
 		Mobile:  form.Mobile,
 		DevID:   form.DevID,
+		Title:   form.Title,
 		Xq:      form.Xq,
 		Zp:      form.Zp,
 		Tbsj:    sj,
@@ -189,6 +191,7 @@ func UpdateProc(c *gin.Context) {
 		Tbr:    form.Tbr,
 		Mobile: form.Mobile,
 		DevID:  form.DevID,
+		Title:  form.Title,
 		Xq:     form.Xq,
 		Zp:     form.Zp,
 		Tbsj:   sj,
@@ -203,13 +206,14 @@ func UpdateProc(c *gin.Context) {
 	if t != "" {
 		if form.Dm == "0" { //if 手工提报
 			pm := models.Procmodify{
-				ProcID: proc.ID,
-				Node:   "0",
-				Dm:     form.Dm,
-				Tsr:    form.Mobile,
-				Czr:    form.Mobile,
-				Spyj:   SUBMIT,
-				Czrq:   t,
+				ProcID:     proc.ID,
+				Node:       "0",
+				Dm:         form.Dm,
+				Tsr:        form.Mobile,
+				Czr:        form.Mobile,
+				Spyj:       SUBMIT,
+				Czrq:       t,
+				FlagNotice: 1,
 			}
 			if err := models.AddProcMod(&pm); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
@@ -230,11 +234,12 @@ func UpdateProc(c *gin.Context) {
 			return
 		}
 		procMod := models.Procmodify{
-			ProcID: proc.ID,
-			Node:   "0",
-			Dm:     form.Dm,
-			Czr:    form.Mobile,
-			Czrq:   t,
+			ProcID:     proc.ID,
+			Node:       "0",
+			Dm:         form.Dm,
+			Czr:        form.Mobile,
+			Czrq:       t,
+			FlagNotice: 1,
 		}
 		if form.Modifyid > 0 {
 			procMod.ID = form.Modifyid
@@ -284,6 +289,7 @@ func UpdateProc(c *gin.Context) {
 			if next.Flag == "1" {
 				pm.Spyj = AGREE
 				pm.Czrq = t
+				pm.FlagNotice = 1
 				if err := models.AddProcMod(&pm); err != nil {
 					appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 					return
@@ -330,9 +336,10 @@ func DeleteProc(c *gin.Context) {
 		return
 	}
 	procMod := models.Procmodify{
-		ID:   proc.Modifyid,
-		Spyj: INVALID,
-		Czrq: time.Now().Format("2006-01-02 15:04:05"),
+		ID:         proc.Modifyid,
+		Spyj:       INVALID,
+		FlagNotice: 1,
+		Czrq:       time.Now().Format("2006-01-02 15:04:05"),
 	}
 	if err := models.UpdateProcMod(&procMod); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)

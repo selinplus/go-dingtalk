@@ -12,6 +12,7 @@ type Process struct {
 	SyrName string `json:"syr_name" gorm:"COMMENT:'使用人姓名'"`
 	Syr     string `json:"syr" gorm:"COMMENT:'使用人手机号'"`
 	Cfwz    string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
+	Title   string `json:"title" gorm:"COMMENT:'提报事项'"`
 	Xq      string `json:"xq" gorm:"COMMENT:'详细描述'"`
 	Tbsj    string `json:"tbsj" gorm:"COMMENT:'提报日期'"`
 	Zfbz    string `json:"zfbz" gorm:"COMMENT:'作废标志,0:未作废,1:作废';default:'0'"`
@@ -61,6 +62,7 @@ type ProcResponse struct {
 	Syr      string `json:"syr"`
 	Cfwz     string `json:"cfwz"`
 	Zp       string `json:"zp"`
+	Title    string `json:"title"`
 	Xq       string `json:"xq"`
 	Tbsj     string `json:"tbsj"`
 	Modifyid uint   `json:"modifyid"`
@@ -71,8 +73,8 @@ type ProcResponse struct {
 
 func GetProcDetail(procid uint) (*ProcResponse, error) {
 	var pr ProcResponse
-	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.xq,
-       			   process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
+	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.title,
+       			   process.xq,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
 			       process.syr_name,process.syr,process.cfwz
 			from process
          	left join procmodify on process.id = procmodify.procid
@@ -87,8 +89,8 @@ func GetProcDetail(procid uint) (*ProcResponse, error) {
 
 func GetProcTodoList(czr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
-	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.xq,
-       			   process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
+	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.title,
+       			   process.xq,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
 				   process.syr_name,process.syr,process.cfwz
 			from process
          	left join procmodify on process.id = procmodify.procid
@@ -108,8 +110,8 @@ func GetProcTodoList(czr string) ([]*ProcResponse, error) {
 
 func GetProcSaveList(tbr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
-	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.xq,
-       			   process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
+	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.title,
+       			   process.xq,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
 				   process.syr_name,process.syr,process.cfwz
 			from process
          	left join procmodify on process.id = procmodify.procid
@@ -128,8 +130,8 @@ func GetProcSaveList(tbr string) ([]*ProcResponse, error) {
 
 func GetProcDoneList(czr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
-	sql := `select distinct process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,
-				   process.devid,process.xq,process.zp,process.tbsj,process.syr_name,process.syr,process.cfwz
+	sql := `select distinct process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,
+			       process.title,process.xq,process.xq,process.zp,process.tbsj,process.syr_name,process.syr,process.cfwz
 		  	from process
           	left join procmodify on process.id = procmodify.procid
           	left join proctype on process.dm = proctype.dm

@@ -1,14 +1,15 @@
 package models
 
 type Procmodify struct {
-	ID     uint   `gorm:"primary_key;AUTO_INCREMENT"`
-	ProcID uint   `json:"procid" gorm:"COMMENT:'流程实例ID';column:procid"`
-	Dm     string `json:"dm" gorm:"COMMENT:'提报类型代码'"`
-	Node   string `json:"node" gorm:"COMMENT:'当前节点代码'"`
-	Tsr    string `json:"tsr" gorm:"COMMENT:'推送人'"`
-	Czr    string `json:"czr" gorm:"COMMENT:'操作人'"`
-	Spyj   string `json:"spyj" gorm:"COMMENT:'审批意见'"`
-	Czrq   string `json:"czrq" gorm:"COMMENT:'操作日期'"`
+	ID         uint   `gorm:"primary_key;AUTO_INCREMENT"`
+	ProcID     uint   `json:"procid" gorm:"COMMENT:'流程实例ID';column:procid"`
+	Dm         string `json:"dm" gorm:"COMMENT:'提报类型代码'"`
+	Node       string `json:"node" gorm:"COMMENT:'当前节点代码'"`
+	Tsr        string `json:"tsr" gorm:"COMMENT:'推送人'"`
+	Czr        string `json:"czr" gorm:"COMMENT:'操作人'"`
+	Spyj       string `json:"spyj" gorm:"COMMENT:'审批意见'"`
+	Czrq       string `json:"czrq" gorm:"COMMENT:'操作日期'"`
+	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'0: 未推送 1: 已推送';size:1;default:'0'"`
 }
 
 func AddProcMod(data interface{}) error {
@@ -48,4 +49,20 @@ func IsProcManualDone(procid uint) bool {
 		return false
 	}
 	return true
+}
+
+func GetProcessFlag() ([]*Procmodify, error) {
+	var ps []*Procmodify
+	if err := db.Table("procmodify").Where("flag_notice=0").Scan(&ps).Error; err != nil {
+		return nil, err
+	}
+	return ps, nil
+}
+
+func UpdateProcessFlag(ID uint) error {
+	if err := db.Table("procmodify").
+		Where("id = ? and flag_notice = 0", ID).Update("flag_notice", 1).Error; err != nil {
+		return err
+	}
+	return nil
 }
