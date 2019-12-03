@@ -52,7 +52,11 @@ func Sec() gin.HandlerFunc {
 					timeSmap, _ := strconv.Atoi(ts[0])
 					if time.Now().Unix()-int64(timeSmap) < setting.AppSetting.TokenTimeout {
 						if t.IsTokenExist(tokenMsg) {
-							code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+							if strings.Index(u, "/upload/images/") == -1 {
+								code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
+							} else { //when download files ,token timeout over 30s
+								code = e.SUCCESS
+							}
 						} else {
 							code = e.SUCCESS
 							t.AddToken(tokenMsg)
