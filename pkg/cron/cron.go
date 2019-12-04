@@ -91,6 +91,7 @@ func ProcessMessageDingding() {
 		}
 		tcmprJson := dingtalk.ProcessMseesageToDingding(p, proc.Czr)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		log.Println("asyncsendReturn is", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateProcessFlag(proc.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
