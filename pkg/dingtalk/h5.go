@@ -148,15 +148,20 @@ func GetJsApiConfig(url string) string {
 //生成流程提报待办通知消息体
 func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
-	link := map[string]interface{}{
-		"messageUrl": "",
-		"picUrl":     "@lALOACZwe2Rk",
-		"title":      p.Title,
-		"text":       p.Xq,
+	var content string
+	if p.Title == "" {
+		content = fmt.Sprintf(
+			"您有一条提报事项待办消息，推送人是%v，描述信息：%v", p.Tbr, p.Xq)
+	} else {
+		content = fmt.Sprintf(
+			"您有一条提报事项待办消息，推送人是%v，标题为：%v，描述信息：%v", p.Tbr, p.Title, p.Xq)
+	}
+	text := map[string]interface{}{
+		"content": content,
 	}
 	msgcotent := map[string]interface{}{
-		"msgtype": "link",
-		"link":    link,
+		"msgtype": "text",
+		"text":    text,
 	}
 	user, _ := models.GetUserByMobile(czr)
 	tcmpr := map[string]interface{}{
