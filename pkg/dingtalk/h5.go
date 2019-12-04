@@ -146,7 +146,7 @@ func GetJsApiConfig(url string) string {
 }
 
 //生成流程提报待办通知消息体
-func ProcessMseesageToDingding(p *models.ProcResponse) string {
+func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
 	link := map[string]interface{}{
 		"messageUrl": "",
@@ -158,8 +158,7 @@ func ProcessMseesageToDingding(p *models.ProcResponse) string {
 		"msgtype": "link",
 		"link":    link,
 	}
-	log.Println(p.Czr)
-	user, _ := models.GetUserByMobile(p.Czr)
+	user, _ := models.GetUserByMobile(czr)
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
 		"userid_list": user.UserID,
@@ -192,6 +191,7 @@ func MseesageToDingding(msg *models.Msg) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 
@@ -205,7 +205,6 @@ type AsyncsendReturn struct {
 // 企业会话消息异步发送
 func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 	var asyncsendReturn AsyncsendReturn
-	log.Println("mpar is", mpar)
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetAccessToken()).
 		Type("json").Send(mpar).End()
@@ -214,7 +213,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 		return nil
 	} else {
 		err := json.Unmarshal([]byte(body), &asyncsendReturn)
-		log.Println("asyncsendReturn is", asyncsendReturn)
+		//log.Println("asyncsendReturn is", asyncsendReturn)
 		if err != nil {
 			log.Printf("unmarshall asyncsendReturn info error:%v", err)
 			return nil

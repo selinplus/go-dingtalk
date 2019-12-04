@@ -85,13 +85,11 @@ func ProcessMessageDingding() {
 		return
 	}
 	for _, proc := range procs {
-		log.Println("flag=0,id=", proc.ID)
-		log.Println("flag=0,procid=", proc.ProcID)
 		p, err := models.GetProcDetail(proc.ProcID)
 		if err != nil {
 			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
 		}
-		tcmprJson := dingtalk.ProcessMseesageToDingding(p)
+		tcmprJson := dingtalk.ProcessMseesageToDingding(p, proc.Czr)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateProcessFlag(proc.ID); err != nil {
