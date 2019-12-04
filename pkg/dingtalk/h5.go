@@ -158,10 +158,11 @@ func ProcessMseesageToDingding(p *models.ProcResponse) string {
 		"msgtype": "link",
 		"link":    link,
 	}
-	userid, _ := models.GetUserByMobile(p.Czr)
+	log.Println(p.Czr)
+	user, _ := models.GetUserByMobile(p.Czr)
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
-		"userid_list": userid,
+		"userid_list": user.UserID,
 		"to_all_user": false,
 		"msg":         msgcotent,
 	}
