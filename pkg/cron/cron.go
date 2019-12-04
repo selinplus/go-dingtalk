@@ -90,6 +90,7 @@ func ProcessMessageDingding() {
 			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
 		}
 		tcmprJson := dingtalk.ProcessMseesageToDingding(p, proc.Czr)
+		log.Println("tcmprJson is", tcmprJson)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		log.Println("asyncsendReturn is", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
