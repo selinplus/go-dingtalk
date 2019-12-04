@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -454,6 +455,8 @@ func GetProcTodoList(c *gin.Context) {
 					p.Zt = "已提交至" + node.Role
 				}
 			}
+
+			log.Println(p)
 			data = append(data, p)
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, data)
@@ -467,6 +470,7 @@ func GetProcTodoList(c *gin.Context) {
 	}
 	for _, proc := range psList {
 		proc.Zt = "已保存未提交"
+		log.Println(proc)
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, psList)
 }
@@ -519,6 +523,8 @@ func GetProcDoneList(c *gin.Context) {
 					p.Zt = "已提交至" + node.Role
 				}
 			}
+
+			log.Println(p)
 			data = append(data, p)
 		}
 	}
