@@ -85,7 +85,7 @@ func ProcessMessageDingding() {
 		return
 	}
 	for _, proc := range procs {
-		p, err := models.GetProcDetail(proc.ID)
+		p, err := models.GetProcDetail(proc.ProcID)
 		if err != nil {
 			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
 		}
