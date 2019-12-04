@@ -205,7 +205,7 @@ type AsyncsendReturn struct {
 // 企业会话消息异步发送
 func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 	var asyncsendReturn AsyncsendReturn
-	//logging.Info(fmt.Sprintf("%v", mpar))
+	log.Println("mpar is", mpar)
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetAccessToken()).
 		Type("json").Send(mpar).End()
@@ -214,7 +214,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 		return nil
 	} else {
 		err := json.Unmarshal([]byte(body), &asyncsendReturn)
-		//logging.Info(fmt.Sprintf("%v", asyncsendReturn))
+		log.Println("asyncsendReturn is", asyncsendReturn)
 		if err != nil {
 			log.Printf("unmarshall asyncsendReturn info error:%v", err)
 			return nil

@@ -36,6 +36,7 @@ type ProcForm struct {
 	SyrName  string `json:"syr_name"`
 	Syr      string `json:"syr"`
 	Cfwz     string `json:"cfwz"`
+	Spyj     string `json:"spyj"`
 }
 
 //提报事项保存&&提交
@@ -83,13 +84,14 @@ func AddProc(c *gin.Context) {
 	if t != "" {
 		if form.Dm == "0" { //if 手工提报
 			pm := models.Procmodify{
-				ProcID: procid,
-				Node:   "0",
-				Dm:     form.Dm,
-				Tsr:    form.Mobile,
-				Czr:    form.Mobile,
-				Spyj:   SUBMIT,
-				Czrq:   t,
+				ProcID:     procid,
+				Node:       "0",
+				Dm:         form.Dm,
+				Tsr:        form.Mobile,
+				Czr:        form.Mobile,
+				Spyj:       SUBMIT,
+				Czrq:       t,
+				FlagNotice: 1,
 			}
 			if err := models.AddProcMod(&pm); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
@@ -110,13 +112,14 @@ func AddProc(c *gin.Context) {
 			return
 		}
 		procMod := models.Procmodify{
-			ProcID: procid,
-			Node:   "0",
-			Dm:     form.Dm,
-			Tsr:    form.Mobile,
-			Czr:    form.Mobile,
-			Spyj:   SUBMIT,
-			Czrq:   t,
+			ProcID:     procid,
+			Node:       "0",
+			Dm:         form.Dm,
+			Tsr:        form.Mobile,
+			Czr:        form.Mobile,
+			Spyj:       SUBMIT,
+			Czrq:       t,
+			FlagNotice: 1,
 		}
 		if err := models.AddProcMod(&procMod); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
@@ -155,6 +158,7 @@ func AddProc(c *gin.Context) {
 			if next.Flag == "1" {
 				pm.Spyj = AGREE
 				pm.Czrq = t
+				pm.FlagNotice = 1
 				if err := models.AddProcMod(&pm); err != nil {
 					appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 					return
@@ -211,7 +215,7 @@ func UpdateProc(c *gin.Context) {
 				Dm:         form.Dm,
 				Tsr:        form.Mobile,
 				Czr:        form.Mobile,
-				Spyj:       SUBMIT,
+				Spyj:       form.Spyj,
 				Czrq:       t,
 				FlagNotice: 1,
 			}
@@ -243,14 +247,14 @@ func UpdateProc(c *gin.Context) {
 		}
 		if form.Modifyid > 0 {
 			procMod.ID = form.Modifyid
-			procMod.Spyj = SUBAGAIN
+			procMod.Spyj = form.Spyj
 			if err := models.UpdateProcMod(&procMod); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 				return
 			}
 		} else {
 			procMod.Tsr = form.Mobile
-			procMod.Spyj = SUBMIT
+			procMod.Spyj = form.Spyj
 			if err := models.AddProcMod(&procMod); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 				return
@@ -280,6 +284,7 @@ func UpdateProc(c *gin.Context) {
 				Czr:    next.Rname,
 			}
 			if next.Flag == "0" {
+				pm.Spyj = form.Spyj
 				if err := models.AddProcMod(&pm); err != nil {
 					appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 					return
