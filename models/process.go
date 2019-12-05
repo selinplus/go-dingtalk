@@ -135,7 +135,8 @@ func GetProcDoneList(czr string) ([]*ProcResponse, error) {
 		  	from process
           	left join procmodify on process.id = procmodify.procid
           	left join proctype on process.dm = proctype.dm
- 		  	where procmodify.czr = ? order by process.id desc`
+ 		  	where procmodify.czr = ?  and procmodify.czrq !='' and procmodify.czrq is not null 
+			order by process.id desc`
 	err := db.Raw(sql, czr).Scan(&pr).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
