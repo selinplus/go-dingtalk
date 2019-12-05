@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -183,6 +184,7 @@ func UpdateProc(c *gin.Context) {
 		form   ProcForm
 		tsr, t string
 	)
+	log.Println("form=====", form)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
@@ -200,6 +202,7 @@ func UpdateProc(c *gin.Context) {
 		Zp:     form.Zp,
 		Tbsj:   sj,
 	}
+	log.Println("proc======", proc)
 	if err := models.UpdateProc(&proc); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_SAVE_PROC_FAIL, nil)
 		return
@@ -215,10 +218,11 @@ func UpdateProc(c *gin.Context) {
 				Dm:         form.Dm,
 				Tsr:        form.Mobile,
 				Czr:        form.Mobile,
-				Spyj:       form.Spyj,
+				Spyj:       SUBMIT,
 				Czrq:       t,
 				FlagNotice: 1,
 			}
+			log.Println("pm======", pm)
 			if err := models.AddProcMod(&pm); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 				return
@@ -247,14 +251,14 @@ func UpdateProc(c *gin.Context) {
 		}
 		if form.Modifyid > 0 {
 			procMod.ID = form.Modifyid
-			procMod.Spyj = form.Spyj
+			procMod.Spyj = SUBAGAIN
 			if err := models.UpdateProcMod(&procMod); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 				return
 			}
 		} else {
 			procMod.Tsr = form.Mobile
-			procMod.Spyj = form.Spyj
+			procMod.Spyj = SUBMIT
 			if err := models.AddProcMod(&procMod); err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
 				return
