@@ -471,7 +471,7 @@ func GetProcTodoList(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, psList)
 }
 
-//获取已办列表
+//获取已办列表(全部)
 func GetProcDoneList(c *gin.Context) {
 	var data []interface{}
 	appG := app.Gin{C: c}
@@ -515,6 +515,114 @@ func GetProcDoneList(c *gin.Context) {
 				}
 				if node.Next == "-1" {
 					p.Zt = COMPLETE
+				} else {
+					p.Zt = "已提交至" + node.Role
+				}
+			}
+			data = append(data, p)
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//获取已办列表(已办结)
+func GetProcDoneListEnd(c *gin.Context) {
+	var data []interface{}
+	appG := app.Gin{C: c}
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
+	czr, uerr := models.GetUserByUserid(userid)
+	if uerr != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
+	procList, err := models.GetProcDoneList(czr.Mobile)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+		return
+	}
+	if len(procList) > 0 {
+		for _, proc := range procList {
+			p, err := models.GetProcDetail(proc.ID)
+			if err != nil {
+				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+				return
+			}
+			if p.Dm == "0" {
+				if models.IsProcManualDone(p.ID) {
+					continue
+				} else {
+					p.Zt = "已由" + p.Czr + "办结"
+				}
+			} else if p.Node == "0" {
+				continue
+			} else {
+				node, err := models.GetNode(p.Dm, p.Node)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR, nil)
+					return
+				}
+				if node.Next == "-1" {
+					p.Zt = COMPLETE
+				} else {
+					continue
+				}
+			}
+			data = append(data, p)
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//获取已办列表(未办结)
+func GetProcDoneListDoing(c *gin.Context) {
+	var data []interface{}
+	appG := app.Gin{C: c}
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
+	czr, uerr := models.GetUserByUserid(userid)
+	if uerr != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
+	procList, err := models.GetProcDoneList(czr.Mobile)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+		return
+	}
+	if len(procList) > 0 {
+		for _, proc := range procList {
+			p, err := models.GetProcDetail(proc.ID)
+			if err != nil {
+				appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+				return
+			}
+			if p.Dm == "0" {
+				if models.IsProcManualDone(p.ID) {
+					p.Zt = "已提交至" + p.Czr + "处理"
+				} else {
+					continue
+				}
+			} else if p.Node == "0" {
+				p.Zt = BACKTOBEG
+			} else {
+				node, err := models.GetNode(p.Dm, p.Node)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR, nil)
+					return
+				}
+				if node.Next == "-1" {
+					continue
 				} else {
 					p.Zt = "已提交至" + node.Role
 				}

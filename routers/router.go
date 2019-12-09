@@ -239,8 +239,12 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/proc/detail", dingtalk.GetProcDetail)
 		//获取待办列表
 		apiv3.GET("/proc/todolist", dingtalk.GetProcTodoList)
-		//获取已办列表
+		//获取已办列表(全部)
 		apiv3.GET("/proc/donelist", dingtalk.GetProcDoneList)
+		//获取已办列表(已办结)
+		apiv3.GET("/proc/donelistend", dingtalk.GetProcDoneListEnd)
+		//获取已办列表(未办结)
+		apiv3.GET("/proc/donelistdoing", dingtalk.GetProcDoneListDoing)
 		//事件处理(退回&&通过)
 		apiv3.POST("/proc/deal", dingtalk.DealProc)
 		//事件处理流水记录查询
