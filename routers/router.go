@@ -116,7 +116,7 @@ func InitRouter() *gin.Engine {
 		//查询操作类型代码
 		apiv1.GET("/dev/op", dingtalk.GetDevOp)
 	}
-	//外网
+	//外网----消息助手&&记事本&&小网盘
 	apiv2 := r.Group("/api/v2")
 	apiv2.Use(sec.Sec())
 	{
@@ -199,7 +199,7 @@ func InitRouter() *gin.Engine {
 		//删除网盘文件夹
 		apiv2.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
 	}
-	//外网----设备管理
+	//外网----设备管理&&事件提报
 	apiv3 := r.Group("/api/v3")
 	apiv3.Use(ot.OT())
 	{
@@ -249,6 +249,10 @@ func InitRouter() *gin.Engine {
 		apiv3.POST("/proc/deal", dingtalk.DealProc)
 		//事件处理流水记录查询
 		apiv3.GET("/proc/list", dingtalk.GetProcModList)
+		//发起补充描述
+		apiv3.GET("/proc/bcms", dingtalk.ProcBcms)
+		//补充描述提交
+		apiv3.POST("/proc/commitbcms", dingtalk.UpdateProcBcms)
 
 		//获取手工提报人员列表
 		apiv3.GET("/proc/custlist", dingtalk.GetProcCustomizeList)

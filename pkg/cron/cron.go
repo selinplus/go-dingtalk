@@ -24,7 +24,11 @@ func Setup() {
 		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项待办工作通知
 		if err := c.AddFunc("*/30 * * * * *", ProcessMessageDingding); err != nil {
-			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
+			logging.Info(fmt.Sprintf("Send Process MessageDingding failed：%v", err))
+		}
+		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项补充描述工作通知
+		if err := c.AddFunc("*/30 * * * * *", ProcessBcmsMessageDingding); err != nil {
+			logging.Info(fmt.Sprintf("Send ProcessBcms MessageDingding failed：%v", err))
 		}
 		// 每天半夜同步一次部门和人员信息
 		if err := c.AddFunc("@midnight", Sync); err != nil {
@@ -93,6 +97,28 @@ func ProcessMessageDingding() {
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateProcessFlag(proc.ID); err != nil {
+				logging.Info(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
+			}
+		}
+	}
+}
+
+//遍历一遍发送标志为0的信息，通知钉钉发送提报事项补充描述工作通知
+func ProcessBcmsMessageDingding() {
+	procs, err := models.GetProcessBcmsFlag()
+	if err != nil {
+		logging.Info(fmt.Sprintf("get process_flag err:%v", err))
+		return
+	}
+	for _, proc := range procs {
+		p, err := models.GetProcDetail(proc.ProcID)
+		if err != nil {
+			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
+		}
+		tcmprJson := dingtalk.ProcessBcmsMseesageToDingding(p)
+		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+			if err := models.UpdateProcessBcmsFlag(proc.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
 			}
 		}

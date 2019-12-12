@@ -145,6 +145,31 @@ func GetJsApiConfig(url string) string {
 	}
 }
 
+//生成工作通知消息体
+func MseesageToDingding(msg *models.Msg) string {
+	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
+	link := map[string]interface{}{
+		"messageUrl": setting.AppSetting.DingtalkMsgUrl + "#/?id=" + strconv.Itoa(int(msg.ID)),
+		"picUrl":     "@lALOACZwe2Rk",
+		"title":      msg.Title,
+		"text":       msg.Content,
+	}
+	msgcotent := map[string]interface{}{
+		"msgtype": "link",
+		"link":    link,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": msg.ToID,
+		"to_all_user": false,
+		"msg":         msgcotent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
+	return tcmprJson
+}
+
 //生成流程提报待办通知消息体
 func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
@@ -175,22 +200,23 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	return tcmprJson
 }
 
-//生成工作通知消息体
-func MseesageToDingding(msg *models.Msg) string {
+//生成流程提报补充描述通知消息体
+func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
 	link := map[string]interface{}{
-		"messageUrl": setting.AppSetting.DingtalkMsgUrl + "#/?id=" + strconv.Itoa(int(msg.ID)),
+		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
 		"picUrl":     "@lALOACZwe2Rk",
-		"title":      msg.Title,
-		"text":       msg.Content,
+		"title":      p.Title,
+		"text":       "您的提报描述不完整，请进行补充描述！",
 	}
 	msgcotent := map[string]interface{}{
 		"msgtype": "link",
 		"link":    link,
 	}
+	user, _ := models.GetUserByMobile(p.Mobile)
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
-		"userid_list": msg.ToID,
+		"userid_list": user.UserID,
 		"to_all_user": false,
 		"msg":         msgcotent,
 	}

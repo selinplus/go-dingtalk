@@ -30,6 +30,7 @@ type ProcForm struct {
 	DevID    string `json:"devid"`
 	Title    string `json:"title"`
 	Xq       string `json:"xq"`
+	Bcms     string `json:"bcms"`
 	Zp       string `json:"zp"`
 	Czr      string `json:"czr"`
 	Modifyid uint   `json:"modifyid"`
@@ -314,11 +315,11 @@ func UpdateProc(c *gin.Context) {
 func DeleteProc(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id, err := strconv.Atoi(c.Query("id"))
-	procid := uint(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
+	procid := uint(id)
 	proc, err := models.GetProcDetail(procid)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
@@ -348,6 +349,43 @@ func DeleteProc(c *gin.Context) {
 	}
 	if err := models.UpdateProcMod(&procMod); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_PROCMOD_FAIL, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//发起补充描述
+func ProcBcms(c *gin.Context) {
+	appG := app.Gin{C: c}
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	procid := uint(id)
+	procTag := models.ProcessTag{ProcID: procid}
+	if err := models.AddProcessBcms(&procTag); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//补充描述提交
+func UpdateProcBcms(c *gin.Context) {
+	appG := app.Gin{C: c}
+	var form ProcForm
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	proc := models.Process{
+		ID:   form.ID,
+		Bcms: form.Bcms,
+	}
+	if err := models.UpdateProc(&proc); err != nil {
+		appG.Response(http.StatusOK, e.ERROR_SAVE_PROC_FAIL, nil)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)

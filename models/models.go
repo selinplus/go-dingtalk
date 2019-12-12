@@ -111,6 +111,11 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Process{})
 	}
+	if !db.HasTable("process_tag") {
+		db.CreateTable(ProcessTag{})
+	} else {
+		db.AutoMigrate(ProcessTag{})
+	}
 	if !db.HasTable("procmodify") {
 		db.CreateTable(Procmodify{})
 	} else {
