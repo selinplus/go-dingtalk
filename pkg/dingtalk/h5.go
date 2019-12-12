@@ -203,10 +203,16 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 //生成流程提报补充描述通知消息体
 func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
+	var title string
+	if p.Title == "" {
+		title = "请对提报事项进行补充描述"
+	} else {
+		title = p.Title
+	}
 	link := map[string]interface{}{
 		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
 		"picUrl":     "@lALOACZwe2Rk",
-		"title":      p.Title,
+		"title":      title,
 		"text":       "您的提报描述不完整，请进行补充描述！",
 	}
 	msgcotent := map[string]interface{}{
