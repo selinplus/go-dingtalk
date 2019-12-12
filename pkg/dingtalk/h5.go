@@ -210,11 +210,11 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 		title = fmt.Sprintf("请对标题为%s的提报事项进行补充描述", p.Title)
 	}
 	link := map[string]interface{}{
-		"messageUrl": "test",
-		//"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
-		"picUrl": "@lALOACZwe2Rk",
-		"title":  title,
-		"text":   "您的提报描述不完整，请进行补充描述！",
+		//"messageUrl": "test",
+		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
+		"picUrl":     "@lALOACZwe2Rk",
+		"title":      title,
+		"text":       "您的提报描述不完整，请进行补充描述！",
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "link",
