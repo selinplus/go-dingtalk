@@ -154,7 +154,7 @@ func MseesageToDingding(msg *models.Msg) string {
 		"title":      msg.Title,
 		"text":       msg.Content,
 	}
-	msgcotent := map[string]interface{}{
+	msgcontent := map[string]interface{}{
 		"msgtype": "link",
 		"link":    link,
 	}
@@ -162,7 +162,7 @@ func MseesageToDingding(msg *models.Msg) string {
 		"agent_id":    agentID,
 		"userid_list": msg.ToID,
 		"to_all_user": false,
-		"msg":         msgcotent,
+		"msg":         msgcontent,
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
@@ -184,7 +184,7 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	text := map[string]interface{}{
 		"content": content,
 	}
-	msgcotent := map[string]interface{}{
+	msgcontent := map[string]interface{}{
 		"msgtype": "text",
 		"text":    text,
 	}
@@ -193,7 +193,7 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 		"agent_id":    agentID,
 		"userid_list": user.UserID,
 		"to_all_user": false,
-		"msg":         msgcotent,
+		"msg":         msgcontent,
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
@@ -207,15 +207,16 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	if p.Title == "" {
 		title = "请对提报事项进行补充描述"
 	} else {
-		title = p.Title
+		title = fmt.Sprintf("请对标题为%s的提报事项进行补充描述", p.Title)
 	}
 	link := map[string]interface{}{
-		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
-		"picUrl":     "@lALOACZwe2Rk",
-		"title":      title,
-		"text":       "您的提报描述不完整，请进行补充描述！",
+		"messageUrl": "test",
+		//"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
+		"picUrl": "@lALOACZwe2Rk",
+		"title":  title,
+		"text":   "您的提报描述不完整，请进行补充描述！",
 	}
-	msgcotent := map[string]interface{}{
+	msgcontent := map[string]interface{}{
 		"msgtype": "link",
 		"link":    link,
 	}
@@ -224,7 +225,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 		"agent_id":    agentID,
 		"userid_list": user.UserID,
 		"to_all_user": false,
-		"msg":         msgcotent,
+		"msg":         msgcontent,
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
