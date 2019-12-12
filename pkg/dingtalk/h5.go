@@ -222,7 +222,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 
@@ -244,7 +244,7 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 		return nil
 	} else {
 		err := json.Unmarshal([]byte(body), &asyncsendReturn)
-		//log.Println("asyncsendReturn is", asyncsendReturn)
+		log.Println("asyncsendReturn is", asyncsendReturn)
 		if err != nil {
 			log.Printf("unmarshall asyncsendReturn info error:%v", err)
 			return nil
