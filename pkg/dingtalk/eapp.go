@@ -69,7 +69,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
 	link := map[string]interface{}{
-		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
+		"messageUrl": fmt.Sprintf("eapp://pages/myreport/myreport?id=%v", p.ID),
 		"picUrl":     "@lALOACZwe2Rk",
 		"title":      "您的提报描述不够准确，请进行补充描述！",
 		"text":       t + text,
