@@ -37,10 +37,8 @@ func GetAccessToken() string {
 	t := time.Now().UnixNano()
 	if Token == nil || t-Token.ExpiresTime >= 0 {
 		_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/gettoken").
-			Query("appkey=ding2zehuqvvwmpxxqpk").
-			Query("appsecret=AQSWiwluE6_GUdPsed2A0hoBk1OzhGCJhhYuuoJc0o_Kz64YJaFqQxu0GXQB10_I").End()
-		//Query("appkey=" + setting.MsgAppSetting.AppKey).
-		//Query("appsecret=" + setting.MsgAppSetting.AppSecret).End()
+			Query("appkey=" + setting.MsgAppSetting.AppKey).
+			Query("appsecret=" + setting.MsgAppSetting.AppSecret).End()
 		if len(errs) > 0 {
 			log.Printf("get dingtalk access token err:%v", errs[0])
 		} else {
@@ -169,67 +167,6 @@ func MseesageToDingding(msg *models.Msg) string {
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
 	//log.Println("tcmprJson is", tcmprJson)
-	return tcmprJson
-}
-
-//生成流程提报待办通知消息体
-func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
-	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
-	var content string
-	if p.Title == "" {
-		content = fmt.Sprintf(
-			"您有一条提报事项待办消息，推送人是%v，描述信息：%v", p.Tbr, p.Xq)
-	} else {
-		content = fmt.Sprintf(
-			"您有一条提报事项待办消息，推送人是%v，标题为：%v，描述信息：%v", p.Tbr, p.Title, p.Xq)
-	}
-	text := map[string]interface{}{
-		"content": content,
-	}
-	msgcontent := map[string]interface{}{
-		"msgtype": "text",
-		"text":    text,
-	}
-	user, _ := models.GetUserByMobile(czr)
-	tcmpr := map[string]interface{}{
-		"agent_id":    agentID,
-		"userid_list": user.UserID,
-		"to_all_user": false,
-		"msg":         msgcontent,
-	}
-	tcmprBytes, _ := json.Marshal(&tcmpr)
-	tcmprJson := string(tcmprBytes)
-	return tcmprJson
-}
-
-//生成流程提报补充描述通知消息体
-func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
-	var title string
-	if p.Title == "" {
-		title = "请对提报事项进行补充描述"
-	} else {
-		title = fmt.Sprintf("请对标题为%s的提报事项进行补充描述", p.Title)
-	}
-	link := map[string]interface{}{
-		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
-		"picUrl":     "@lALOACZwe2Rk",
-		"title":      title,
-		"text":       "您的提报描述不完整，请进行补充描述！",
-	}
-	msgcontent := map[string]interface{}{
-		"msgtype": "link",
-		"link":    link,
-	}
-	user, _ := models.GetUserByMobile(p.Mobile)
-	tcmpr := map[string]interface{}{
-		"agent_id":    287582923,
-		"userid_list": user.UserID,
-		"to_all_user": false,
-		"msg":         msgcontent,
-	}
-	tcmprBytes, _ := json.Marshal(&tcmpr)
-	tcmprJson := string(tcmprBytes)
-	log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 

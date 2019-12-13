@@ -82,6 +82,15 @@ type MsgApp struct {
 
 var MsgAppSetting = &MsgApp{}
 
+type EApp struct {
+	AgentID   string
+	AppKey    string
+	AppSecret string
+	Domain    string
+}
+
+var EAppSetting = &EApp{}
+
 var cfg *ini.File
 
 // Setup initialize the configuration instance
@@ -98,6 +107,7 @@ func Setup() {
 	mapTo("redis", RedisSetting)
 	mapTo("dingtalk", DingtalkSetting)
 	mapTo("msgapp", MsgAppSetting)
+	mapTo("eapp", EAppSetting)
 
 	AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second

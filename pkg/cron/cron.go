@@ -94,7 +94,7 @@ func ProcessMessageDingding() {
 			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
 		}
 		tcmprJson := dingtalk.ProcessMseesageToDingding(p, proc.Czr)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateProcessFlag(proc.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
@@ -116,7 +116,7 @@ func ProcessBcmsMessageDingding() {
 			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
 		}
 		tcmprJson := dingtalk.ProcessBcmsMseesageToDingding(p)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateProcessBcmsFlag(proc.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
