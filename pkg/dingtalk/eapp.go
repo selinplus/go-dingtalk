@@ -9,6 +9,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
 	"strconv"
+	"time"
 )
 
 // 小程序Token(用于发送工作通知)
@@ -53,23 +54,25 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 
 //生成流程提报补充描述通知消息体
 func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
-	var title string
+	var text string
 	if p.Title == "" {
-		title = "请对提报事项进行补充描述"
+		text = ":请对提报事项进行补充描述"
 	} else {
-		title = fmt.Sprintf("请对标题为%s的提报事项进行补充描述", p.Title)
+		text = fmt.Sprintf(":请对标题为[%s]的提报事项进行补充描述", p.Title)
 	}
+	t := time.Now().Format("2006-01-02 15:04:05")
 	link := map[string]interface{}{
 		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
 		"picUrl":     "@lALOACZwe2Rk",
-		"title":      title,
-		"text":       "您的提报描述不完整，请进行补充描述！",
+		"title":      "您的提报描述不够准确，请进行补充描述！",
+		"text":       t + text,
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "link",
@@ -84,7 +87,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	log.Println("tcmprJson is", tcmprJson)
+	//log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 
