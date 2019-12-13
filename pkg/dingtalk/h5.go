@@ -202,7 +202,6 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 
 //生成流程提报补充描述通知消息体
 func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
-	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
 	var title string
 	if p.Title == "" {
 		title = "请对提报事项进行补充描述"
@@ -210,7 +209,6 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 		title = fmt.Sprintf("请对标题为%s的提报事项进行补充描述", p.Title)
 	}
 	link := map[string]interface{}{
-		//"messageUrl": "test",
 		"messageUrl": fmt.Sprintf("eapp://pages/bcms/bcms?id=%v", p.ID),
 		"picUrl":     "@lALOACZwe2Rk",
 		"title":      title,
@@ -222,7 +220,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	}
 	user, _ := models.GetUserByMobile(p.Mobile)
 	tcmpr := map[string]interface{}{
-		"agent_id":    agentID,
+		"agent_id":    287582923,
 		"userid_list": user.UserID,
 		"to_all_user": false,
 		"msg":         msgcontent,
