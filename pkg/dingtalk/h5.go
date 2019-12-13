@@ -37,8 +37,10 @@ func GetAccessToken() string {
 	t := time.Now().UnixNano()
 	if Token == nil || t-Token.ExpiresTime >= 0 {
 		_, body, errs := gorequest.New().Get(setting.DingtalkSetting.OapiHost + "/gettoken").
-			Query("appkey=" + setting.MsgAppSetting.AppKey).
-			Query("appsecret=" + setting.MsgAppSetting.AppSecret).End()
+			Query("appkey=ding2zehuqvvwmpxxqpk").
+			Query("appsecret=AQSWiwluE6_GUdPsed2A0hoBk1OzhGCJhhYuuoJc0o_Kz64YJaFqQxu0GXQB10_I").End()
+		//Query("appkey=" + setting.MsgAppSetting.AppKey).
+		//Query("appsecret=" + setting.MsgAppSetting.AppSecret).End()
 		if len(errs) > 0 {
 			log.Printf("get dingtalk access token err:%v", errs[0])
 		} else {
