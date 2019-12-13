@@ -65,7 +65,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	if p.Title == "" {
 		text = ":请对提报事项进行补充描述"
 	} else {
-		text = fmt.Sprintf(":请对标题为[%s]的提报事项进行补充描述", p.Title)
+		text = fmt.Sprintf(":请对标题为%s的提报事项进行补充描述", p.Title)
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
 	link := map[string]interface{}{
