@@ -250,7 +250,7 @@ func InitRouter() *gin.Engine {
 		//事件处理流水记录查询
 		apiv3.GET("/proc/list", dingtalk.GetProcModList)
 		//发起补充描述
-		apiv3.GET("/proc/bcms", dingtalk.ProcBcms)
+		apiv3.POST("/proc/bcms", dingtalk.ProcBcms)
 		//补充描述提交
 		apiv3.POST("/proc/commitbcms", dingtalk.UpdateProcBcms)
 

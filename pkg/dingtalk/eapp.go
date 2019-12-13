@@ -32,11 +32,21 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	var content string
 	if p.Title == "" {
-		content = fmt.Sprintf(
-			"您有一条提报事项待办消息，推送人是%v，描述信息：%v", p.Tbr, p.Xq)
+		if p.Bcms == "" {
+			content = fmt.Sprintf(
+				"您有一条提报事项待办消息，推送人是%v，详情：%v", p.Tbr, p.Xq)
+		} else {
+			content = fmt.Sprintf(
+				"您有一条提报事项待办消息，推送人是%v，补充描述为：%v", p.Tbr, p.Bcms)
+		}
 	} else {
-		content = fmt.Sprintf(
-			"您有一条提报事项待办消息，推送人是%v，标题为：%v，描述信息：%v", p.Tbr, p.Title, p.Xq)
+		if p.Bcms == "" {
+			content = fmt.Sprintf(
+				"您有一条提报事项待办消息，推送人是%v，标题为：%v，详情：%v", p.Tbr, p.Title, p.Xq)
+		} else {
+			content = fmt.Sprintf(
+				"您有一条提报事项待办消息，推送人是%v，标题为：%v，补充描述为：%v", p.Tbr, p.Title, p.Bcms)
+		}
 	}
 	text := map[string]interface{}{
 		"content": content,

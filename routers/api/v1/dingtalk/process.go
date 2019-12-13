@@ -357,13 +357,21 @@ func DeleteProc(c *gin.Context) {
 //发起补充描述
 func ProcBcms(c *gin.Context) {
 	appG := app.Gin{C: c}
-	id, err := strconv.Atoi(c.Query("id"))
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+	var form ProcForm
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	procid := uint(id)
-	procTag := models.ProcessTag{ProcID: procid}
+	proc := models.Process{
+		ID:   form.ID,
+		Bcms: form.Bcms,
+	}
+	if err := models.UpdateProc(&proc); err != nil {
+		appG.Response(http.StatusOK, e.ERROR_SAVE_PROC_FAIL, nil)
+		return
+	}
+	procTag := models.ProcessTag{ProcID: form.ID}
 	if err := models.AddProcessBcms(&procTag); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
@@ -386,6 +394,19 @@ func UpdateProcBcms(c *gin.Context) {
 	}
 	if err := models.UpdateProc(&proc); err != nil {
 		appG.Response(http.StatusOK, e.ERROR_SAVE_PROC_FAIL, nil)
+		return
+	}
+	p, err := models.GetProcDetail(form.ID)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
+		return
+	}
+	procmd := models.Procmodify{
+		ID:         p.Modifyid,
+		FlagNotice: 0,
+	}
+	if err := models.UpdateProcMod(&procmd); err != nil {
+		appG.Response(http.StatusOK, e.ERROR, nil)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
