@@ -8,7 +8,7 @@ type Note struct {
 	Content    string `json:"content" gorm:"COMMENT:'内容';size:65535"`
 	UserID     string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 	Xgrq       string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
-	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'0: 未推送 1: 已推送';size:1"`
+	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'1: 未推送 2: 已推送';size:1"`
 }
 
 func IsSameTitle(userid, title string) bool {
@@ -84,7 +84,7 @@ func GetNoteDetail(id uint) (*NoteResp, error) {
 
 func UpdateNoteFlag(id uint) error {
 	if err := db.Table("note").
-		Where("id = ? and flag_notice = 0", id).Update("flag_notice", 1).Error; err != nil {
+		Where("id = ? and flag_notice = 1", id).Update("flag_notice", 2).Error; err != nil {
 		return err
 	}
 	return nil
@@ -92,7 +92,7 @@ func UpdateNoteFlag(id uint) error {
 
 func GetNoteFlag() ([]*Note, error) {
 	var notes []*Note
-	if err := db.Table("note").Where("flag_notice=0").Scan(&notes).Error; err != nil {
+	if err := db.Table("note").Where("flag_notice=1").Scan(&notes).Error; err != nil {
 		return nil, err
 	}
 	return notes, nil

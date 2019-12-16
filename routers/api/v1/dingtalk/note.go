@@ -125,7 +125,7 @@ func UpdateNote(c *gin.Context) {
 		Content:    form.Content,
 		UserID:     userID,
 		Xgrq:       t,
-		FlagNotice: 0,
+		FlagNotice: 1,
 	}
 	err = models.UpdateNote(&note)
 	if err != nil {
