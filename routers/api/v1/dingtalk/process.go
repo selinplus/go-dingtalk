@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -363,6 +364,7 @@ func ProcBcms(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	log.Println("form is ", form)
 	proc := models.Process{
 		ID:   form.ID,
 		Bcms: form.Bcms,
@@ -388,6 +390,7 @@ func UpdateProcBcms(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
+	log.Println("form is ", form)
 	proc := models.Process{
 		ID:   form.ID,
 		Bcms: form.Bcms,
