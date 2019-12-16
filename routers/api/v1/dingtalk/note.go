@@ -106,7 +106,7 @@ func UpdateNote(c *gin.Context) {
 		return
 	}
 	mobile = form.Mobile
-	//flag := 1
+	flag := 2
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
@@ -114,7 +114,7 @@ func UpdateNote(c *gin.Context) {
 			return
 		}
 		userID = user.UserID
-		//flag = 0
+		flag = 1
 	} else {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
@@ -125,7 +125,7 @@ func UpdateNote(c *gin.Context) {
 		Content:    form.Content,
 		UserID:     userID,
 		Xgrq:       t,
-		FlagNotice: 1,
+		FlagNotice: flag,
 	}
 	err = models.UpdateNote(&note)
 	if err != nil {

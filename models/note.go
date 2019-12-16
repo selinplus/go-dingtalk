@@ -8,7 +8,7 @@ type Note struct {
 	Content    string `json:"content" gorm:"COMMENT:'内容';size:65535"`
 	UserID     string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 	Xgrq       string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
-	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'1: 未推送 2: 已推送';size:1"`
+	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'1: 未推送 2: 已推送';size:1;default:'2'"`
 }
 
 func IsSameTitle(userid, title string) bool {
