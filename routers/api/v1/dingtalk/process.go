@@ -41,6 +41,11 @@ type ProcForm struct {
 	Spyj     string `json:"spyj"`
 }
 
+type ProcBcmsForm struct {
+	ID   uint   `json:"id" form:"id"`
+	Bcms string `json:"bcms" form:"bcms"`
+}
+
 //提报事项保存&&提交
 func AddProc(c *gin.Context) {
 	var (
@@ -358,7 +363,7 @@ func DeleteProc(c *gin.Context) {
 //发起补充描述
 func ProcBcms(c *gin.Context) {
 	appG := app.Gin{C: c}
-	var form ProcForm
+	var form ProcBcmsForm
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
@@ -384,7 +389,7 @@ func ProcBcms(c *gin.Context) {
 //补充描述提交
 func UpdateProcBcms(c *gin.Context) {
 	appG := app.Gin{C: c}
-	var form ProcForm
+	var form ProcBcmsForm
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
