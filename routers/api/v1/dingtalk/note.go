@@ -37,7 +37,6 @@ func AddNote(c *gin.Context) {
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
 	mobile = form.Mobile
-	//flag := 1
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
@@ -45,7 +44,6 @@ func AddNote(c *gin.Context) {
 			return
 		}
 		userID = user.UserID
-		//flag = 0
 	} else {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
@@ -63,11 +61,10 @@ func AddNote(c *gin.Context) {
 		}
 	}
 	note := models.Note{
-		Title:      form.Title,
-		Content:    form.Content,
-		UserID:     userID,
-		Xgrq:       t,
-		FlagNotice: 0,
+		Title:   form.Title,
+		Content: form.Content,
+		UserID:  userID,
+		Xgrq:    t,
 	}
 	err = models.AddNote(&note)
 	if err != nil {
