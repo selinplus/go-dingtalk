@@ -60,7 +60,7 @@ type ProcResponse struct {
 	Mobile   string `json:"mobile"`
 	Devid    string `json:"devid"`
 	SyrName  string `json:"syr_name"`
-	Syr      string `json:"syr"`
+	Syr      string `json:"syr"` //syr mobile
 	Cfwz     string `json:"cfwz"`
 	Zp       string `json:"zp"`
 	Title    string `json:"title"`

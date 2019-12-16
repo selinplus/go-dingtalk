@@ -35,7 +35,7 @@ type ProcForm struct {
 	Czr      string `json:"czr"`
 	Modifyid uint   `json:"modifyid"`
 	SyrName  string `json:"syr_name"`
-	Syr      string `json:"syr"`
+	Syr      string `json:"syr"` //syr mobile
 	Cfwz     string `json:"cfwz"`
 	Spyj     string `json:"spyj"`
 }
@@ -415,14 +415,6 @@ func GetProcDetail(c *gin.Context) {
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
 		return
-	}
-	if proc.Syr != "" {
-		syr, err := models.GetUserByMobile(proc.Syr)
-		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
-			return
-		}
-		proc.Syr = syr.Name
 	}
 	if proc.Dm == "0" {
 		if proc.Czr == "" {
