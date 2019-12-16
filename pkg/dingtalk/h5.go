@@ -173,14 +173,8 @@ func MseesageToDingding(msg *models.Msg) string {
 //生成记事本通知消息体
 func NoteMseesageToDingding(p *models.Note) string {
 	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
-	var content string
-	if p.Title == "" {
-		content = fmt.Sprintf("记事本标题为 %v，内容：\n%v", p.Title, p.Content)
-	} else {
-		content = fmt.Sprintf("记事本标题内容：\n%v", p.Content)
-	}
 	text := map[string]interface{}{
-		"content": content,
+		"content": p.Content,
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "text",
