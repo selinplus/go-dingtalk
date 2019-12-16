@@ -396,13 +396,8 @@ func UpdateProcBcms(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR_SAVE_PROC_FAIL, nil)
 		return
 	}
-	p, err := models.GetProcDetail(form.ID)
-	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_PROC_FAIL, nil)
-		return
-	}
 	procmd := models.Procmodify{
-		ID:         p.Modifyid,
+		ID:         form.Modifyid,
 		FlagNotice: 0,
 	}
 	if err := models.UpdateProcMod(&procmd); err != nil {
