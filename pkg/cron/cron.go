@@ -113,7 +113,7 @@ func ProcessBcmsMessageDingding() {
 	for _, proc := range procs {
 		p, err := models.GetProcDetail(proc.ProcID)
 		if err != nil {
-			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
+			logging.Info(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ProcID, err))
 		}
 		tcmprJson := dingtalk.ProcessBcmsMseesageToDingding(p)
 		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)

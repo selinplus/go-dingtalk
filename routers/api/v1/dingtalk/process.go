@@ -5,7 +5,6 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,11 +38,6 @@ type ProcForm struct {
 	Syr      string `json:"syr"`
 	Cfwz     string `json:"cfwz"`
 	Spyj     string `json:"spyj"`
-}
-
-type ProcBcmsForm struct {
-	ID   uint   `json:"id" form:"id"`
-	Bcms string `json:"bcms" form:"bcms"`
 }
 
 //提报事项保存&&提交
@@ -363,13 +357,12 @@ func DeleteProc(c *gin.Context) {
 //发起补充描述
 func ProcBcms(c *gin.Context) {
 	appG := app.Gin{C: c}
-	var form ProcBcmsForm
+	var form ProcForm
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	log.Println("form is ", form)
 	proc := models.Process{
 		ID:   form.ID,
 		Bcms: form.Bcms,
@@ -389,13 +382,12 @@ func ProcBcms(c *gin.Context) {
 //补充描述提交
 func UpdateProcBcms(c *gin.Context) {
 	appG := app.Gin{C: c}
-	var form ProcBcmsForm
+	var form ProcForm
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	log.Println("form is ", form)
 	proc := models.Process{
 		ID:   form.ID,
 		Bcms: form.Bcms,
