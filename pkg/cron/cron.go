@@ -22,13 +22,17 @@ func Setup() {
 		if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
-		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项待办工作通知
+		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送记事本消息
+		if err := c.AddFunc("*/30 * * * * *", NoteMessageDingding); err != nil {
+			logging.Info(fmt.Sprintf("Send Process NoteMessageDingding failed：%v", err))
+		}
+		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项待办工作通知消息
 		if err := c.AddFunc("*/30 * * * * *", ProcessMessageDingding); err != nil {
-			logging.Info(fmt.Sprintf("Send Process MessageDingding failed：%v", err))
+			logging.Info(fmt.Sprintf("Send Process ProcessMessageDingding failed：%v", err))
 		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项补充描述工作通知
 		if err := c.AddFunc("*/30 * * * * *", ProcessBcmsMessageDingding); err != nil {
-			logging.Info(fmt.Sprintf("Send ProcessBcms MessageDingding failed：%v", err))
+			logging.Info(fmt.Sprintf("Send ProcessBcms ProcessBcmsMessageDingding failed：%v", err))
 		}
 		// 每天半夜同步一次部门和人员信息
 		if err := c.AddFunc("@midnight", Sync); err != nil {
@@ -81,7 +85,25 @@ func MessageDingding() {
 	}
 }
 
-//遍历一遍发送标志为0的信息，通知钉钉发送提报事项待办工作通知
+//遍历一遍发送标志为0的信息，通知钉钉发送记事本消息
+func NoteMessageDingding() {
+	notes, err := models.GetNoteFlag()
+	if err != nil {
+		logging.Info(fmt.Sprintf("get note_flag err:%v", err))
+		return
+	}
+	for _, note := range notes {
+		tcmprJson := dingtalk.NoteMseesageToDingding(note)
+		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+			if err := models.UpdateNoteFlag(note.ID); err != nil {
+				logging.Info(fmt.Sprintf("%v update note_flag err:%v", note.ID, err))
+			}
+		}
+	}
+}
+
+//遍历一遍发送标志为0的信息，通知钉钉发送提报事项待办工作通知消息
 func ProcessMessageDingding() {
 	procs, err := models.GetProcessFlag()
 	if err != nil {
