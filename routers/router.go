@@ -93,7 +93,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
 
 		//增加设备管理机构
-		apiv1.POST("/dev/adddetp", dingtalk.AddDevdept)
+		apiv1.POST("/dev/adddept", dingtalk.AddDevdept)
 		//修改设备管理机构
 		apiv1.POST("/dev/upddept", dingtalk.UpdateDevdept)
 		//获取设备管理机构列表
