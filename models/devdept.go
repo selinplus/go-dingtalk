@@ -71,7 +71,7 @@ func DeleteDevdept(jgdm string) error {
 }
 
 type ScopedSlots struct {
-	Jgmc string `json:"jgmc"`
+	Title string `json:"title"`
 }
 
 type DevdeptTree struct {
@@ -89,7 +89,7 @@ func GetDevdeptTree() ([]DevdeptTree, error) {
 	child := DevdeptTree{
 		Jgdm:        "00",
 		Jgmc:        "烟台市税务局",
-		ScopedSlots: ScopedSlots{Jgmc: "custom"},
+		ScopedSlots: ScopedSlots{Title: "custom"},
 		Children:    []*DevdeptTree{},
 	}
 	err := getDevdeptTreeNode("00", &child)
@@ -113,7 +113,7 @@ func getDevdeptTreeNode(sjjgdm string, tree *DevdeptTree) error {
 			Jgmc:        perms[i].Jgmc,
 			Sjjgdm:      perms[i].Sjjgdm,
 			Gly:         perms[i].Gly,
-			ScopedSlots: ScopedSlots{Jgmc: "custom"},
+			ScopedSlots: ScopedSlots{Title: "custom"},
 			Children:    []*DevdeptTree{},
 		}
 		tree.Children = append(tree.Children, &child)
