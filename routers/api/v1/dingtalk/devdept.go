@@ -33,7 +33,7 @@ func AddDevdept(c *gin.Context) {
 	if len(form.Mobile) > 0 {
 		u, err := models.GetUserByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusOK, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 			return
 		}
 		userid = u.UserID
@@ -62,7 +62,7 @@ func AddDevdept(c *gin.Context) {
 		Xgr:    userid,
 		Xgrq:   t,
 	}
-	if err := models.AddDevdept(devdept); err != nil {
+	if err := models.AddDevdept(&devdept); err != nil {
 		appG.Response(http.StatusOK, e.ERROR_ADD_DEPARTMENT_FAIL, err)
 		return
 	}

@@ -18,27 +18,27 @@ type Devdept struct {
 	Xgrq   string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
 }
 
-func GenDevdeptDmBySjjgdm(sjdm string) (string, error) {
-	var ddt *Devdept
+func GenDevdeptDmBySjjgdm(sjjgdm string) (string, error) {
+	var ddt Devdept
 	err := db.Table("devdept").
-		Where("sjdm=?", sjdm).Limit(1).Order("id desc").First(&ddt).Error
+		Where("sjjgdm=?", sjjgdm).Limit(1).Order("id desc").First(&ddt).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return "", err
 	}
 	if err == gorm.ErrRecordNotFound {
-		return sjdm + "01", nil
+		return sjjgdm + "01", nil
 	}
 	dm, err := strconv.Atoi(ddt.Jgdm[2:4])
 	if err != nil {
 		return "", err
 	}
 	if dm+1 < 10 {
-		return sjdm + "0" + strconv.Itoa(dm+1), nil
+		return sjjgdm + "0" + strconv.Itoa(dm+1), nil
 	}
 	if dm+1 > 99 {
 		return "", errors.New("机构代码超过99")
 	}
-	return sjdm + strconv.Itoa(dm+1), nil
+	return sjjgdm + strconv.Itoa(dm+1), nil
 }
 
 func AddDevdept(data interface{}) error {
@@ -70,27 +70,27 @@ func DeleteDevdept(jgdm string) error {
 	return nil
 }
 
-type Slots struct {
-	Icon string `json:"icon"`
+type ScopedSlots struct {
+	Title string `json:"title"`
 }
 
 type DevdeptTree struct {
-	Jgdm     string `json:"jgdm"`
-	Jgmc     string `json:"jgmc"`
-	Sjjgdm   string `json:"sjjgdm"`
-	Gly      string `json:"gly"`
-	Slots    `json:"slots"`
-	Children []*DevdeptTree `json:"children"`
+	Jgdm        string `json:"jgdm"`
+	Jgmc        string `json:"jgmc"`
+	Sjjgdm      string `json:"sjjgdm"`
+	Gly         string `json:"gly"`
+	ScopedSlots `json:"scopedSlots"`
+	Children    []*DevdeptTree `json:"children"`
 }
 
 //获取设备管理机构列表
 func GetDevdeptTree() ([]DevdeptTree, error) {
 	perms := make([]DevdeptTree, 0)
 	child := DevdeptTree{
-		Jgdm:     "00",
-		Jgmc:     "烟台市税务局",
-		Slots:    Slots{Icon: "icon"},
-		Children: []*DevdeptTree{},
+		Jgdm:        "00",
+		Jgmc:        "烟台市税务局",
+		ScopedSlots: ScopedSlots{Title: "custom"},
+		Children:    []*DevdeptTree{},
 	}
 	err := getDevdeptTreeNode("00", &child)
 	if err != nil {
@@ -109,12 +109,12 @@ func getDevdeptTreeNode(sjjgdm string, tree *DevdeptTree) error {
 	}
 	for i := 0; i < len(perms); i++ {
 		child := DevdeptTree{
-			Jgdm:     perms[i].Jgdm,
-			Jgmc:     perms[i].Jgmc,
-			Sjjgdm:   perms[i].Sjjgdm,
-			Gly:      perms[i].Gly,
-			Slots:    Slots{Icon: "icon"},
-			Children: []*DevdeptTree{},
+			Jgdm:        perms[i].Jgdm,
+			Jgmc:        perms[i].Jgmc,
+			Sjjgdm:      perms[i].Sjjgdm,
+			Gly:         perms[i].Gly,
+			ScopedSlots: ScopedSlots{Title: "custom"},
+			Children:    []*DevdeptTree{},
 		}
 		tree.Children = append(tree.Children, &child)
 		err = getDevdeptTreeNode(perms[i].Jgdm, &child)
