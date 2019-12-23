@@ -1,9 +1,9 @@
 package models
 
 type Devuser struct {
-	ID  uint   `gorm:"primary_key"`
-	Dm  string `json:"dm" gorm:"COMMENT:'设备管理机构代码'"`
-	Syr string `json:"glr" gorm:"COMMENT:'设备使用人代码'"`
+	ID   uint   `gorm:"primary_key"`
+	Jgdm string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
+	Syr  string `json:"syr" gorm:"COMMENT:'设备使用人代码'"`
 }
 
 func AddDevuser(data interface{}) error {
@@ -20,6 +20,14 @@ func UpdateDevuser(devu *Devuser) error {
 	return nil
 }
 
+func GetDevuser(jgdm string) ([]*Devuser, error) {
+	var dus []*Devuser
+	if err := db.Where("jgdm=?", jgdm).Find(&dus).Error; err != nil {
+		return nil, err
+	}
+	return dus, nil
+}
+
 func DeleteDevuser(id uint) error {
 	if err := db.Where("id=?", id).Delete(Devuser{}).Error; err != nil {
 		return err
@@ -27,11 +35,9 @@ func DeleteDevuser(id uint) error {
 	return nil
 }
 
-//TODO
-func IsDevuserExist(userid string, id int) bool {
-	var nt Devuser
-	if err := db.
-		Where("userid =? and id=?", userid, id).First(&nt).Error; err != nil {
+func IsDevuserExist(jgdm string) bool {
+	var du Devuser
+	if err := db.Where("jgdm=?", jgdm).First(&du).Error; err != nil {
 		return false
 	}
 	return true

@@ -52,7 +52,12 @@ var MsgFlags = map[int]string{
 	ERROR_GET_DEPARTMENT_FAIL:        "获取部门列表失败",
 	ERROR_GET_USER_FAIL:              "获取部门用户列表失败",
 	ERROR_GET_USERBYMOBILE_FAIL:      "用户手机号不正确",
-	ERROR_ADD_DEPARTMENT_FAIL:        "获取部门列表失败",
+	ERROR_ADD_DEPARTMENT_FAIL:        "新增设备机构失败",
+	ERROR_DELETE_DEVDETP_IS_PARENT:   "删除失败,设备机构含下级机构",
+	ERROR_DELETE_DEVDETP_NOT_NULL:    "删除失败,设备机构非空",
+	ERROR_DELETE_DEPARTMENT_FAIL:     "删除部门失败",
+	ERROR_DELETE_USER_FAIL:           "删除用户失败",
+	ERROR_ADD_USER_FAIL:              "新增人员失败",
 
 	ERROR_ADD_DEV_FAIL:     "设备登记失败",
 	ERROR_GET_DEV_FAIL:     "获取设备登记信息失败",

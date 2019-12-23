@@ -11,7 +11,7 @@ import (
 )
 
 type DevdeptForm struct {
-	ID     string
+	ID     uint
 	Jgmc   string `json:"jgmc"`
 	Sjjgdm string `json:"sjjgdm"`
 	Gly    string `json:"gly"`
@@ -46,7 +46,7 @@ func AddDevdept(c *gin.Context) {
 		ts := strings.Split(token, ".")
 		userid = ts[3]
 	}
-	jgdm, err := models.GenDevdeptDmBySjdm(form.Sjjgdm)
+	jgdm, err := models.GenDevdeptDmBySjjgdm(form.Sjjgdm)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err)
 		return
@@ -70,7 +70,7 @@ func AddDevdept(c *gin.Context) {
 }
 
 //修改设备管理机构
-func GetDevdeptByID(c *gin.Context) {
+func UpdateDevdept(c *gin.Context) {
 	var (
 		appG   = app.Gin{C: c}
 		form   DevdeptForm
@@ -99,6 +99,7 @@ func GetDevdeptByID(c *gin.Context) {
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
 	devdept := models.Devdept{
+		ID:     form.ID,
 		Jgmc:   form.Jgmc,
 		Sjjgdm: form.Sjjgdm,
 		Gly:    form.Gly,
@@ -117,12 +118,31 @@ func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
 	tree, err := models.GetDevdeptTree()
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, nil)
 		return
 	}
 	if len(tree) > 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, tree)
 	} else {
-		appG.Response(http.StatusOK, e.ERROR, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, nil)
 	}
+}
+
+//删除设备管理机构
+func DeleteDevdept(c *gin.Context) {
+	appG := app.Gin{C: c}
+	jgdm := c.Query("jgdm")
+	if models.IsSjjg(jgdm) {
+		appG.Response(http.StatusOK, e.ERROR_DELETE_DEVDETP_IS_PARENT, nil)
+		return
+	}
+	if models.IsDevuserExist(jgdm) {
+		appG.Response(http.StatusOK, e.ERROR_DELETE_DEVDETP_NOT_NULL, nil)
+		return
+	}
+	if err := models.DeleteDevdept(jgdm); err != nil {
+		appG.Response(http.StatusOK, e.ERROR_DELETE_DEPARTMENT_FAIL, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

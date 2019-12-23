@@ -92,8 +92,22 @@ func InitRouter() *gin.Engine {
 		//删除文件夹
 		apiv1.GET("/netdisk/deldir", dingtalk.DeleteNetdiskDir)
 
+		//增加设备管理机构
+		apiv1.GET("/dev/adddetp", dingtalk.AddDevdept)
+		//修改设备管理机构
+		apiv1.GET("/dev/upddept", dingtalk.UpdateDevdept)
 		//获取设备管理机构列表
 		apiv1.GET("/dev/tree", dingtalk.GetDevdeptTree)
+		//删除设备管理机构
+		apiv1.GET("/dev/deldept", dingtalk.DeleteDevdept)
+		//增加设备使用人员
+		apiv1.GET("/dev/adduser", dingtalk.AddDevuser)
+		//修改设备使用人员
+		apiv1.GET("/dev/upduser", dingtalk.UpdateDevuser)
+		//获取设备使用人员列表
+		apiv1.GET("/dev/userlist", dingtalk.GetDevuserList)
+		//删除设备使用人员
+		apiv1.GET("/dev/deluser", dingtalk.DeleteDevuser)
 		//单项录入
 		apiv1.POST("/dev/add", dingtalk.AddDevice)
 		//批量导入

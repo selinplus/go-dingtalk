@@ -18,7 +18,7 @@ type Devdept struct {
 	Xgrq   string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
 }
 
-func GenDevdeptDmBySjdm(sjdm string) (string, error) {
+func GenDevdeptDmBySjjgdm(sjdm string) (string, error) {
 	var ddt *Devdept
 	err := db.Table("devdept").
 		Where("sjdm=?", sjdm).Limit(1).Order("id desc").First(&ddt).Error
@@ -56,8 +56,15 @@ func UpdateDevdept(devd *Devdept) error {
 	return nil
 }
 
-func DeleteDevdept(id uint) error {
-	if err := db.Where("id=?", id).Delete(Devdept{}).Error; err != nil {
+func IsSjjg(jgdm string) bool {
+	var d Devdept
+	if err := db.Where("sjjgdm=? ", jgdm).First(&d).Error; err != nil {
+		return false
+	}
+	return true
+}
+func DeleteDevdept(jgdm string) error {
+	if err := db.Where("jgdm=?", jgdm).Delete(Devdept{}).Error; err != nil {
 		return err
 	}
 	return nil
