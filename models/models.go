@@ -86,6 +86,16 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Device{})
 	}
+	if !db.HasTable("devdept") {
+		db.CreateTable(Devdept{})
+	} else {
+		db.AutoMigrate(Devdept{})
+	}
+	if !db.HasTable("devuser") {
+		db.CreateTable(Devuser{})
+	} else {
+		db.AutoMigrate(Devuser{})
+	}
 	if !db.HasTable("devmodify") {
 		db.CreateTable(Devmodify{})
 	} else {
