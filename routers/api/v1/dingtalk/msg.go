@@ -129,7 +129,7 @@ func SendMsgMobile(c *gin.Context) {
 	}
 	err := models.AddSendMsg(&msg)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, err)
 		return
 	}
 	if msg.ID == 0 {

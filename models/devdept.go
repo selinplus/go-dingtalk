@@ -28,7 +28,7 @@ func GenDevdeptDmBySjjgdm(sjjgdm string) (string, error) {
 	if err == gorm.ErrRecordNotFound {
 		return sjjgdm + "01", nil
 	}
-	dm, err := strconv.Atoi(ddt.Jgdm[2:4])
+	dm, err := strconv.Atoi(ddt.Jgdm[len(sjjgdm) : len(sjjgdm)+2])
 	if err != nil {
 		return "", err
 	}
