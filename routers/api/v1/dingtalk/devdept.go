@@ -11,7 +11,6 @@ import (
 )
 
 type DevdeptForm struct {
-	ID     uint
 	Jgmc   string `json:"jgmc"`
 	Sjjgdm string `json:"sjjgdm"`
 	Gly    string `json:"gly"`
@@ -99,7 +98,6 @@ func UpdateDevdept(c *gin.Context) {
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
 	devdept := models.Devdept{
-		ID:     form.ID,
 		Jgmc:   form.Jgmc,
 		Sjjgdm: form.Sjjgdm,
 		Gly:    form.Gly,

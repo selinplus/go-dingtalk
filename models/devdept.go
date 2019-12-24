@@ -50,7 +50,7 @@ func AddDevdept(data interface{}) error {
 
 func UpdateDevdept(devd *Devdept) error {
 	if err := db.Table("devdept").
-		Where("id=?", devd.ID).Updates(devd).Error; err != nil {
+		Where("jgdm=?", devd.Jgdm).Updates(devd).Error; err != nil {
 		return err
 	}
 	return nil
