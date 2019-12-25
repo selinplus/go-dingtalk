@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type DevuserForm struct {
@@ -26,13 +27,15 @@ func AddDevuser(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	devuser := models.Devuser{
-		Jgdm: form.Jgdm,
-		Syr:  form.Syr,
-	}
-	if err := models.AddDevuser(&devuser); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
-		return
+	for _, syr := range strings.Split(form.Syr, ",") {
+		devuser := models.Devuser{
+			Jgdm: form.Jgdm,
+			Syr:  syr,
+		}
+		if err := models.AddDevuser(&devuser); err != nil {
+			appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
+			return
+		}
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
