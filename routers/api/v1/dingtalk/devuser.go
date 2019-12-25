@@ -16,6 +16,12 @@ type DevuserForm struct {
 	Syr  string `json:"syr"`
 }
 
+type DevuserResp struct {
+	*models.Devuser
+	Name   string `json:"name"`
+	Mobile string `json:"mobile"`
+}
+
 //增加设备使用人员
 func AddDevuser(c *gin.Context) {
 	var (
@@ -63,12 +69,6 @@ func UpdateDevuser(c *gin.Context) {
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
-}
-
-type DevuserResp struct {
-	*models.Devuser
-	Name   string
-	Mobile string
 }
 
 //获取设备使用人员列表
