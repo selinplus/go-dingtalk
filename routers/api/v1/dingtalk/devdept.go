@@ -6,7 +6,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -138,35 +137,31 @@ func GetDevdeptTree(c *gin.Context) {
 //获取设备管理机构列表(循环遍历)
 func GetDevdeptBySjjgdm(c *gin.Context) {
 	var appG = app.Gin{C: c}
-	id, errc := strconv.Atoi(c.Query("jgdm"))
-	if errc != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
-		return
-	}
-	parentDt, errd := models.GetDepartmentByID(id)
-	if errd != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+	jgdm := c.Query("jgdm")
+	parentDt, err := models.GetDevdept(jgdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	var dts []interface{}
 	data := map[string]interface{}{
-		"key":      parentDt.ID,
-		"value":    parentDt.ID,
-		"title":    parentDt.Name,
+		"key":      parentDt.Jgdm,
+		"value":    parentDt.Jgdm,
+		"title":    parentDt.Jgmc,
 		"children": dts,
 	}
-	departments, err := models.GetDepartmentByParentID(id)
+	departments, err := models.GetDevdeptBySjjgdm(jgdm)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	if len(departments) > 0 {
 		for _, department := range departments {
-			leaf := models.IsLeafDepartment(department.ID)
+			leaf := models.IsLeafDevdept(department.Jgdm)
 			dt := map[string]interface{}{
-				"key":    department.ID,
-				"value":  department.ID,
-				"title":  department.Name,
+				"key":    department.Jgdm,
+				"value":  department.Jgdm,
+				"title":  department.Jgmc,
 				"isLeaf": leaf,
 			}
 			dts = append(dts, dt)

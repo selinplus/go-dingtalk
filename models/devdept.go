@@ -63,6 +63,7 @@ func IsSjjg(jgdm string) bool {
 	}
 	return true
 }
+
 func DeleteDevdept(jgdm string) error {
 	if err := db.Where("jgdm=?", jgdm).Delete(Devdept{}).Error; err != nil {
 		return err
@@ -76,6 +77,29 @@ func GetDevdept(jgdm string) (*Devdept, error) {
 		return nil, err
 	}
 	return &dd, nil
+}
+
+func GetDevdeptBySjjgdm(jgdm string) ([]*Devdept, error) {
+	var dds []*Devdept
+	if err := db.Where("sjjgdm=?", jgdm).Find(&dds).Error; err != nil {
+		return nil, err
+	}
+	return dds, nil
+}
+
+func IsLeafDevdept(jgdm string) bool {
+	var dt Devdept
+	err := db.Select("id").Where("sjjgdm =?", jgdm).First(&dt).Error
+	if err == gorm.ErrRecordNotFound {
+		return true
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false
+	}
+	if dt.ID > 0 {
+		return false
+	}
+	return true
 }
 
 type ScopedSlots struct {
