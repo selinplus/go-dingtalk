@@ -1,5 +1,7 @@
 package models
 
+import "github.com/jinzhu/gorm"
+
 type Devuser struct {
 	ID   uint   `gorm:"primary_key"`
 	Jgdm string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
@@ -35,9 +37,9 @@ func DeleteDevuser(id uint) error {
 	return nil
 }
 
-func IsDevuserExist(syr string) bool {
+func IsDevuserExist(jgdm, syr string) bool {
 	var du Devuser
-	if err := db.Where("syr=?", syr).First(&du).Error; err != nil {
+	if err := db.Where("jgdm=? and syr=?", jgdm, syr).First(&du).Error; err != nil {
 		return false
 	}
 	return true
@@ -49,4 +51,14 @@ func IsDevdeptUserExist(jgdm string) bool {
 		return false
 	}
 	return true
+}
+
+func CreateDevuser(db *gorm.DB, data interface{}) error {
+	tx := db.Begin()
+	if err := tx.Create(data).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
 }

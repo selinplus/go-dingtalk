@@ -28,11 +28,11 @@ func AddDevuser(c *gin.Context) {
 		return
 	}
 	for _, syr := range strings.Split(form.Syr, ",") {
-		devuser := models.Devuser{
-			Jgdm: form.Jgdm,
-			Syr:  syr,
-		}
-		if !models.IsDevuserExist(syr) {
+		if !models.IsDevuserExist(form.Jgdm, syr) {
+			devuser := models.Devuser{
+				Jgdm: form.Jgdm,
+				Syr:  syr,
+			}
 			if err := models.AddDevuser(&devuser); err != nil {
 				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
 				return
