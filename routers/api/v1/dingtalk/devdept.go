@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -119,7 +120,7 @@ func UpdateDevdept(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-//获取设备管理机构列表
+//获取设备管理机构列表(树结构)
 func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
 	tree, err := models.GetDevdeptTree()
@@ -131,6 +132,49 @@ func GetDevdeptTree(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, tree)
 	} else {
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
+	}
+}
+
+//获取设备管理机构列表(循环遍历)
+func GetDevdeptBySjjgdm(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	id, errc := strconv.Atoi(c.Query("jgdm"))
+	if errc != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	parentDt, errd := models.GetDepartmentByID(id)
+	if errd != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	var dts []interface{}
+	data := map[string]interface{}{
+		"key":      parentDt.ID,
+		"value":    parentDt.ID,
+		"title":    parentDt.Name,
+		"children": dts,
+	}
+	departments, err := models.GetDepartmentByParentID(id)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		return
+	}
+	if len(departments) > 0 {
+		for _, department := range departments {
+			leaf := models.IsLeafDepartment(department.ID)
+			dt := map[string]interface{}{
+				"key":    department.ID,
+				"value":  department.ID,
+				"title":  department.Name,
+				"isLeaf": leaf,
+			}
+			dts = append(dts, dt)
+		}
+		data["children"] = dts
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	} else {
+		appG.Response(http.StatusOK, e.SUCCESS, data)
 	}
 }
 
@@ -162,6 +206,11 @@ func GetDevdeptGly(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
 		return
 	}
+	resps := make([]*GlyResp, 0)
+	if ddept.Gly == "" {
+		appG.Response(http.StatusOK, e.SUCCESS, resps)
+		return
+	}
 	user, err := models.GetUserByUserid(ddept.Gly)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
@@ -172,5 +221,6 @@ func GetDevdeptGly(c *gin.Context) {
 		Name:   user.Name,
 		Mobile: user.Mobile,
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, resp)
+	resps = append(resps, resp)
+	appG.Response(http.StatusOK, e.SUCCESS, resps)
 }
