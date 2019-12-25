@@ -54,7 +54,7 @@ func UpdateDevuser(c *gin.Context) {
 		Syr:  form.Syr,
 	}
 	if err := models.UpdateDevuser(&devuser); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -65,13 +65,13 @@ func GetDevuserList(c *gin.Context) {
 	appG := app.Gin{C: c}
 	dus, err := models.GetDevuser(c.Query("jgdm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
 		return
 	}
 	if len(dus) > 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, dus)
 	} else {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, nil)
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	}
 }
 

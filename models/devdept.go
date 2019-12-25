@@ -92,8 +92,7 @@ func GetDevdeptTree() ([]DevdeptTree, error) {
 		ScopedSlots: ScopedSlots{Title: "custom"},
 		Children:    []*DevdeptTree{},
 	}
-	err := getDevdeptTreeNode("00", &child)
-	if err != nil {
+	if err := getDevdeptTreeNode("00", &child); err != nil {
 		return nil, err
 	}
 	perms = append(perms, child)

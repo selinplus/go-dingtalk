@@ -107,7 +107,7 @@ func UpdateDevdept(c *gin.Context) {
 		Xgrq:   t,
 	}
 	if err := models.UpdateDevdept(&devdept); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -118,13 +118,13 @@ func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
 	tree, err := models.GetDevdeptTree()
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	if len(tree) > 0 {
 		appG.Response(http.StatusOK, e.SUCCESS, tree)
 	} else {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	}
 }
 
