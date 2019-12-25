@@ -1,7 +1,5 @@
 package models
 
-import "github.com/jinzhu/gorm"
-
 type Devuser struct {
 	ID   uint   `gorm:"primary_key"`
 	Jgdm string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
@@ -53,12 +51,20 @@ func IsDevdeptUserExist(jgdm string) bool {
 	return true
 }
 
-func CreateDevuser(db *gorm.DB, data interface{}) error {
+func CreateDevuser(data interface{}) error {
 	tx := db.Begin()
+	defer tx.Close()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
 	if err := tx.Create(data).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-	tx.Commit()
-	return nil
+	return tx.Commit().Error
 }

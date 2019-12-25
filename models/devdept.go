@@ -85,11 +85,16 @@ type DevdeptTree struct {
 
 //获取设备管理机构列表
 func GetDevdeptTree() ([]DevdeptTree, error) {
+	var ytsw Devdept
+	if err := db.Where("jgdm='00'").First(&ytsw).Error; err != nil {
+		return nil, err
+	}
 	perms := make([]DevdeptTree, 0)
 	child := DevdeptTree{
-		Jgdm:        "00",
-		Jgmc:        "烟台市税务局",
+		Jgdm:        ytsw.Jgdm,
+		Jgmc:        ytsw.Jgmc,
 		ScopedSlots: ScopedSlots{Title: "custom"},
+		Gly:         ytsw.Gly,
 		Children:    []*DevdeptTree{},
 	}
 	if err := getDevdeptTreeNode("00", &child); err != nil {
