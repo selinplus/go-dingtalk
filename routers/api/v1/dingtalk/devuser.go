@@ -65,6 +65,12 @@ func UpdateDevuser(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
+type DevuserResp struct {
+	*models.Devuser
+	Name   string
+	Mobile string
+}
+
 //获取设备使用人员列表
 func GetDevuserList(c *gin.Context) {
 	appG := app.Gin{C: c}
@@ -74,7 +80,17 @@ func GetDevuserList(c *gin.Context) {
 		return
 	}
 	if len(dus) > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, dus)
+		resp := make([]*DevuserResp, 0)
+		for _, du := range dus {
+			user, _ := models.GetUserByUserid(du.Syr)
+			u := &DevuserResp{
+				Devuser: du,
+				Name:    user.Name,
+				Mobile:  user.Mobile,
+			}
+			resp = append(resp, u)
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, resp)
 	} else {
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
 	}
