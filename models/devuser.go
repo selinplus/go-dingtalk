@@ -35,7 +35,15 @@ func DeleteDevuser(id uint) error {
 	return nil
 }
 
-func IsDevuserExist(jgdm string) bool {
+func IsDevuserExist(syr string) bool {
+	var du Devuser
+	if err := db.Where("syr=?", syr).First(&du).Error; err != nil {
+		return false
+	}
+	return true
+}
+
+func IsDevdeptUserExist(jgdm string) bool {
 	var du Devuser
 	if err := db.Where("jgdm=?", jgdm).First(&du).Error; err != nil {
 		return false

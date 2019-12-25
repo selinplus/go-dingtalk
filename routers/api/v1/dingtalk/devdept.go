@@ -136,7 +136,7 @@ func DeleteDevdept(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR_DELETE_DEVDETP_IS_PARENT, nil)
 		return
 	}
-	if models.IsDevuserExist(jgdm) {
+	if models.IsDevdeptUserExist(jgdm) {
 		appG.Response(http.StatusOK, e.ERROR_DELETE_DEVDETP_NOT_NULL, nil)
 		return
 	}

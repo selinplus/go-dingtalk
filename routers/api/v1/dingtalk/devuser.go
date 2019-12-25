@@ -32,9 +32,11 @@ func AddDevuser(c *gin.Context) {
 			Jgdm: form.Jgdm,
 			Syr:  syr,
 		}
-		if err := models.AddDevuser(&devuser); err != nil {
-			appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
-			return
+		if !models.IsDevuserExist(syr) {
+			if err := models.AddDevuser(&devuser); err != nil {
+				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
+				return
+			}
 		}
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
