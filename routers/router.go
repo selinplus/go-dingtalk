@@ -102,6 +102,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/tree", dingtalk.GetDevdeptTree)
 		//删除设备管理机构
 		apiv1.GET("/dev/deldept", dingtalk.DeleteDevdept)
+		//获取当前机构管理员信息
+		apiv1.GET("/dev/deptgly", dingtalk.GetDevdeptGly)
 		//增加设备使用人员
 		apiv1.POST("/dev/adduser", dingtalk.AddDevuser)
 		//修改设备使用人员

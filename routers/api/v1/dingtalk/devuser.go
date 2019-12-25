@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -82,7 +83,10 @@ func GetDevuserList(c *gin.Context) {
 	if len(dus) > 0 {
 		resp := make([]*DevuserResp, 0)
 		for _, du := range dus {
-			user, _ := models.GetUserByUserid(du.Syr)
+			user, err := models.GetUserByUserid(du.Syr)
+			if err != nil {
+				log.Println(err)
+			}
 			u := &DevuserResp{
 				Devuser: du,
 				Name:    user.Name,

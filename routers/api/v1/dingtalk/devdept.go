@@ -18,6 +18,12 @@ type DevdeptForm struct {
 	Mobile string `json:"mobile"`
 }
 
+type GlyResp struct {
+	UserID string `json:"userid"`
+	Name   string `json:"name"`
+	Mobile string `json:"mobile"`
+}
+
 //增加设备管理机构
 func AddDevdept(c *gin.Context) {
 	var (
@@ -145,4 +151,26 @@ func DeleteDevdept(c *gin.Context) {
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//获取当前机构管理员信息
+func GetDevdeptGly(c *gin.Context) {
+	appG := app.Gin{C: c}
+	jgdm := c.Query("jgdm")
+	ddept, err := models.GetDevdept(jgdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+		return
+	}
+	user, err := models.GetUserByUserid(ddept.Gly)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+		return
+	}
+	resp := &GlyResp{
+		UserID: user.UserID,
+		Name:   user.Name,
+		Mobile: user.Mobile,
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, resp)
 }

@@ -70,6 +70,14 @@ func DeleteDevdept(jgdm string) error {
 	return nil
 }
 
+func GetDevdept(jgdm string) (*Devdept, error) {
+	var dd Devdept
+	if err := db.Where("jgdm=?", jgdm).First(&dd).Error; err != nil {
+		return nil, err
+	}
+	return &dd, nil
+}
+
 type ScopedSlots struct {
 	Title string `json:"title"`
 }
@@ -85,8 +93,8 @@ type DevdeptTree struct {
 
 //获取设备管理机构列表
 func GetDevdeptTree() ([]DevdeptTree, error) {
-	var ytsw Devdept
-	if err := db.Where("jgdm='00'").First(&ytsw).Error; err != nil {
+	ytsw, err := GetDevdept("00")
+	if err != nil {
 		return nil, err
 	}
 	perms := make([]DevdeptTree, 0)
