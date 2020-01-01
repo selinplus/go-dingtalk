@@ -86,6 +86,11 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Device{})
 	}
+	if !db.HasTable("devinfo") {
+		db.CreateTable(Devinfo{})
+	} else {
+		db.AutoMigrate(Devinfo{})
+	}
 	if !db.HasTable("devdept") {
 		db.CreateTable(Devdept{})
 	} else {
@@ -95,6 +100,16 @@ func CheckTable() {
 		db.CreateTable(Devuser{})
 	} else {
 		db.AutoMigrate(Devuser{})
+	}
+	if !db.HasTable("devmod") {
+		db.CreateTable(Devmod{})
+	} else {
+		db.AutoMigrate(Devmod{})
+	}
+	if !db.HasTable("devmodetail") {
+		db.CreateTable(Devmodetail{})
+	} else {
+		db.AutoMigrate(Devmodetail{})
 	}
 	if !db.HasTable("devmodify") {
 		db.CreateTable(Devmodify{})
@@ -115,6 +130,11 @@ func CheckTable() {
 		db.CreateTable(Devtype{})
 	} else {
 		db.AutoMigrate(Devtype{})
+	}
+	if !db.HasTable("devproperty") {
+		db.CreateTable(Devproperty{})
+	} else {
+		db.AutoMigrate(Devproperty{})
 	}
 	if !db.HasTable("process") {
 		db.CreateTable(Process{})
@@ -148,7 +168,7 @@ func InitDb() {
 	var cnt int
 	err := db.Select("id").Model(&Devtype{}).Count(&cnt).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		logging.Error(fmt.Sprintf("init db error: %v", err))
+		logging.Error(fmt.Sprintf("init Devtype error: %v", err))
 		return
 	}
 	if cnt == 0 {
@@ -156,7 +176,7 @@ func InitDb() {
 	}
 	err = db.Select("id").Model(&Devstate{}).Count(&cnt).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		logging.Error(fmt.Sprintf("init db error: %v", err))
+		logging.Error(fmt.Sprintf("init Devstate error: %v", err))
 		return
 	}
 	if cnt == 0 {
@@ -164,15 +184,23 @@ func InitDb() {
 	}
 	err = db.Select("id").Model(&Devoperation{}).Count(&cnt).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		logging.Error(fmt.Sprintf("init db error: %v", err))
+		logging.Error(fmt.Sprintf("init Devoperation error: %v", err))
 		return
 	}
 	if cnt == 0 {
 		AddOpera()
 	}
+	err = db.Select("id").Model(&Devproperty{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init Devproperty error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		AddProperty()
+	}
 	err = db.Select("id").Model(&Procnode{}).Count(&cnt).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		logging.Error(fmt.Sprintf("init db error: %v", err))
+		logging.Error(fmt.Sprintf("init Procnode error: %v", err))
 		return
 	}
 	if cnt == 0 {
@@ -180,7 +208,7 @@ func InitDb() {
 	}
 	err = db.Select("id").Model(&Proctype{}).Count(&cnt).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		logging.Error(fmt.Sprintf("init db error: %v", err))
+		logging.Error(fmt.Sprintf("init Proctype error: %v", err))
 		return
 	}
 	if cnt == 0 {
@@ -201,6 +229,11 @@ func AddState() {
 func AddOpera() {
 	devOpera := readXmlToMapOpera()
 	InsertOpera(devOpera)
+}
+
+func AddProperty() {
+	devProperty := readXmlToMapProperty()
+	InsertProperty(devProperty)
 }
 
 func AddProcNode() {
@@ -288,6 +321,39 @@ func readXmlToMapOpera() []map[string]string {
 	}
 	for k, sheet := range xlFile.Sheets {
 		if k == 3 {
+			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
+			for r, row := range sheet.Rows {
+				if r == 0 {
+					continue
+				}
+				m := make(map[string]string, 0)
+				// 遍历每行的列读取
+				for i, cell := range row.Cells {
+					text := cell.String()
+					switch {
+					case i == 0:
+						m["dm"] = text
+					case i == 1:
+						m["mc"] = text
+					}
+				}
+				res = append(res, m)
+			}
+		}
+	}
+	return res
+}
+
+func readXmlToMapProperty() []map[string]string {
+	res := make([]map[string]string, 0)
+	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
+	xlFile, err := xlsx.OpenFile(inFile)
+	if err != nil {
+		logging.Info(err.Error())
+		return nil
+	}
+	for k, sheet := range xlFile.Sheets {
+		if k == 4 {
 			logging.Info(fmt.Sprintf("sheet name: %s", sheet.Name))
 			for r, row := range sheet.Rows {
 				if r == 0 {
@@ -440,6 +506,28 @@ func InsertOpera(devOpera []map[string]string) {
 				Mc: d["mc"],
 			}
 			err := db.Model(Devoperation{}).Create(&dev).Error
+			if err != nil {
+				er = append(er, dev)
+			}
+		}
+	}
+	if len(er) > 0 {
+		for _, e := range er {
+			logging.Info(fmt.Sprintf("%+v", e))
+		}
+	}
+}
+
+func InsertProperty(devProperty []map[string]string) {
+	er := make([]Devproperty, 0)
+	logging.Debug(fmt.Sprintf("------------------%d------", len(devProperty)))
+	if len(devProperty) > 0 {
+		for _, d := range devProperty {
+			dev := Devproperty{
+				Dm: d["dm"],
+				Mc: d["mc"],
+			}
+			err := db.Model(Devproperty{}).Create(&dev).Error
 			if err != nil {
 				er = append(er, dev)
 			}

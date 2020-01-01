@@ -16,7 +16,7 @@ type Devmodify struct {
 	Zzrq  string `json:"zzrq" gorm:"COMMENT:'终止日期'"`
 }
 
-func AddDevMod(data interface{}) error {
+func AddDevModify(data interface{}) error {
 	if err := db.Create(data).Error; err != nil {
 		return err
 	}
@@ -42,19 +42,18 @@ func ModifyZzrq(devid, t string) error {
 	return nil
 }
 
-func GetDevMods(devid string, pageNo, pageSize int) ([]*Devmodify, error) {
+func GetDevModifes(devid string, pageNo, pageSize int) ([]*Devmodify, error) {
 	var devs []*Devmodify
 	offset := (pageNo - 1) * pageSize
-	if err := db.Raw("select devmodify.id,devmodify.devid,devoperation.mc as czlx,department.name as sydw,department.name as syks,devmodify.syr,devmodify.cfwz,devmodify.czrq,devmodify.czr,devmodify.qsrq,devmodify.zzrq from devmodify left join device on device.id=devmodify.devid left join devoperation on devoperation.dm=devmodify.czlx left join  department on department.id=devmodify.syks  where devmodify.devid = ? order by devmodify.id desc LIMIT ?,?", devid, offset, pageSize).Scan(&devs).Error; err != nil {
+	query := `select devmodify.id,devmodify.devid,devoperation.mc as czlx,department.name as sydw,
+			department.name as syks,devmodify.syr,devmodify.cfwz,devmodify.czrq,devmodify.czr,
+			devmodify.qsrq,devmodify.zzrq from devmodify 
+			left join device on device.id=devmodify.devid 
+			left join devoperation on devoperation.dm=devmodify.czlx 
+			left join  department on department.id=devmodify.syks  
+			where devmodify.devid = ? order by devmodify.id desc LIMIT ?,?`
+	if err := db.Raw(query, devid, offset, pageSize).Scan(&devs).Error; err != nil {
 		return nil, err
 	}
 	return devs, nil
-}
-
-func GetDevModCount(devid string) (int, error) {
-	var devs []*Devmodify
-	if err := db.Raw("select devmodify.* from device,devmodify where device.id=devmodify.devid and devmodify.devid = ? ", devid).Scan(&devs).Error; err != nil {
-		return 0, err
-	}
-	return len(devs), nil
 }

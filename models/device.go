@@ -175,7 +175,7 @@ func InsertDeviceXml(devs []*Device) ([]*Device, int, int) {
 			}()
 		}
 		go func() {
-			for _ = range cntChan {
+			for range cntChan {
 				cnt++
 				if cnt == devsNum {
 					close(devsChan)
@@ -268,15 +268,6 @@ func GetDevices(con map[string]string, pageNo, pageSize int) ([]*DevResponse, er
 		return nil, err
 	}
 	return devs, nil
-}
-
-func GetDevicesCount(con map[string]string) (int, error) {
-	var devs []*Device
-	if err := db.Raw("select device.* from device left join devmodify on device.id=devmodify.devid where device.mc like ? and device.rkrq > ? and device.rkrq < ? and device.id like ? and device.xlh like ? and ifnull(devmodify.syr,'') like ?", "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], "%"+con["sbbh"]+"%", "%"+con["xlh"]+"%", "%"+con["syr"]+"%").
-		Scan(&devs).Error; err != nil {
-		return 0, err
-	}
-	return len(devs), nil
 }
 
 func GetDeviceByID(id string) (*Device, error) {

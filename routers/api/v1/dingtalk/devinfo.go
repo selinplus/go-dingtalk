@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type DeviceForm struct {
+type DevinfoForm struct {
 	ID   string
 	Zcbh string `json:"zcbh"`
 	Lx   string `json:"lx"`
@@ -27,30 +27,32 @@ type DeviceForm struct {
 	Grrq string `json:"grrq"`
 	Bfnx string `json:"bfnx"`
 	Jg   string `json:"jg"`
-	Zp   string `json:"zp"`
 	Gys  string `json:"gys"`
-	Rkrq string `json:"rkrq"`
 	Czr  string `json:"czr"`
 	Zt   string `json:"zt"`
+	Jgdm string `json:"jgdm"`
+	Syr  string `json:"syr"`
+	Sx   string `json:"sx"`
 }
 
 //单项录入
-func AddDevice(c *gin.Context) {
+func AddDevinfo(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form DeviceForm
+		form DevinfoForm
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	if _, err := models.GetUserByMobile(form.Czr); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+	czr, err := models.GetUserByMobile(form.Czr)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 		return
 	}
 	sbbh := models.GenerateSbbh(form.Lx, form.Xlh)
-	dev := models.Device{
+	dev := &models.Devinfo{
 		ID:   sbbh,
 		Zcbh: form.Zcbh,
 		Lx:   form.Lx,
@@ -63,13 +65,14 @@ func AddDevice(c *gin.Context) {
 		Grrq: form.Grrq,
 		Bfnx: form.Bfnx,
 		Jg:   form.Jg,
-		Zp:   form.Zp,
 		Gys:  form.Gys,
-		Rkrq: time.Now().Format("2006-01-02 15:04:05"),
-		Czr:  form.Czr,
-		Zt:   form.Zt,
+		Czrq: time.Now().Format("2006-01-02 15:04:05"),
+		Czr:  czr.UserID,
+		Zt:   "1",
+		Jgdm: "00",
+		Sx:   "1",
 	}
-	if models.IsXlhExist(form.Xlh) {
+	if models.IsDevXlhExist(form.Xlh) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_XLHEXIST_FAIL, nil)
 		return
 	}
@@ -79,33 +82,30 @@ func AddDevice(c *gin.Context) {
 		log.Println(err)
 	}
 	dev.QrUrl = qrcode.GetQrCodeFullUrl(name)
-	err = models.AddDevice(&dev)
+	err = models.AddDevinfo(dev)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err)
 		return
 	}
-	if len(dev.ID) > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
-	} else {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
-	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //批量导入
-func ImpDevices(c *gin.Context) {
+func ImpDevinfos(c *gin.Context) {
 	appG := app.Gin{C: c}
 	czr := c.Query("czr")
-	if _, err := models.GetUserByMobile(czr); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+	user, err := models.GetUserByMobile(czr)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 		return
 	}
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
-	errDev, success, failed := models.ImpDevices(file, czr)
+	errDev, success, failed := models.ImpDevinfos(file, user.UserID)
 	data := map[string]interface{}{
 		"suNum":  success,
 		"faNum":  failed,
@@ -115,17 +115,31 @@ func ImpDevices(c *gin.Context) {
 }
 
 //更新设备信息
-func UpdateDevice(c *gin.Context) {
+func UpdateDevinfo(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form DeviceForm
+		form DevinfoForm
+		syr  string
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	dev := models.Device{
+	czr, err := models.GetUserByMobile(form.Czr)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		return
+	}
+	if form.Syr != "" {
+		suser, err := models.GetUserByMobile(form.Syr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+			return
+		}
+		syr = suser.UserID
+	}
+	dev := &models.Devinfo{
 		ID:   form.ID,
 		Zcbh: form.Zcbh,
 		Lx:   form.Lx,
@@ -138,27 +152,23 @@ func UpdateDevice(c *gin.Context) {
 		Grrq: form.Grrq,
 		Bfnx: form.Bfnx,
 		Jg:   form.Jg,
-		Zp:   form.Zp,
 		Gys:  form.Gys,
-		Czr:  form.Czr,
+		Czr:  czr.UserID,
 		Zt:   form.Zt,
+		Jgdm: form.Jgdm,
+		Syr:  syr,
+		Sx:   form.Sx,
 	}
-	if form.Czr != "" {
-		if _, err := models.GetUserByMobile(form.Czr); err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
-			return
-		}
-	}
-	err := models.EditDevice(&dev)
+	err = models.EditDevinfo(dev)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //获取设备列表
-func GetDevices(c *gin.Context) {
+func GetDevinfos(c *gin.Context) {
 	var (
 		appG  = app.Gin{C: c}
 		rkrqq = c.Query("rkrqq")
@@ -184,15 +194,15 @@ func GetDevices(c *gin.Context) {
 	}
 	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
 	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
-	devs, err := models.GetDevices(con, pageNo, pageSize)
+	devs, err := models.GetDevinfos(con, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
 	for _, dev := range devs {
-		if dev.Czr != "" {
-			uczr, _ := models.GetUserByMobile(dev.Czr)
-			dev.Czr = uczr.Name
+		if dev.Syr != "" {
+			usyr, _ := models.GetUserByMobile(dev.Syr)
+			dev.Syr = usyr.Name
 		}
 	}
 	data := make(map[string]interface{})
@@ -202,10 +212,10 @@ func GetDevices(c *gin.Context) {
 }
 
 //获取设备详情
-func GetDeviceByID(c *gin.Context) {
+func GetDevinfoByID(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id := c.Query("id")
-	dev, err := models.GetDeviceByID(id)
+	dev, err := models.GetDevinfoByID(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 		return
@@ -214,29 +224,11 @@ func GetDeviceByID(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, dev)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
-	}
-}
-
-//查询设备信息及当前使用状态详情
-func GetDeviceModByDevID(c *gin.Context) {
-	appG := app.Gin{C: c}
-	id := c.Query("id")
-	dev, err := models.GetDeviceModByDevID(id)
-	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEV_FAIL, nil)
-		return
-	}
-	if len(dev.ID) > 0 {
-		user, _ := models.GetUserByMobile(dev.Czr)
-		dev.Czr = user.Name
-		appG.Response(http.StatusOK, e.SUCCESS, dev)
-	} else {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEV_FAIL, nil)
 	}
 }
 
 //获取当前用户设备列表
-func GetDevicesByUser(c *gin.Context) {
+func GetDevinfosByUser(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
 		rkrqq    = c.Query("rkrqq")
@@ -254,24 +246,18 @@ func GetDevicesByUser(c *gin.Context) {
 	}
 	ts := strings.Split(token, ".")
 	userid := ts[3]
-
 	if rkrqq == "" {
 		rkrqq = "2000-01-01 00:00:00"
 	}
 	if rkrqz == "" {
 		rkrqz = "2099-01-01 00:00:00"
 	}
-	syr, uerr := models.GetUserByUserid(userid)
-	if uerr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
-		return
-	}
 	con := map[string]string{
 		"rkrqq": rkrqq,
 		"rkrqz": rkrqz,
 		"sbbh":  sbbh,
 		"xlh":   xlh,
-		"syr":   syr.Mobile,
+		"syr":   userid,
 		"mc":    mc,
 	}
 	if c.Query("pageNo") == "" {
@@ -284,7 +270,7 @@ func GetDevicesByUser(c *gin.Context) {
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
-	devs, err := models.GetDevices(con, pageNo, pageSize)
+	devs, err := models.GetDevinfos(con, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return

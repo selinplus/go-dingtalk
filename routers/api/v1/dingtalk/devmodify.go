@@ -65,7 +65,7 @@ func AddDeviceMod(c *gin.Context) {
 			return
 		}
 	}
-	err = models.AddDevMod(&d)
+	err = models.AddDevModify(&d)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
@@ -95,12 +95,7 @@ func GetDevModList(c *gin.Context) {
 	} else {
 		pageSize = 10000
 	}
-	total, er := models.GetDevModCount(devid)
-	if er != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
-		return
-	}
-	devs, err := models.GetDevMods(devid, pageNo, pageSize)
+	devs, err := models.GetDevModifes(devid, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
@@ -117,6 +112,6 @@ func GetDevModList(c *gin.Context) {
 	}
 	data := make(map[string]interface{})
 	data["lists"] = devs
-	data["total"] = total
+	data["total"] = len(devs)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }

@@ -54,6 +54,21 @@ func GetDevOp(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, d)
 }
 
+//查询操作属性代码
+func GetDevProp(c *gin.Context) {
+	appG := app.Gin{C: c}
+	d, err := models.GetDevproperty()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	if len(d) == 0 {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, d)
+}
+
 //获取下一节点操作人
 func GetProcCzr(c *gin.Context) {
 	var (

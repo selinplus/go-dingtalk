@@ -114,18 +114,33 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/userlist", dingtalk.GetDevuserList)
 		//删除设备使用人员
 		apiv1.GET("/dev/deluser", dingtalk.DeleteDevuser)
+
 		//单项录入
-		apiv1.POST("/dev/add", dingtalk.AddDevice)
+		apiv1.POST("/dev/add", dingtalk.AddDevinfo)
 		//批量导入
-		apiv1.POST("/dev/imp", dingtalk.ImpDevices)
+		apiv1.POST("/dev/imp", dingtalk.ImpDevinfos)
 		//更新设备信息
-		apiv1.POST("/dev/update", dingtalk.UpdateDevice)
+		apiv1.POST("/dev/update", dingtalk.UpdateDevinfo)
 		//查询设备详情
-		apiv1.GET("/dev/detail", dingtalk.GetDeviceByID)
+		apiv1.GET("/dev/detail", dingtalk.GetDevinfoByID)
+		//获取设备列表
+		apiv1.GET("/dev/list", dingtalk.GetDevinfos)
+
+		/*
+			//单项录入
+			apiv1.POST("/dev/add", dingtalk.AddDevice)
+			//批量导入
+			apiv1.POST("/dev/imp", dingtalk.ImpDevices)
+			//更新设备信息
+			apiv1.POST("/dev/update", dingtalk.UpdateDevice)
+			//查询设备详情
+			apiv1.GET("/dev/detail", dingtalk.GetDeviceByID)
+			//获取设备列表
+			apiv1.GET("/dev/list", dingtalk.GetDevices)
+		*/
+
 		//查询设备信息及当前使用状态详情
 		apiv1.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
-		//获取设备列表
-		apiv1.GET("/dev/list", dingtalk.GetDevices)
 		//流转登记
 		apiv1.POST("/devmod/add", dingtalk.AddDeviceMod)
 		//设备流水记录查询
@@ -137,6 +152,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/type", dingtalk.GetDevtype)
 		//查询操作类型代码
 		apiv1.GET("/dev/op", dingtalk.GetDevOp)
+		//查询操作属性代码
+		apiv1.GET("/dev/prop", dingtalk.GetDevProp)
 	}
 	//外网----消息助手&&记事本&&小网盘
 	apiv2 := r.Group("/api/v2")
