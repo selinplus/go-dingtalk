@@ -106,6 +106,10 @@ func ImpDevinfos(c *gin.Context) {
 		return
 	}
 	errDev, success, failed := models.ImpDevinfos(file, user.UserID)
+	if success == 0 && failed == 0 {
+		appG.Response(http.StatusOK, e.ERROR_ADD_DEV_FAIL, nil)
+		return
+	}
 	data := map[string]interface{}{
 		"suNum":  success,
 		"faNum":  failed,
