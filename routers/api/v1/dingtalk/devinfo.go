@@ -158,6 +158,7 @@ func UpdateDevinfo(c *gin.Context) {
 		Jg:   form.Jg,
 		Gys:  form.Gys,
 		Czr:  czr.UserID,
+		Czrq: time.Now().Format("2006-01-02 15:04:05"),
 		Zt:   form.Zt,
 		Jgdm: form.Jgdm,
 		Syr:  syr,
@@ -174,13 +175,15 @@ func UpdateDevinfo(c *gin.Context) {
 //获取设备列表
 func GetDevinfos(c *gin.Context) {
 	var (
-		appG  = app.Gin{C: c}
-		rkrqq = c.Query("rkrqq")
-		rkrqz = c.Query("rkrqz")
-		sbbh  = c.Query("sbbh")
-		xlh   = c.Query("xlh")
-		syr   = c.Query("syr")
-		mc    = c.Query("mc")
+		appG     = app.Gin{C: c}
+		rkrqq    = c.Query("rkrqq")
+		rkrqz    = c.Query("rkrqz")
+		sbbh     = c.Query("sbbh")
+		xlh      = c.Query("xlh")
+		syr      = c.Query("syr")
+		mc       = c.Query("mc")
+		pageNo   int
+		pageSize int
 	)
 	if rkrqq == "" {
 		rkrqq = "2000-01-01 00:00:00"
@@ -196,8 +199,16 @@ func GetDevinfos(c *gin.Context) {
 		"syr":   syr,
 		"mc":    mc,
 	}
-	pageNo, _ := strconv.Atoi(c.Query("pageNo"))
-	pageSize, _ := strconv.Atoi(c.Query("pageSize"))
+	if c.Query("pageNo") == "" {
+		pageNo = 1
+	} else {
+		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
+	}
+	if c.Query("pageSize") == "" {
+		pageSize = 10000
+	} else {
+		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
+	}
 	devs, err := models.GetDevinfos(con, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)

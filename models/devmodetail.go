@@ -10,22 +10,15 @@ type Devmodetail struct {
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 }
 
-func AddDevModetail(data interface{}) error {
-	if err := db.Create(data).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
 func GetDevModetails(devid string, pageNo, pageSize int) ([]*Devmodetail, error) {
 	var devs []*Devmodetail
 	offset := (pageNo - 1) * pageSize
 	query := `	select devmodetail.id,devmodetail.lsh,devmodetail.devid,devoperation.mc as czlx,
-				devtype.mc,devmodetail.devid,devmodetail.zcbh from devmodetail 
-				left join devinfo on device.id=devmodetail.devid 
+				devmodetail.czrq,devtype.mc as lx,devmodetail.devid,devmodetail.zcbh from devmodetail 
+				left join devinfo on devinfo.id=devmodetail.devid 
 				left join devoperation on devoperation.dm=devmodetail.czlx 
-				left join devtype on devtype.id=devmodetail.lx  
-				where devmodetail.devid = ? order by devmodetail.id desc LIMIT ?,?`
+				left join devtype on devtype.dm=devmodetail.lx  
+				where devmodetail.lsh = ? order by devmodetail.id desc LIMIT ?,?`
 	if err := db.Raw(query, devid, offset, pageSize).Scan(&devs).Error; err != nil {
 		return nil, err
 	}

@@ -11,24 +11,15 @@ type Devmod struct {
 	Jgdm   string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
 }
 
-func AddDevMod(data interface{}) error {
-	if err := db.Create(data).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func GetDevMods(pageNo, pageSize int) ([]*Devmod, error) {
+func GetDevMods(czr string) ([]*Devmod, error) {
 	var devs []*Devmod
-	offset := (pageNo - 1) * pageSize
 	query := `select devmod.id,devmod.lsh,devmod.pre_lsh,devoperation.mc as czlx,devmod.czrq,
 			devmod.num,user.name as czr,devdept.jgmc as jgdm from devmod 
-			left join device on device.id=devmod.devid 
 			left join devoperation on devoperation.dm=devmod.czlx 
 			left join devdept on devdept.jgdm=devmod.jgdm  
 			left join user on user.userid=devmod.czr  
-			order by devmod.id desc LIMIT ?,?`
-	if err := db.Raw(query, offset, pageSize).Scan(&devs).Error; err != nil {
+			where devmod.czr=? order by devmod.id`
+	if err := db.Raw(query, czr).Scan(&devs).Error; err != nil {
 		return nil, err
 	}
 	return devs, nil
