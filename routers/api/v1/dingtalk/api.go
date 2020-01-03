@@ -33,7 +33,7 @@ func Login(c *gin.Context) {
 		userInfo := dingtalk.GetUserInfo(id)
 		session.Set("userid", userInfo.UserID)
 		if err := session.Save(); err != nil {
-			log.Printf("session.Save() err:%v", err)
+			log.Printf("session.Save() err:%v", err.Error())
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, userInfo)
 		return

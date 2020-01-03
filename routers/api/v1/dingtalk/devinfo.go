@@ -48,7 +48,7 @@ func AddDevinfo(c *gin.Context) {
 	}
 	czr, err := models.GetUserByMobile(form.Czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 		return
 	}
 	sbbh := models.GenerateSbbh(form.Lx, form.Xlh)
@@ -84,7 +84,7 @@ func AddDevinfo(c *gin.Context) {
 	dev.QrUrl = qrcode.GetQrCodeFullUrl(name)
 	err = models.AddDevinfo(dev)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -96,13 +96,13 @@ func ImpDevinfos(c *gin.Context) {
 	czr := c.Query("czr")
 	user, err := models.GetUserByMobile(czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 		return
 	}
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
 	errDev, success, failed := models.ImpDevinfos(file, user.UserID)
@@ -132,13 +132,13 @@ func UpdateDevinfo(c *gin.Context) {
 	}
 	czr, err := models.GetUserByMobile(form.Czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 		return
 	}
 	if form.Syr != "" {
 		suser, err := models.GetUserByMobile(form.Syr)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 			return
 		}
 		syr = suser.UserID
@@ -166,7 +166,7 @@ func UpdateDevinfo(c *gin.Context) {
 	}
 	err = models.EditDevinfo(dev)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)

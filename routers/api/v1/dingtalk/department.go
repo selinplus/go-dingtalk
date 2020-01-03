@@ -174,7 +174,7 @@ func OrgUserCount(c *gin.Context) {
 	appG := app.Gin{C: c}
 	cnt, err := dingtalk.OrgUserCount(20)
 	if err != nil {
-		appG.Response(http.StatusOK, e.SUCCESS, err)
+		appG.Response(http.StatusOK, e.SUCCESS, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, cnt)

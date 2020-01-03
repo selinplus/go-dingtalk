@@ -41,7 +41,7 @@ func AddDevuser(c *gin.Context) {
 				Syr:  syr,
 			}
 			if err := models.AddDevuser(&devuser); err != nil {
-				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
+				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err.Error())
 				return
 			}
 		}
@@ -66,7 +66,7 @@ func UpdateDevuser(c *gin.Context) {
 		Syr:  form.Syr,
 	}
 	if err := models.UpdateDevuser(&devuser); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -77,7 +77,7 @@ func GetDevuserList(c *gin.Context) {
 	appG := app.Gin{C: c}
 	dus, err := models.GetDevuser(c.Query("jgdm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err.Error())
 		return
 	}
 	if len(dus) > 0 {
@@ -105,11 +105,11 @@ func DeleteDevuser(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err)
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}
 	if err := models.DeleteDevuser(uint(id)); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_DELETE_USER_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_DELETE_USER_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)

@@ -39,7 +39,7 @@ func AddDevdept(c *gin.Context) {
 	if len(form.Mobile) > 0 {
 		u, err := models.GetUserByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+			appG.Response(http.StatusOK, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 			return
 		}
 		userid = u.UserID
@@ -54,7 +54,7 @@ func AddDevdept(c *gin.Context) {
 	}
 	jgdm, err := models.GenDevdeptDmBySjjgdm(form.Sjjgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err)
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
@@ -69,7 +69,7 @@ func AddDevdept(c *gin.Context) {
 		Xgrq:   t,
 	}
 	if err := models.AddDevdept(&devdept); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_ADD_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_ADD_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -90,7 +90,7 @@ func UpdateDevdept(c *gin.Context) {
 	if len(form.Mobile) > 0 {
 		u, err := models.GetUserByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
 			return
 		}
 		userid = u.UserID
@@ -113,7 +113,7 @@ func UpdateDevdept(c *gin.Context) {
 		Xgrq:   t,
 	}
 	if err := models.UpdateDevdept(&devdept); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -125,7 +125,7 @@ func GetDevdeptTree(c *gin.Context) {
 	jgdm := c.Query("jgdm")
 	tree, err := models.GetDevdeptTree(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	if len(tree) > 0 {
@@ -135,13 +135,141 @@ func GetDevdeptTree(c *gin.Context) {
 	}
 }
 
+//获取设备管理机构列表(bz:0-管理员不可选;1-管理员可选)
+func GetDevdeptGlyList(c *gin.Context) {
+	var (
+		appG    = app.Gin{C: c}
+		flag    bool
+		glyName string
+	)
+	bz := c.Query("bz")
+	parentDt, err := models.GetDevdept(c.Query("jgdm"))
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	var dts []interface{}
+	if parentDt.Gly != "" {
+		gly, err := models.GetUserByUserid(parentDt.Gly)
+		if err != nil {
+			appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+			return
+		}
+		glyName = gly.Name
+	} else {
+		glyName = ""
+	}
+	data := map[string]interface{}{
+		"jgdm":        parentDt.Jgdm,
+		"jgmc":        parentDt.Jgmc,
+		"gly":         glyName,
+		"children":    dts,
+		"scopedSlots": map[string]string{"title": "custom"},
+		"disabled":    true,
+	}
+	departments, err := models.GetDevdeptBySjjgdm(parentDt.Jgdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	if len(departments) > 0 {
+		for _, department := range departments {
+			var ds []interface{}
+			leaf := models.IsLeafDevdept(department.Jgdm)
+			if !leaf {
+				departs, err := models.GetDevdeptBySjjgdm(department.Jgdm)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, department.Jgdm)
+					return
+				}
+				if len(departs) > 0 {
+					for _, depart := range departs {
+						if bz == "0" {
+							if depart.Gly != "" {
+								flag = true
+							} else {
+								flag = false
+							}
+						}
+						if bz == "1" {
+							if depart.Gly != "" && department.Gly == "" {
+								flag = false
+							} else {
+								flag = true
+							}
+						}
+						if depart.Gly != "" {
+							gly, err := models.GetUserByUserid(depart.Gly)
+							if err != nil {
+								appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+								return
+							}
+							glyName = gly.Name
+						} else {
+							glyName = ""
+						}
+						d := map[string]interface{}{
+							"jgdm":        depart.Jgdm,
+							"sjjgdm":      depart.Sjjgdm,
+							"jgmc":        depart.Jgmc,
+							"gly":         glyName,
+							"scopedSlots": map[string]string{"title": "custom"},
+							"children":    nil,
+							"disabled":    flag,
+						}
+						ds = append(ds, d)
+					}
+				}
+			}
+			if bz == "0" {
+				if department.Gly != "" {
+					flag = true
+				} else {
+					flag = false
+				}
+			}
+			if bz == "1" {
+				if department.Gly == "" {
+					flag = true
+				} else {
+					flag = false
+				}
+			}
+			if department.Gly != "" {
+				gly, err := models.GetUserByUserid(department.Gly)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+					return
+				}
+				glyName = gly.Name
+			} else {
+				glyName = ""
+			}
+			dt := map[string]interface{}{
+				"jgdm":        department.Jgdm,
+				"sjjgdm":      department.Sjjgdm,
+				"jgmc":        department.Jgmc,
+				"gly":         glyName,
+				"scopedSlots": map[string]string{"title": "custom"},
+				"children":    ds,
+				"disabled":    flag,
+			}
+			dts = append(dts, dt)
+		}
+		data["children"] = dts
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	} else {
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	}
+}
+
 //获取设备管理机构列表(循环遍历)
 func GetDevdeptBySjjgdm(c *gin.Context) {
 	var appG = app.Gin{C: c}
 	jgdm := c.Query("jgdm")
 	parentDt, err := models.GetDevdept(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	var dts []interface{}
@@ -153,7 +281,7 @@ func GetDevdeptBySjjgdm(c *gin.Context) {
 	}
 	departments, err := models.GetDevdeptBySjjgdm(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	if len(departments) > 0 {
@@ -187,7 +315,7 @@ func DeleteDevdept(c *gin.Context) {
 		return
 	}
 	if err := models.DeleteDevdept(jgdm); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_DELETE_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_DELETE_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -199,7 +327,7 @@ func GetDevdeptGly(c *gin.Context) {
 	jgdm := c.Query("jgdm")
 	ddept, err := models.GetDevdept(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
 		return
 	}
 	resps := make([]*GlyResp, 0)
@@ -209,7 +337,7 @@ func GetDevdeptGly(c *gin.Context) {
 	}
 	user, err := models.GetUserByUserid(ddept.Gly)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
 		return
 	}
 	resp := &GlyResp{
@@ -226,12 +354,12 @@ func GetDevGly(c *gin.Context) {
 	appG := app.Gin{C: c}
 	gly, err := models.GetUserByMobile(c.Query("gly"))
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 		return
 	}
 	depts, err := models.GetDevGly(gly.UserID)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	data := make(map[string]interface{})
