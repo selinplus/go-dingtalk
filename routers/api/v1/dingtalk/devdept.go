@@ -122,7 +122,8 @@ func UpdateDevdept(c *gin.Context) {
 //获取设备管理机构列表(树结构)
 func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
-	tree, err := models.GetDevdeptTree()
+	jgdm := c.Query("jgdm")
+	tree, err := models.GetDevdeptTree(jgdm)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
@@ -218,4 +219,23 @@ func GetDevdeptGly(c *gin.Context) {
 	}
 	resps = append(resps, resp)
 	appG.Response(http.StatusOK, e.SUCCESS, resps)
+}
+
+//获取当前用户为机构管理员的所有机构列表
+func GetDevGly(c *gin.Context) {
+	appG := app.Gin{C: c}
+	gly, err := models.GetUserByMobile(c.Query("gly"))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		return
+	}
+	depts, err := models.GetDevGly(gly.UserID)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		return
+	}
+	data := make(map[string]interface{})
+	data["lists"] = depts
+	data["total"] = len(depts)
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }

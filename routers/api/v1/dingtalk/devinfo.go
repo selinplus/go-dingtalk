@@ -182,6 +182,7 @@ func GetDevinfos(c *gin.Context) {
 		xlh      = c.Query("xlh")
 		syr      = c.Query("syr")
 		mc       = c.Query("mc")
+		jgdm     = c.Query("jgdm")
 		pageNo   int
 		pageSize int
 	)
@@ -198,6 +199,7 @@ func GetDevinfos(c *gin.Context) {
 		"xlh":   xlh,
 		"syr":   syr,
 		"mc":    mc,
+		"jgdm":  jgdm,
 	}
 	if c.Query("pageNo") == "" {
 		pageNo = 1

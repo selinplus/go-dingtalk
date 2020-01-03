@@ -79,6 +79,14 @@ func GetDevdept(jgdm string) (*Devdept, error) {
 	return &dd, nil
 }
 
+func GetDevGly(gly string) ([]*Devdept, error) {
+	var dds []*Devdept
+	if err := db.Where("gly=?", gly).Find(&dds).Error; err != nil {
+		return nil, err
+	}
+	return dds, nil
+}
+
 func GetDevdeptBySjjgdm(jgdm string) ([]*Devdept, error) {
 	var dds []*Devdept
 	if err := db.Where("sjjgdm=?", jgdm).Find(&dds).Error; err != nil {
@@ -116,8 +124,8 @@ type DevdeptTree struct {
 }
 
 //获取设备管理机构列表
-func GetDevdeptTree() ([]DevdeptTree, error) {
-	ytsw, err := GetDevdept("00")
+func GetDevdeptTree(jgdm string) ([]DevdeptTree, error) {
+	ytsw, err := GetDevdept(jgdm)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +137,7 @@ func GetDevdeptTree() ([]DevdeptTree, error) {
 		Gly:         ytsw.Gly,
 		Children:    []*DevdeptTree{},
 	}
-	if err := getDevdeptTreeNode("00", &child); err != nil {
+	if err := getDevdeptTreeNode(jgdm, &child); err != nil {
 		return nil, err
 	}
 	perms = append(perms, child)

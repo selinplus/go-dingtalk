@@ -106,6 +106,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/deldept", dingtalk.DeleteDevdept)
 		//获取当前机构管理员信息
 		apiv1.GET("/dev/deptgly", dingtalk.GetDevdeptGly)
+		//获取当前用户为机构管理员的所有机构列表
+		apiv1.GET("/dev/gly", dingtalk.GetDevGly)
 		//增加设备使用人员
 		apiv1.POST("/dev/adduser", dingtalk.AddDevuser)
 		//修改设备使用人员
@@ -123,7 +125,7 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/update", dingtalk.UpdateDevinfo)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dingtalk.GetDevinfoByID)
-		//获取设备列表
+		//获取设备列表(多条件查询)
 		apiv1.GET("/dev/list", dingtalk.GetDevinfos)
 		//获取当前操作人所有流水记录
 		apiv1.GET("/devmod/lslist", dingtalk.GetDevMods)
