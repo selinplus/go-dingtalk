@@ -161,6 +161,7 @@ func GetDevdeptGlyList(c *gin.Context) {
 	}
 	data := map[string]interface{}{
 		"jgdm":        parentDt.Jgdm,
+		"sjjgdm":      parentDt.Sjjgdm,
 		"jgmc":        parentDt.Jgmc,
 		"gly":         glyName,
 		"children":    dts,
