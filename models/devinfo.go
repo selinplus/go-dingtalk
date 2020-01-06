@@ -36,6 +36,7 @@ type Devinfo struct {
 	Zt    string `json:"zt" gorm:"COMMENT:'设备状态'"`
 	Jgdm  string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
 	Syr   string `json:"syr" gorm:"COMMENT:'设备使用人代码'"`
+	Cfwz  string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
 	Sx    string `json:"sx" gorm:"COMMENT:'设备属性'"`
 }
 
@@ -189,7 +190,7 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
 }
 
 //设备分配&借出
-func DevAllocate(ids []string, jgdm, syr, czr, czlx string) error {
+func DevAllocate(ids []string, jgdm, syr, cfwz, czr, czlx string) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -220,6 +221,7 @@ func DevAllocate(ids []string, jgdm, syr, czr, czlx string) error {
 			Czrq: t,
 			Czr:  czr,
 			Syr:  syr,
+			Cfwz: cfwz,
 			Jgdm: jgdm,
 			Zt:   zt,
 			Sx:   sx,
@@ -499,7 +501,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,
-			devinfo.syr,devproperty.mc as sx
+			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
 			from devinfo 
 			left join user on user.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
@@ -522,7 +524,7 @@ func GetDevinfoByID(id string) (*Devinfo, error) {
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devdept.jgmc as jgdm,
-			devinfo.syr,devproperty.mc as sx
+			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
 			from devinfo 
 			left join devdept on devdept.jgdm=devinfo.jgdm 
 			left join user on user.userid=devinfo.czr 

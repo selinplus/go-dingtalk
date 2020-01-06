@@ -40,6 +40,7 @@ type DevOpForm struct {
 	SrcJgdm string   `json:"src_jgdm"`
 	DstJgdm string   `json:"dst_jgdm"`
 	Syr     string   `json:"syr"`
+	Cfwz    string   `json:"cfwz"`
 	Czr     string   `json:"czr"`
 	Czlx    string   `json:"czlx"`
 }
@@ -391,7 +392,7 @@ func DevAllocate(c *gin.Context) {
 		}
 		syr = suser.UserID
 	}
-	if err := models.DevAllocate(form.Ids, form.DstJgdm, syr, czr.UserID, form.Czlx); err != nil {
+	if err := models.DevAllocate(form.Ids, form.DstJgdm, syr, form.Cfwz, czr.UserID, form.Czlx); err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}
