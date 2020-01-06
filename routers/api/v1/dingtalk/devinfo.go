@@ -61,6 +61,7 @@ func AddDevinfo(c *gin.Context) {
 		return
 	}
 	sbbh := models.GenerateSbbh(form.Lx, form.Xlh)
+	t := time.Now().Format("2006-01-02 15:04:05")
 	dev := &models.Devinfo{
 		ID:   sbbh,
 		Zcbh: form.Zcbh,
@@ -75,7 +76,8 @@ func AddDevinfo(c *gin.Context) {
 		Bfnx: form.Bfnx,
 		Jg:   form.Jg,
 		Gys:  form.Gys,
-		Czrq: time.Now().Format("2006-01-02 15:04:05"),
+		Rkrq: t,
+		Czrq: t,
 		Czr:  czr.UserID,
 		Zt:   "1",
 		Jgdm: "00",
@@ -206,6 +208,14 @@ func GetDevinfos(c *gin.Context) {
 	if rkrqz == "" {
 		rkrqz = "2099-01-01 00:00:00"
 	}
+	if syr != "" {
+		user, err := models.GetUserByMobile(syr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		syr = user.UserID
+	}
 	con := map[string]string{
 		"rkrqq": rkrqq,
 		"rkrqz": rkrqz,
@@ -233,7 +243,7 @@ func GetDevinfos(c *gin.Context) {
 	resps := make([]*DevResponse, 0)
 	for _, dev := range devs {
 		if dev.Syr != "" {
-			usyr, _ := models.GetUserByMobile(dev.Syr)
+			usyr, _ := models.GetUserByUserid(dev.Syr)
 			dev.Syr = usyr.Name
 		}
 		dept, err := models.GetDevdept(dev.Jgdm)

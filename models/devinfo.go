@@ -30,6 +30,7 @@ type Devinfo struct {
 	Grrq  string `json:"grrq" gorm:"COMMENT:'购入日期'"`
 	Bfnx  string `json:"bfnx" gorm:"COMMENT:'设备报废年限'"`
 	QrUrl string `json:"qrurl" gorm:"COMMENT:'二维码URL';column:qrurl"`
+	Rkrq  string `json:"rkrq" gorm:"COMMENT:'入库日期'"`
 	Czr   string `json:"czr" gorm:"COMMENT:'操作人'"`
 	Czrq  string `json:"czrq" gorm:"COMMENT:'操作日期'"`
 	Zt    string `json:"zt" gorm:"COMMENT:'设备状态'"`
@@ -406,6 +407,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 					//if dev == nil {
 					//	break
 					//}
+					t := time.Now().Format("2006-01-02 15:04:05")
 					d := &Devinfo{
 						ID:   dev.ID,
 						Zcbh: dev.Zcbh,
@@ -420,7 +422,8 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 						Bfnx: dev.Bfnx,
 						Jg:   dev.Jg,
 						Gys:  dev.Gys,
-						Czrq: time.Now().Format("2006-01-02 15:04:05"),
+						Rkrq: t,
+						Czrq: t,
 						Czr:  dev.Czr,
 						Zt:   "1",
 						Jgdm: "00",
@@ -481,7 +484,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 	var devs []*Devinfo
 	offset := (pageNo - 1) * pageSize
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
-			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,
+			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devdept.jgmc as jgdm,
 			devinfo.syr,devproperty.mc as sx
 			from devinfo 
@@ -490,7 +493,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
 			left join devproperty on devproperty.dm=devinfo.sx 
-			where devinfo.mc like '%%%s%%' and devinfo.czrq > '%s' and devinfo.czrq < '%s'
+			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
 			and devinfo.id like '%%%s%%' and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
 			and devinfo.jgdm like '%%%s%%'
 			order by devinfo.czrq desc LIMIT %d,%d`
@@ -505,7 +508,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 func GetDevinfoByID(id string) (*Devinfo, error) {
 	var dev Devinfo
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
-			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,
+			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devdept.jgmc as jgdm,
 			devinfo.syr,devproperty.mc as sx
 			from devinfo 
