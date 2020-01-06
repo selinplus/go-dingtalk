@@ -13,3 +13,11 @@ func GetDevtype() ([]*Devtype, error) {
 	}
 	return ds, nil
 }
+
+func IsDevtypeCorrect(dm string) bool {
+	var ds *Devtype
+	if err := db.Table("devtype").Where("dm=?", dm).First(&ds).Error; err != nil {
+		return false
+	}
+	return true
+}

@@ -116,9 +116,13 @@ func ImpDevinfos(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
-	errDev, success, failed := models.ImpDevinfos(file, user.UserID)
+	errDev, success, failed, err := models.ImpDevinfos(file, user.UserID)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err.Error())
+		return
+	}
 	if success == 0 && failed == 0 {
-		appG.Response(http.StatusOK, e.ERROR_ADD_DEV_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, nil)
 		return
 	}
 	data := map[string]interface{}{

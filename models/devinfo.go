@@ -281,24 +281,27 @@ func EditDevinfo(dev *Devinfo) error {
 }
 
 //批量导入
-func ImpDevinfos(fileName io.Reader, czr string) ([]*Devinfo, int, int) {
-	devs := ReadDevinfoXmlToStructs(fileName, czr)
+func ImpDevinfos(fileName io.Reader, czr string) ([]*Devinfo, int, int, error) {
+	devs, err := ReadDevinfoXmlToStructs(fileName, czr)
+	if err != nil {
+		return nil, 0, 0, err
+	}
 	errDev, success, failed := InsertDevinfoXml(devs, czr)
-	return errDev, success, failed
+	return errDev, success, failed, nil
 }
 
-func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) []*Devinfo {
+func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error) {
 	devs := make([]*Devinfo, 0)
 	xlsx, err := excelize.OpenReader(fileName)
 	if err != nil {
 		logging.Info(err.Error())
-		return nil
+		return nil, err
 	}
 	sheetName := xlsx.GetSheetName(1)
 	rows, err := xlsx.GetRows(sheetName)
 	if err != nil {
 		logging.Info(err.Error())
-		return nil
+		return nil, err
 	}
 	//logging.Info(fmt.Sprintf("sheet name: %s", sheetName))
 	//遍历行读取
@@ -310,11 +313,17 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) []*Devinfo {
 		d := Devinfo{}
 		d.Czr = czr
 		for i, cell := range row {
+			if cell == "" {
+				return nil, fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+			}
 			switch {
 			case i == 0:
 				d.Zcbh = cell
 			case i == 1:
 				d.Lx = cell
+				if !IsDevtypeCorrect(cell) {
+					return nil, fmt.Errorf("%s", "文件校验错误，设备类型代码错误！")
+				}
 			case i == 2:
 				d.Mc = cell
 			case i == 3:
@@ -341,7 +350,7 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) []*Devinfo {
 		//logging.Debug(fmt.Sprintf("*: %+v", d))
 		devs = append(devs, &d)
 	}
-	return devs
+	return devs, nil
 }
 
 func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
