@@ -485,10 +485,9 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 	offset := (pageNo - 1) * pageSize
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devdept.jgmc as jgdm,
+			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,
 			devinfo.syr,devproperty.mc as sx
 			from devinfo 
-			left join devdept on devdept.jgdm=devinfo.jgdm 
 			left join user on user.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
