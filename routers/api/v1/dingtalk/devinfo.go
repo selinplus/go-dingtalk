@@ -35,6 +35,15 @@ type DevinfoForm struct {
 	Sx   string `json:"sx"`
 }
 
+type DevOpForm struct {
+	Ids     []string `json:"ids"`
+	SrcJgdm string   `json:"src_jgdm"`
+	DstJgdm string   `json:"dst_jgdm"`
+	Syr     string   `json:"syr"`
+	Czr     string   `json:"czr"`
+	Czlx    string   `json:"czlx"`
+}
+
 //单项录入
 func AddDevinfo(c *gin.Context) {
 	var (
@@ -172,6 +181,11 @@ func UpdateDevinfo(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
+type DevResponse struct {
+	*models.Devinfo
+	Jgmc string `json:"jgmc"`
+}
+
 //获取设备列表
 func GetDevinfos(c *gin.Context) {
 	var (
@@ -216,15 +230,26 @@ func GetDevinfos(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
+	resps := make([]*DevResponse, 0)
 	for _, dev := range devs {
 		if dev.Syr != "" {
 			usyr, _ := models.GetUserByMobile(dev.Syr)
 			dev.Syr = usyr.Name
 		}
+		dept, err := models.GetDevdept(dev.Jgdm)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+			return
+		}
+		resp := &DevResponse{
+			Devinfo: dev,
+			Jgmc:    dept.Jgmc,
+		}
+		resps = append(resps, resp)
 	}
 	data := make(map[string]interface{})
-	data["lists"] = devs
-	data["total"] = len(devs)
+	data["lists"] = resps
+	data["total"] = len(resps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
@@ -302,4 +327,59 @@ func GetDevinfosByUser(c *gin.Context) {
 	data["lists"] = devs
 	data["total"] = len(devs)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//设备下发
+func DevIssued(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form DevOpForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	czr, err := models.GetUserByMobile(form.Czr)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
+	if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr.UserID); err != nil {
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//设备分配&借出
+func DevAllocate(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form DevOpForm
+		syr  string
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	czr, err := models.GetUserByMobile(form.Czr)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		return
+	}
+	if form.Syr != "" {
+		suser, err := models.GetUserByMobile(form.Czr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		syr = suser.UserID
+	}
+	if err := models.DevAllocate(form.Ids, form.DstJgdm, syr, czr.UserID, form.Czlx); err != nil {
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

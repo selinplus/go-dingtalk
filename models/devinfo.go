@@ -51,6 +51,7 @@ func IsDevXlhExist(xlh string) bool {
 	return true
 }
 
+//设备入库
 func AddDevinfo(dev *Devinfo) error {
 	tx := db.Begin()
 	defer func() {
@@ -92,6 +93,183 @@ func AddDevinfo(dev *Devinfo) error {
 		return err
 	}
 	return tx.Commit().Error
+}
+
+//设备下发
+func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	ckLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	t := time.Now().Format("2006-01-02 15:04:05")
+	dm := &Devmod{
+		Lsh:  ckLsh,
+		Czrq: t,
+		Czlx: "2",
+		Num:  len(ids),
+		Czr:  czr,
+		Jgdm: srcJgdm,
+	}
+	if err := tx.Table("devmod").Create(dm).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	for _, id := range ids {
+		d, err := getDevinfoByID(id)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		dmd := &Devmodetail{
+			Lsh:   ckLsh,
+			Czlx:  "2",
+			Czrq:  t,
+			Lx:    d.Lx,
+			DevID: d.ID,
+			Zcbh:  d.Zcbh,
+		}
+		if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	rkLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	dm2 := &Devmod{
+		Lsh:  rkLsh,
+		Czrq: t,
+		Czlx: "1",
+		Num:  len(ids),
+		Czr:  czr,
+		Jgdm: dstJgdm,
+	}
+	if err := tx.Table("devmod").Create(dm2).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	zt, sx := getState("1")
+	for _, id := range ids {
+		dev := &Devinfo{
+			ID:   id,
+			Czrq: t,
+			Czr:  czr,
+			Jgdm: dstJgdm,
+			Zt:   zt,
+			Sx:   sx,
+		}
+		if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		d, err := getDevinfoByID(id)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		dmd := &Devmodetail{
+			Lsh:   rkLsh,
+			Czlx:  "1",
+			Czrq:  t,
+			Lx:    d.Lx,
+			DevID: d.ID,
+			Zcbh:  d.Zcbh,
+		}
+		if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
+}
+
+//设备分配&借出
+func DevAllocate(ids []string, jgdm, syr, czr, czlx string) error {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	t := time.Now().Format("2006-01-02 15:04:05")
+	dm := &Devmod{
+		Lsh:  lsh,
+		Czrq: t,
+		Czlx: czlx,
+		Num:  len(ids),
+		Czr:  czr,
+		Jgdm: jgdm,
+	}
+	if err := tx.Table("devmod").Create(dm).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	zt, sx := getState(czlx)
+	for _, id := range ids {
+		dev := &Devinfo{
+			ID:   id,
+			Czrq: t,
+			Czr:  czr,
+			Syr:  syr,
+			Jgdm: jgdm,
+			Zt:   zt,
+			Sx:   sx,
+		}
+		if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		d, err := getDevinfoByID(id)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+		dmd := &Devmodetail{
+			Lsh:   lsh,
+			Czlx:  czlx,
+			Czrq:  t,
+			Lx:    d.Lx,
+			DevID: d.ID,
+			Zcbh:  d.Zcbh,
+		}
+		if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
+}
+
+func getState(czlx string) (zt, sx string) {
+	switch czlx {
+	case "1":
+		return "1", "1"
+	case "2":
+		return "4", "1"
+	case "3":
+		return "2", "3"
+	case "4":
+		return "2", "4"
+	case "5":
+		return "3", "3"
+	case "6":
+		return "3", "4"
+	case "7":
+		return "4", "2"
+	case "8":
+		return "4", "2"
+	case "9":
+		return "5", "5"
+	}
+	return
 }
 
 func EditDevinfo(dev *Devinfo) error {
@@ -336,9 +514,20 @@ func GetDevinfoByID(id string) (*Devinfo, error) {
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
 			left join devproperty on devproperty.dm=devinfo.sx 
-			where devinfo.id like '%%%s%%'`
+			where devinfo.id = '%s'`
 	squery := fmt.Sprintf(query, id)
 	if err := db.Raw(squery).Scan(&dev).Error; err != nil {
+		return nil, err
+	}
+	if len(dev.ID) > 0 {
+		return &dev, nil
+	}
+	return nil, nil
+}
+
+func getDevinfoByID(id string) (*Devinfo, error) {
+	var dev Devinfo
+	if err := db.Table("devinfo").Where("id=?", id).First(&dev).Error; err != nil {
 		return nil, err
 	}
 	if len(dev.ID) > 0 {
