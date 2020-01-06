@@ -481,6 +481,10 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 			tx.Rollback()
 			return nil, 0, 0
 		}
+		if devsNum == len(errDev) {
+			tx.Rollback()
+			return errDev, devsNum - len(errDev), len(errDev)
+		}
 		tx.Commit()
 	}
 	if len(errDev) > 0 {
