@@ -513,7 +513,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 			order by devinfo.czrq desc LIMIT %d,%d`
 	var jgdmCon string
 	if con["jgdm"] == "" {
-		jgdmCon = "like '00%"
+		jgdmCon = "like '00%'"
 	} else {
 		jgdmCon = "= '" + con["jgdm"] + "' and devinfo.zt = '1'"
 	}
