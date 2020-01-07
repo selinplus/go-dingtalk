@@ -273,14 +273,23 @@ func InitRouter() *gin.Engine {
 		//获取部门用户列表
 		apiv3.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
-		//获取设备管理机构列表
-		apiv3.GET("/dev/tree", dingtalk.GetDevdeptTree)
-		//获取当前用户设备列表
-		apiv3.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
+		//获取设备管理机构及人员列表(循环遍历)
+		apiv3.GET("/dev/epptree", dingtalk.GetDevdeptEppTree)
+		//设备分配&借出
+		apiv3.POST("/dev/allocate", dingtalk.DevAllocate)
 		//查询设备信息及当前使用状态详情
 		apiv3.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dingtalk.GetDevModList)
+
+		/*
+			//获取当前用户设备列表
+			apiv3.GET("/dev/listbyuser", dingtalk.GetDevicesByUser)
+			//查询设备信息及当前使用状态详情
+			apiv3.GET("/dev/detailmod", dingtalk.GetDeviceModByDevID)
+			//设备流水记录查询
+			apiv3.GET("/devmod/list", dingtalk.GetDevModList)
+		*/
 
 		//提报事项保存&&提交
 		apiv3.POST("/proc/add", dingtalk.AddProc)

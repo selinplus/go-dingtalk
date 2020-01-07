@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -297,6 +298,52 @@ func GetDevdeptBySjjgdm(c *gin.Context) {
 			dts = append(dts, dt)
 		}
 		data["children"] = dts
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	} else {
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	}
+}
+
+//获取设备管理机构及人员列表(Epp循环遍历)
+func GetDevdeptEppTree(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	jgdm := c.Query("jgdm")
+	var data []interface{}
+	departments, err := models.GetDevdeptBySjjgdm(jgdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	if len(departments) > 0 {
+		for _, department := range departments {
+			if department.Gly == "" {
+				dt := map[string]interface{}{
+					"dm":     department.Jgdm,
+					"mc":     department.Jgmc,
+					"isDept": true,
+				}
+				data = append(data, dt)
+			}
+		}
+		dus, err := models.GetDevuser(jgdm)
+		if err != nil {
+			appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err.Error())
+			return
+		}
+		if len(dus) > 0 {
+			for _, du := range dus {
+				user, err := models.GetUserByUserid(du.Syr)
+				if err != nil {
+					log.Println(err)
+				}
+				u := map[string]interface{}{
+					"dm":     user.UserID,
+					"mc":     user.Name,
+					"isDept": false,
+				}
+				data = append(data, u)
+			}
+		}
 		appG.Response(http.StatusOK, e.SUCCESS, data)
 	} else {
 		appG.Response(http.StatusOK, e.SUCCESS, data)

@@ -39,9 +39,11 @@ type DevOpForm struct {
 	Ids     []string `json:"ids"`
 	SrcJgdm string   `json:"src_jgdm"`
 	DstJgdm string   `json:"dst_jgdm"`
-	Syr     string   `json:"syr"`
+	Czr     string   `json:"czr"`     //inner传递操作人mobile
+	Syr     string   `json:"syr"`     //inner传递使用人mobile
+	CuserID string   `json:"cuserid"` //epp传递操作人userid
+	SuserID string   `json:"suserid"` //epp传递使用人userid
 	Cfwz    string   `json:"cfwz"`
-	Czr     string   `json:"czr"`
 	Czlx    string   `json:"czlx"`
 }
 
@@ -372,6 +374,7 @@ func DevAllocate(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
 		form DevOpForm
+		czr  string
 		syr  string
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
@@ -379,10 +382,16 @@ func DevAllocate(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	czr, err := models.GetUserByMobile(form.Czr)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
-		return
+	if form.Czr != "" {
+		cuser, err := models.GetUserByMobile(form.Czr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		czr = cuser.UserID
+	}
+	if form.CuserID != "" {
+		czr = form.CuserID
 	}
 	if form.Syr != "" {
 		suser, err := models.GetUserByMobile(form.Czr)
@@ -392,7 +401,10 @@ func DevAllocate(c *gin.Context) {
 		}
 		syr = suser.UserID
 	}
-	if err := models.DevAllocate(form.Ids, form.DstJgdm, syr, form.Cfwz, czr.UserID, form.Czlx); err != nil {
+	if form.SuserID != "" {
+		syr = form.SuserID
+	}
+	if err := models.DevAllocate(form.Ids, form.DstJgdm, syr, form.Cfwz, czr, form.Czlx); err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}
