@@ -254,25 +254,25 @@ func DevAllocate(ids []string, jgdm, syr, cfwz, czr, czlx string) error {
 func getState(czlx string) (zt, sx string) {
 	switch czlx {
 	case "1":
-		return "1", "1"
+		zt, sx = "1", "1"
 	case "2":
-		return "4", "1"
+		zt, sx = "4", "1"
 	case "3":
-		return "2", "3"
+		zt, sx = "2", "3"
 	case "4":
-		return "2", "4"
+		zt, sx = "2", "4"
 	case "5":
-		return "3", "3"
+		zt, sx = "3", "3"
 	case "6":
-		return "3", "4"
+		zt, sx = "3", "4"
 	case "7":
-		return "4", "2"
+		zt, sx = "4", "2"
 	case "8":
-		return "4", "2"
+		zt, sx = "4", "2"
 	case "9":
-		return "5", "5"
+		zt, sx = "5", "5"
 	}
-	return
+	return zt, sx
 }
 
 func EditDevinfo(dev *Devinfo) error {
@@ -509,7 +509,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 			left join devproperty on devproperty.dm=devinfo.sx 
 			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
 			and devinfo.id like '%%%s%%' and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
-			and devinfo.jgdm like '%%%s%%'
+			and devinfo.jgdm = '%s' and devinfo.zt = '1'
 			order by devinfo.czrq desc LIMIT %d,%d`
 	squery := fmt.Sprintf(query,
 		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], con["jgdm"], offset, pageSize)

@@ -38,6 +38,11 @@ func GetDevMods(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
+type LsResp struct {
+	*models.Devmodetail
+	Xh int `json:"xh"`
+}
+
 //根据流水号查询记录
 func GetDevModetails(c *gin.Context) {
 	var (
@@ -60,8 +65,15 @@ func GetDevModetails(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
+	resps := make([]*LsResp, 0)
+	if len(devs) > 0 {
+		for i, dev := range devs {
+			resp := &LsResp{dev, i}
+			resps = append(resps, resp)
+		}
+	}
 	data := make(map[string]interface{})
-	data["lists"] = devs
-	data["total"] = len(devs)
+	data["lists"] = resps
+	data["total"] = len(resps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
