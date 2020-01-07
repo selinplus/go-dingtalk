@@ -77,3 +77,18 @@ func GetDevModetails(c *gin.Context) {
 	data["total"] = len(resps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
+
+//设备流水记录查询
+func GetDevModList(c *gin.Context) {
+	appG := app.Gin{C: c}
+	devid := c.Query("devid")
+	devs, err := models.GetDevModsByDevid(devid)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	data := make(map[string]interface{})
+	data["lists"] = devs
+	data["total"] = len(devs)
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}

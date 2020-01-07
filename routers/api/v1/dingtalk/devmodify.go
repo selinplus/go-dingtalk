@@ -78,7 +78,7 @@ func AddDeviceMod(c *gin.Context) {
 }
 
 //设备流水记录查询
-func GetDevModList(c *gin.Context) {
+func GetDevModifyList(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
 		pageNo   int

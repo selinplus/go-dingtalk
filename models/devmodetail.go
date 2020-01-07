@@ -24,3 +24,32 @@ func GetDevModetails(devid string, pageNo, pageSize int) ([]*Devmodetail, error)
 	}
 	return devs, nil
 }
+
+type DevmodResp struct {
+	*Devmodetail
+	Mc   string `json:"mc"`
+	Rkrq string `json:"rkrq"`
+	Ly   string `json:"ly"`
+	Czr  string `json:"czr"`
+	Jgdm string `json:"jgdm"`
+	Jgmc string `json:"jgmc"`
+}
+
+func GetDevModsByDevid(devid string) ([]*DevmodResp, error) {
+	var devs []*DevmodResp
+	query := `select devmodetail.id,devmodetail.lsh,devmodetail.devid,devmodetail.czrq,devmodetail.zcbh,
+			devinfo.mc,devinfo.rkrq,devinfo.ly,devmod.jgdm,devdept.jgmc,user.name as czr,			
+			devoperation.mc as czlx,devtype.mc as lx
+			from devmodetail 
+			left join devinfo on devinfo.id=devmodetail.devid 
+			left join devmod on devmod.lsh=devmodetail.lsh 
+			left join devoperation on devoperation.dm=devmodetail.czlx 
+			left join devtype on devtype.dm=devmodetail.lx 
+			left join devdept on devdept.jgdm=devmod.jgdm 
+			left join user on user.userid=devmod.czr 
+			where devmodetail.devid = ? order by devmodetail.id desc`
+	if err := db.Raw(query, devid).Scan(&devs).Error; err != nil {
+		return nil, err
+	}
+	return devs, nil
+}
