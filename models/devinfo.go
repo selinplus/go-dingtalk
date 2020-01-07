@@ -509,10 +509,16 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 			left join devproperty on devproperty.dm=devinfo.sx 
 			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
 			and devinfo.id like '%%%s%%' and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
-			and devinfo.jgdm = '%s' and devinfo.zt = '1'
+			and devinfo.jgdm %s' and devinfo.zt = '1'
 			order by devinfo.czrq desc LIMIT %d,%d`
+	var jgdmCon string
+	if con["jgdm"] == "" {
+		jgdmCon = "like '00%"
+	} else {
+		jgdmCon = "= '" + con["jgdm"]
+	}
 	squery := fmt.Sprintf(query,
-		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], con["jgdm"], offset, pageSize)
+		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], jgdmCon, offset, pageSize)
 	if err := db.Raw(squery).Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
