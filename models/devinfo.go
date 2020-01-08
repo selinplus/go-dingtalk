@@ -525,11 +525,16 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 	return devs, nil
 }
 
-func GetDevinfoByID(id string) (*Devinfo, error) {
-	var dev Devinfo
+type DevinfoResp struct {
+	*Devinfo
+	Jgmc string `json:"jgmc"`
+}
+
+func GetDevinfoByID(id string) (*DevinfoResp, error) {
+	var dev DevinfoResp
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devdept.jgmc as jgdm,
+			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc ,
 			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
 			from devinfo 
 			left join devdept on devdept.jgdm=devinfo.jgdm 

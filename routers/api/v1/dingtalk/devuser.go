@@ -114,3 +114,58 @@ func DeleteDevuser(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
+
+//eapp登录后获取人员信息
+func DevLoginInfo(c *gin.Context) {
+	var (
+		appG     = app.Gin{C: c}
+		syrDepts = make([]map[string]string, 0)
+		glyDepts = make([]map[string]string, 0)
+		sfbz     = "0" //0:syr;1:gly;2:super
+	)
+
+	token := c.GetHeader("Authorization")
+	auth := c.Query("token")
+	if len(auth) > 0 {
+		token = auth
+	}
+	ts := strings.Split(token, ".")
+	userid := ts[3]
+
+	sDepts, err := models.GetSyrDepts(userid)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		return
+	}
+	for _, sDept := range sDepts {
+		syrDept := map[string]string{
+			"jgdm": sDept.Jgdm,
+			"jgmc": sDept.Jgmc,
+		}
+		syrDepts = append(syrDepts, syrDept)
+	}
+	gDepts, err := models.GetGlyDepts(userid)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		return
+	}
+	for _, gDept := range gDepts {
+		if gDept.Jgdm == "00" {
+			sfbz = "2"
+		}
+		glyDept := map[string]string{
+			"jgdm": gDept.Jgdm,
+			"jgmc": gDept.Jgmc,
+		}
+		glyDepts = append(glyDepts, glyDept)
+	}
+	if len(gDepts) > 0 && sfbz != "2" {
+		sfbz = "1"
+	}
+	data := map[string]interface{}{
+		"sfbz":      sfbz,
+		"syr_depts": syrDepts,
+		"gly_depts": glyDepts,
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}

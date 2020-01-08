@@ -273,6 +273,8 @@ func InitRouter() *gin.Engine {
 		//获取部门用户列表
 		apiv3.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
+		//eapp登录后获取人员信息
+		apiv3.GET("/dev/login", dingtalk.DevLoginInfo)
 		//获取设备管理机构及人员列表(循环遍历)
 		apiv3.GET("/dev/epptree", dingtalk.GetDevdeptEppTree)
 		//查询设备详情

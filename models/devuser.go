@@ -50,21 +50,3 @@ func IsDevdeptUserExist(jgdm string) bool {
 	}
 	return true
 }
-
-func CreateDevuser(data interface{}) error {
-	tx := db.Begin()
-	defer tx.Close()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-	if tx.Error != nil {
-		return tx.Error
-	}
-	if err := tx.Create(data).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-	return tx.Commit().Error
-}
