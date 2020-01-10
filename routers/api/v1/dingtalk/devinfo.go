@@ -37,12 +37,13 @@ type DevinfoForm struct {
 
 type DevOpForm struct {
 	Ids     []string `json:"ids"`
+	Dms     []string `json:"dms"` //批量收回
 	SrcJgdm string   `json:"src_jgdm"`
-	DstJgdm string   `json:"dst_jgdm"`
-	Czr     string   `json:"czr"`     //inner传递操作人mobile
-	Syr     string   `json:"syr"`     //inner传递使用人mobile
-	CuserID string   `json:"cuserid"` //epp传递操作人userid
-	SuserID string   `json:"suserid"` //epp传递使用人userid
+	DstJgdm string   `json:"dst_jgdm"` //分配
+	Czr     string   `json:"czr"`      //inner传递操作人mobile
+	Syr     string   `json:"syr"`      //inner传递使用人mobile
+	CuserID string   `json:"cuserid"`  //epp传递操作人userid
+	SuserID string   `json:"suserid"`  //epp传递使用人userid
 	Cfwz    string   `json:"cfwz"`
 	Czlx    string   `json:"czlx"`
 }
@@ -389,7 +390,7 @@ func DevAllocate(c *gin.Context) {
 	if form.SuserID != "" {
 		syr = form.SuserID
 	}
-	if err := models.DevAllocate(form.Ids, form.DstJgdm, syr, form.Cfwz, czr, form.Czlx); err != nil {
+	if err := models.DevAllocate(form.Ids, form.Dms, form.DstJgdm, syr, form.Cfwz, czr, form.Czlx); err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}

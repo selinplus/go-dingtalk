@@ -190,7 +190,7 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
 }
 
 //设备分配&借出
-func DevAllocate(ids []string, jgdm, syr, cfwz, czr, czlx string) error {
+func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx string) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -221,16 +221,20 @@ func DevAllocate(ids []string, jgdm, syr, cfwz, czr, czlx string) error {
 	if cfwz == " " {
 		cfwz = ""
 	}
-	for _, id := range ids {
+	for i, id := range ids {
 		dev := map[string]string{
 			"id":   id,
 			"czrq": t,
 			"czr":  czr,
 			"syr":  syr,
 			"cfwz": cfwz,
-			"jgdm": jgdm,
 			"zt":   zt,
 			"sx":   sx,
+		}
+		if jgdm != "" {
+			dev["jgdm"] = jgdm
+		} else {
+			dev["jgdm"] = dms[i]
 		}
 		if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 			tx.Rollback()
