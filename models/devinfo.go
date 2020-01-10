@@ -215,18 +215,24 @@ func DevAllocate(ids []string, jgdm, syr, cfwz, czr, czlx string) error {
 		return err
 	}
 	zt, sx := getState(czlx)
+	if syr == " " {
+		syr = ""
+	}
+	if cfwz == " " {
+		cfwz = ""
+	}
 	for _, id := range ids {
-		dev := &Devinfo{
-			ID:   id,
-			Czrq: t,
-			Czr:  czr,
-			Syr:  syr,
-			Cfwz: cfwz,
-			Jgdm: jgdm,
-			Zt:   zt,
-			Sx:   sx,
+		dev := map[string]string{
+			"id":   id,
+			"czrq": t,
+			"czr":  czr,
+			"syr":  syr,
+			"cfwz": cfwz,
+			"jgdm": jgdm,
+			"zt":   zt,
+			"sx":   sx,
 		}
-		if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+		if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -495,7 +501,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 	return nil, devsNum, 0
 }
 
-func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error) {
+func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Devinfo, error) {
 	var devs []*Devinfo
 	offset := (pageNo - 1) * pageSize
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
@@ -509,16 +515,28 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int) ([]*Devinfo, error
 			left join devproperty on devproperty.dm=devinfo.sx 
 			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
 			and devinfo.id like '%%%s%%' and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
-			and devinfo.jgdm %s
+			and devinfo.jgdm %s %s
 			order by devinfo.czrq desc LIMIT %d,%d`
 	var jgdmCon string
 	if con["jgdm"] == "" {
 		jgdmCon = "like '00%'"
 	} else {
-		jgdmCon = "= '" + con["jgdm"] + "' and devinfo.zt = '1'"
+		jgdmCon = "= '" + con["jgdm"] + "'"
+	}
+	var ztCon string
+	if bz == "0" {
+		jgdmCon = " and devinfo.zt = '1'"
+	} else if bz == "3" {
+		jgdmCon = " and devinfo.zt = '2' and devinfo.sx = '3'"
+	} else if bz == "4" {
+		jgdmCon = " and devinfo.zt = '2' and devinfo.sx = '4'"
+	} else if bz == "6" {
+		jgdmCon = " and devinfo.zt = '3' and devinfo.sx = '4'"
+	} else if bz == "10" {
+		jgdmCon = " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
 	}
 	squery := fmt.Sprintf(query,
-		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], jgdmCon, offset, pageSize)
+		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], jgdmCon, ztCon, offset, pageSize)
 	if err := db.Raw(squery).Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

@@ -195,7 +195,7 @@ type DevResponse struct {
 	Jgmc string `json:"jgmc"`
 }
 
-//获取设备列表
+//获取设备列表(inner多条件查询设备)
 func GetDevinfos(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
@@ -242,7 +242,7 @@ func GetDevinfos(c *gin.Context) {
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
-	devs, err := models.GetDevinfos(con, pageNo, pageSize)
+	devs, err := models.GetDevinfos(con, pageNo, pageSize, "0")
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
@@ -286,18 +286,17 @@ func GetDevinfoByID(c *gin.Context) {
 	}
 }
 
-//获取当前用户设备列表
+// 获取设备列表(管理员查询||eapp使用人查询)
+// jgdm!="",bz=0:管理人名下在库设备;jgdm!="",bz=3:管理人名下共用设备;
+// jgdm!="",bz=4:管理人名下已分配设备;jgdm!="",bz=6:管理人名下已借出设备;
+// eapp :jgdm!="",bz=10:管理人名下已分配&已借出设备;jgdm=="",bz=10:使用人;
 func GetDevinfosByUser(c *gin.Context) {
 	var (
-		appG     = app.Gin{C: c}
-		rkrqq    = c.Query("rkrqq")
-		rkrqz    = c.Query("rkrqz")
-		sbbh     = c.Query("sbbh")
-		xlh      = c.Query("xlh")
-		mc       = c.Query("mc")
-		pageNo   int
-		pageSize int
+		appG = app.Gin{C: c}
+		jgdm = c.Query("jgdm")
+		bz   = c.Query("bz")
 	)
+	//使用人查看名下设备
 	token := c.GetHeader("Authorization")
 	auth := c.Query("token")
 	if len(auth) > 0 {
@@ -305,44 +304,36 @@ func GetDevinfosByUser(c *gin.Context) {
 	}
 	ts := strings.Split(token, ".")
 	userid := ts[3]
-	if rkrqq == "" {
-		rkrqq = "2000-01-01 00:00:00"
-	}
-	if rkrqz == "" {
-		rkrqz = "2099-01-01 00:00:00"
-	}
+
 	con := map[string]string{
-		"rkrqq": rkrqq,
-		"rkrqz": rkrqz,
-		"sbbh":  sbbh,
-		"xlh":   xlh,
-		"syr":   userid,
-		"mc":    mc,
+		"rkrqq": "2000-01-01 00:00:00",
+		"rkrqz": "2099-01-01 00:00:00",
+		"syr":   "",
+		"jgdm":  "",
 	}
-	if c.Query("pageNo") == "" {
-		pageNo = 1
-	} else {
-		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
-	}
-	if c.Query("pageSize") == "" {
-		pageSize = 10000
-	} else {
-		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
-	}
-	devs, err := models.GetDevinfos(con, pageNo, pageSize)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
-		return
-	}
-	for _, dev := range devs {
-		if dev.Czr != "" {
-			uczr, _ := models.GetUserByMobile(dev.Czr)
-			dev.Czr = uczr.Name
+	resps := make([]*models.Devinfo, 0)
+	if jgdm != "" {
+		for _, dm := range strings.Split(jgdm, ",") {
+			con["jgdm"] = dm
+			devs, err := models.GetDevinfos(con, 1, 10000, bz)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+				return
+			}
+			resps = append(resps, devs...)
 		}
+	} else {
+		con["syr"] = userid
+		devs, err := models.GetDevinfos(con, 1, 10000, bz)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+			return
+		}
+		resps = append(resps, devs...)
 	}
 	data := make(map[string]interface{})
-	data["lists"] = devs
-	data["total"] = len(devs)
+	data["lists"] = resps
+	data["total"] = len(resps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
@@ -369,7 +360,7 @@ func DevIssued(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-//设备分配&借出
+//设备分配&借出&收回&交回
 func DevAllocate(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
@@ -394,12 +385,16 @@ func DevAllocate(c *gin.Context) {
 		czr = form.CuserID
 	}
 	if form.Syr != "" {
-		suser, err := models.GetUserByMobile(form.Czr)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
-			return
+		if form.Syr != " " {
+			suser, err := models.GetUserByMobile(form.Syr)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+				return
+			}
+			syr = suser.UserID
+		} else {
+			syr = form.Syr
 		}
-		syr = suser.UserID
 	}
 	if form.SuserID != "" {
 		syr = form.SuserID

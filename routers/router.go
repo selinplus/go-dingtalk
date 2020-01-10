@@ -127,7 +127,7 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/update", dingtalk.UpdateDevinfo)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dingtalk.GetDevinfoByID)
-		//获取设备列表(多条件查询)
+		//获取设备列表(inner多条件查询设备)
 		apiv1.GET("/dev/list", dingtalk.GetDevinfos)
 		//获取当前操作人所有流水记录
 		apiv1.GET("/devmod/lslist", dingtalk.GetDevMods)
@@ -135,8 +135,10 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/devmod/lsdetail", dingtalk.GetDevModetails)
 		//设备下发
 		apiv1.POST("/dev/issued", dingtalk.DevIssued)
-		//设备分配&借出
+		//设备分配&借出&收回&交回
 		apiv1.POST("/dev/allocate", dingtalk.DevAllocate)
+		// 获取设备列表(管理员查询||eapp使用人查询)
+		apiv1.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 
 		/*
 			//单项录入
@@ -281,8 +283,10 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/dev/detail", dingtalk.GetDevinfoByID)
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dingtalk.GetDevModList)
-		//设备分配&借出
+		//设备分配&借出&收回&交回
 		apiv3.POST("/dev/allocate", dingtalk.DevAllocate)
+		// 获取设备列表(管理员查询||eapp使用人查询)
+		apiv3.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 
 		/*
 			//获取当前用户设备列表
