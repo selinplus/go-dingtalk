@@ -502,7 +502,11 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 }
 
 func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Devinfo, error) {
-	var devs []*Devinfo
+	var (
+		devs    []*Devinfo
+		jgdmCon string
+		ztCon   string
+	)
 	offset := (pageNo - 1) * pageSize
 	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
@@ -517,23 +521,21 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			and devinfo.id like '%%%s%%' and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
 			and devinfo.jgdm %s %s
 			order by devinfo.czrq desc LIMIT %d,%d`
-	var jgdmCon string
 	if con["jgdm"] == "" {
 		jgdmCon = "like '00%'"
 	} else {
 		jgdmCon = "= '" + con["jgdm"] + "'"
 	}
-	var ztCon string
 	if bz == "0" {
-		jgdmCon = " and devinfo.zt = '1'"
+		ztCon = " and devinfo.zt = '1'"
 	} else if bz == "3" {
-		jgdmCon = " and devinfo.zt = '2' and devinfo.sx = '3'"
+		ztCon = " and devinfo.zt = '2' and devinfo.sx = '3'"
 	} else if bz == "4" {
-		jgdmCon = " and devinfo.zt = '2' and devinfo.sx = '4'"
+		ztCon = " and devinfo.zt = '2' and devinfo.sx = '4'"
 	} else if bz == "6" {
-		jgdmCon = " and devinfo.zt = '3' and devinfo.sx = '4'"
+		ztCon = " and devinfo.zt = '3' and devinfo.sx = '4'"
 	} else if bz == "10" {
-		jgdmCon = " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
+		ztCon = " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
 	}
 	squery := fmt.Sprintf(query,
 		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], jgdmCon, ztCon, offset, pageSize)
