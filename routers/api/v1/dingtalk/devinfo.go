@@ -190,11 +190,6 @@ func UpdateDevinfo(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-type DevResponse struct {
-	*models.Devinfo
-	Jgmc string `json:"jgmc"`
-}
-
 //获取设备列表(inner多条件查询设备)
 func GetDevinfos(c *gin.Context) {
 	var (
@@ -247,22 +242,13 @@ func GetDevinfos(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	resps := make([]*DevResponse, 0)
+	resps := make([]*models.DevinfoResp, 0)
 	for _, dev := range devs {
 		if dev.Syr != "" {
 			usyr, _ := models.GetUserByUserid(dev.Syr)
 			dev.Syr = usyr.Name
 		}
-		dept, err := models.GetDevdept(dev.Jgdm)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
-			return
-		}
-		resp := &DevResponse{
-			Devinfo: dev,
-			Jgmc:    dept.Jgmc,
-		}
-		resps = append(resps, resp)
+		resps = append(resps, dev)
 	}
 	data := make(map[string]interface{})
 	data["lists"] = resps
@@ -315,7 +301,7 @@ func GetDevinfosByUser(c *gin.Context) {
 		"syr":   "",
 		"jgdm":  "",
 	}
-	resps := make([]*models.Devinfo, 0)
+	resps := make([]*models.DevinfoResp, 0)
 	if jgdm != "" {
 		for _, dm := range strings.Split(jgdm, ",") {
 			con["jgdm"] = dm
