@@ -292,18 +292,22 @@ func GetDevinfoByID(c *gin.Context) {
 // eapp :jgdm!="",bz=10:管理人名下已分配&已借出设备;jgdm=="",bz=10:使用人;
 func GetDevinfosByUser(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
-		jgdm = c.Query("jgdm")
-		bz   = c.Query("bz")
+		appG   = app.Gin{C: c}
+		jgdm   = c.Query("jgdm")
+		bz     = c.Query("bz")
+		userid string
 	)
 	//使用人查看名下设备
-	token := c.GetHeader("Authorization")
-	auth := c.Query("token")
-	if len(auth) > 0 {
-		token = auth
+	u := c.Request.URL.Path
+	if strings.Index(u, "api/v3") != -1 {
+		token := c.GetHeader("Authorization")
+		auth := c.Query("token")
+		if len(auth) > 0 {
+			token = auth
+		}
+		ts := strings.Split(token, ".")
+		userid = ts[3]
 	}
-	ts := strings.Split(token, ".")
-	userid := ts[3]
 
 	con := map[string]string{
 		"rkrqq": "2000-01-01 00:00:00",
