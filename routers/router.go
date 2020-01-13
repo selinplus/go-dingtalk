@@ -98,6 +98,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/adddept", dingtalk.AddDevdept)
 		//修改设备管理机构
 		apiv1.POST("/dev/upddept", dingtalk.UpdateDevdept)
+		//获取设备管理机构信息
+		apiv1.GET("/dev/deptinfo", dingtalk.GetDept)
 		//获取设备管理机构列表(树结构)
 		apiv1.GET("/dev/tree", dingtalk.GetDevdeptTree)
 		//获取设备管理机构列表(循环遍历)

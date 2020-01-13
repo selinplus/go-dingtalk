@@ -64,6 +64,14 @@ func IsSjjg(jgdm string) bool {
 	return true
 }
 
+func IsDevdeptGylExist(jgdm string) bool {
+	var du Devuser
+	if err := db.Where("jgdm=? and gyl !=''", jgdm).First(&du).Error; err != nil {
+		return false
+	}
+	return true
+}
+
 func DeleteDevdept(jgdm string) error {
 	if err := db.Where("jgdm=?", jgdm).Delete(Devdept{}).Error; err != nil {
 		return err

@@ -105,11 +105,15 @@ func DeleteDevuser(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+		return
+	}
+	if models.IsUserDevExist(c.Query("id")) {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
 		return
 	}
 	if err := models.DeleteDevuser(uint(id)); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_DELETE_USER_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USER_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)

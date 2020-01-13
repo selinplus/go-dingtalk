@@ -53,6 +53,14 @@ func IsDevXlhExist(xlh string) bool {
 	return true
 }
 
+func IsUserDevExist(userid string) bool {
+	var d Devinfo
+	if err := db.Where("syr=?", userid).First(&d).Error; err != nil {
+		return false
+	}
+	return true
+}
+
 //设备入库
 func AddDevinfo(dev *Devinfo) error {
 	tx := db.Begin()

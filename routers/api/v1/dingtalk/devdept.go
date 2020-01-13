@@ -120,6 +120,17 @@ func UpdateDevdept(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
+//获取设备管理机构信息
+func GetDept(c *gin.Context) {
+	appG := app.Gin{C: c}
+	d, err := models.GetDevdept(c.Query("jgdm"))
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, d)
+}
+
 //获取设备管理机构列表(树结构)
 func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
@@ -355,15 +366,19 @@ func DeleteDevdept(c *gin.Context) {
 	appG := app.Gin{C: c}
 	jgdm := c.Query("jgdm")
 	if models.IsSjjg(jgdm) {
-		appG.Response(http.StatusOK, e.ERROR_DELETE_DEVDETP_IS_PARENT, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DEVDETP_IS_PARENT, nil)
 		return
 	}
 	if models.IsDevdeptUserExist(jgdm) {
-		appG.Response(http.StatusOK, e.ERROR_DELETE_DEVDETP_NOT_NULL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DEVDETP_NOT_NULL, nil)
+		return
+	}
+	if models.IsDevdeptGylExist(jgdm) {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DEVDETPGYL_NOT_NULL, nil)
 		return
 	}
 	if err := models.DeleteDevdept(jgdm); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_DELETE_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
