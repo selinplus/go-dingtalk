@@ -126,15 +126,24 @@ func DevLoginInfo(c *gin.Context) {
 		syrDepts = make([]map[string]string, 0)
 		glyDepts = make([]map[string]string, 0)
 		sfbz     = "0" //0:syr;1:gly;2:super
+		userid   string
 	)
-
-	token := c.GetHeader("Authorization")
-	auth := c.Query("token")
-	if len(auth) > 0 {
-		token = auth
+	if c.Query("mobile") != "" {
+		user, err := models.GetUserByMobile(c.Query("mobile"))
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+			return
+		}
+		userid = user.UserID
+	} else {
+		token := c.GetHeader("Authorization")
+		auth := c.Query("token")
+		if len(auth) > 0 {
+			token = auth
+		}
+		ts := strings.Split(token, ".")
+		userid = ts[3]
 	}
-	ts := strings.Split(token, ".")
-	userid := ts[3]
 
 	sDepts, err := models.GetSyrDepts(userid)
 	if err != nil {

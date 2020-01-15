@@ -464,7 +464,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 						errDev = append(errDev, dev)
 					} else {
 						//生成二维码
-						info := dev.ID + "$" + dev.Xlh + "$" + dev.Scs + "$" + dev.Scrq
+						info := dev.ID + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$生产日期[" + dev.Scrq + "]$"
 						name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 						if err != nil {
 							log.Println(err)
