@@ -27,8 +27,8 @@ type QrCode struct {
 
 const (
 	logo_file = "bg.jpg"
-	logo_w    = 54
-	logo_h    = 54
+	logo_w    = 72
+	logo_h    = 63
 	qr_size   = 256
 	qr_level  = qrcode.High
 	EXT_JPG   = ".jpg"
