@@ -16,7 +16,8 @@ import (
 
 //new devinfo info
 type Devinfo struct {
-	ID    string `gorm:"primary_key;COMMENT:'设备编号'"`
+	Sbbh  uint   `json:"sbbh" gorm:"primary_key;AUTO_INCREMENT"`
+	ID    string `json:"id" gorm:"COMMENT:'设备编号'"`
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`
 	Mc    string `json:"mc" gorm:"COMMENT:'设备名称'"`
@@ -463,7 +464,8 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 						errDev = append(errDev, dev)
 					} else {
 						//生成二维码
-						name, _, err := qrcode.GenerateQrWithLogo(dev.ID, qrcode.GetQrCodeFullPath())
+						info := dev.ID + "$" + dev.Xlh + "$" + dev.Scs + "$" + dev.Scrq
+						name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 						if err != nil {
 							log.Println(err)
 						}
@@ -525,7 +527,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 		ztCon   string
 	)
 	offset := (pageNo - 1) * pageSize
-	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
+	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,
 			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
@@ -565,7 +567,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 
 func GetDevinfoByID(id string) (*DevinfoResp, error) {
 	var dev DevinfoResp
-	query := `select devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
+	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,
 			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
@@ -595,4 +597,22 @@ func getDevinfoByID(id string) (*Devinfo, error) {
 		return &dev, nil
 	}
 	return nil, nil
+}
+
+func ConvSbbhToIdstr(sbbh uint) (idstr string) {
+	switch {
+	case sbbh < 10:
+		idstr = "00000" + strconv.Itoa(int(sbbh))
+	case sbbh >= 10 && sbbh < 100:
+		idstr = "0000" + strconv.Itoa(int(sbbh))
+	case sbbh >= 100 && sbbh < 1000:
+		idstr = "000" + strconv.Itoa(int(sbbh))
+	case sbbh >= 1000 && sbbh < 10000:
+		idstr = "00" + strconv.Itoa(int(sbbh))
+	case sbbh >= 10000 && sbbh < 100000:
+		idstr = "0" + strconv.Itoa(int(sbbh))
+	case sbbh >= 100000:
+		idstr = strconv.Itoa(int(sbbh))
+	}
+	return idstr
 }

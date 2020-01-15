@@ -2,7 +2,7 @@ package models
 
 type Devmodetail struct {
 	ID    uint   `gorm:"primary_key;AUTO_INCREMENT"`
-	Lsh   string `json:"lsh" gorm:"COMMENT:'流水号''"`
+	Lsh   string `json:"lsh" gorm:"COMMENT:'流水号'"`
 	Czlx  string `json:"czlx" gorm:"COMMENT:'操作类型'"`
 	Czrq  string `json:"czrq" gorm:"COMMENT:'操作日期'"`
 	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`

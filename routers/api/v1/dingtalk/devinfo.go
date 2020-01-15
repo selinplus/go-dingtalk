@@ -92,7 +92,8 @@ func AddDevinfo(c *gin.Context) {
 		return
 	}
 	//生成二维码
-	name, _, err := qrcode.GenerateQrWithLogo(sbbh, qrcode.GetQrCodeFullPath())
+	info := sbbh + "$" + form.Xlh + "$" + form.Scs + "$" + form.Scrq
+	name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 	if err != nil {
 		log.Println(err)
 	}
@@ -257,17 +258,23 @@ func GetDevinfos(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
+type DevResp struct {
+	*models.DevinfoResp
+	Idstr string `json:"idstr"`
+}
+
 //获取设备详情
 func GetDevinfoByID(c *gin.Context) {
 	appG := app.Gin{C: c}
-	id := c.Query("id")
+	id := strings.Split(c.Query("id"), "$")[0]
 	dev, err := models.GetDevinfoByID(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 		return
 	}
 	if len(dev.ID) > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, dev)
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh)}
+		appG.Response(http.StatusOK, e.SUCCESS, d)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 	}
