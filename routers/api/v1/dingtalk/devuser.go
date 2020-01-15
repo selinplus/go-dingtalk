@@ -119,7 +119,7 @@ func DeleteDevuser(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-//eapp登录后获取人员信息
+//登录后获取人员身份信息
 func DevLoginInfo(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
