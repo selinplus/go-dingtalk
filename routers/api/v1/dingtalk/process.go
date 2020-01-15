@@ -54,11 +54,17 @@ func AddProc(c *gin.Context) {
 		return
 	}
 	sj := time.Now().Format("2006-01-02")
+	sbbh, _ := strconv.Atoi(form.DevID)
+	dev, err := models.GetDevinfoBySbbh(uint(sbbh))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		return
+	}
 	proc := models.Process{
 		Dm:      form.Dm,
 		Tbr:     form.Tbr,
 		Mobile:  form.Mobile,
-		DevID:   form.DevID,
+		DevID:   dev.ID,
 		Title:   form.Title,
 		Xq:      form.Xq,
 		Zp:      form.Zp,
@@ -190,12 +196,18 @@ func UpdateProc(c *gin.Context) {
 		return
 	}
 	sj := time.Now().Format("2006-01-02")
+	sbbh, _ := strconv.Atoi(form.DevID)
+	dev, err := models.GetDevinfoBySbbh(uint(sbbh))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		return
+	}
 	proc := models.Process{
 		ID:     form.ID,
 		Dm:     form.Dm,
 		Tbr:    form.Tbr,
 		Mobile: form.Mobile,
-		DevID:  form.DevID,
+		DevID:  dev.ID,
 		Title:  form.Title,
 		Xq:     form.Xq,
 		Zp:     form.Zp,

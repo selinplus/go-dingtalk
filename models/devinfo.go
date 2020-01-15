@@ -17,7 +17,7 @@ import (
 //new devinfo info
 type Devinfo struct {
 	Sbbh  uint   `json:"sbbh" gorm:"primary_key;AUTO_INCREMENT"`
-	ID    string `json:"id" gorm:"COMMENT:'设备编号'"`
+	ID    string `json:"ID" gorm:"COMMENT:'设备编号'"`
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`
 	Mc    string `json:"mc" gorm:"COMMENT:'设备名称'"`
@@ -591,6 +591,17 @@ func GetDevinfoByID(id string) (*DevinfoResp, error) {
 func getDevinfoByID(id string) (*Devinfo, error) {
 	var dev Devinfo
 	if err := db.Table("devinfo").Where("id=?", id).First(&dev).Error; err != nil {
+		return nil, err
+	}
+	if len(dev.ID) > 0 {
+		return &dev, nil
+	}
+	return nil, nil
+}
+
+func GetDevinfoBySbbh(sbbh uint) (*Devinfo, error) {
+	var dev Devinfo
+	if err := db.Table("devinfo").Where("sbbh=?", sbbh).First(&dev).Error; err != nil {
 		return nil, err
 	}
 	if len(dev.ID) > 0 {

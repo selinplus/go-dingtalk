@@ -244,13 +244,14 @@ func GetDevinfos(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	resps := make([]*models.DevinfoResp, 0)
+	resps := make([]*DevResp, 0)
 	for _, dev := range devs {
 		if dev.Syr != "" {
 			usyr, _ := models.GetUserByUserid(dev.Syr)
 			dev.Syr = usyr.Name
 		}
-		resps = append(resps, dev)
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh)}
+		resps = append(resps, d)
 	}
 	data := make(map[string]interface{})
 	data["lists"] = resps
@@ -329,9 +330,14 @@ func GetDevinfosByUser(c *gin.Context) {
 		}
 		resps = append(resps, devs...)
 	}
+	devResps := make([]*DevResp, 0)
 	data := make(map[string]interface{})
-	data["lists"] = resps
-	data["total"] = len(resps)
+	for _, dev := range resps {
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh)}
+		devResps = append(devResps, d)
+	}
+	data["lists"] = devResps
+	data["total"] = len(devResps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
