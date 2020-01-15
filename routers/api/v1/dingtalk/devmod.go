@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type DevmodForm struct {
@@ -81,7 +82,7 @@ func GetDevModetails(c *gin.Context) {
 //设备流水记录查询
 func GetDevModList(c *gin.Context) {
 	appG := app.Gin{C: c}
-	devid := c.Query("devid")
+	devid := strings.Split(c.Query("devid"), "$")[0]
 	devs, err := models.GetDevModsByDevid(devid)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)

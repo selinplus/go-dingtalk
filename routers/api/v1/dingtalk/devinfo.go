@@ -246,11 +246,16 @@ func GetDevinfos(c *gin.Context) {
 	}
 	resps := make([]*DevResp, 0)
 	for _, dev := range devs {
+		var syrName string
 		if dev.Syr != "" {
-			usyr, _ := models.GetUserByUserid(dev.Syr)
-			dev.Syr = usyr.Name
+			suser, err := models.GetUserByUserid(dev.Syr)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				return
+			}
+			syrName = suser.Name
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh)}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
 		resps = append(resps, d)
 	}
 	data := make(map[string]interface{})
@@ -261,7 +266,8 @@ func GetDevinfos(c *gin.Context) {
 
 type DevResp struct {
 	*models.DevinfoResp
-	Idstr string `json:"idstr"`
+	Idstr   string `json:"idstr"`
+	SyrName string `json:"syr_name"`
 }
 
 //获取设备详情
@@ -274,7 +280,16 @@ func GetDevinfoByID(c *gin.Context) {
 		return
 	}
 	if len(dev.ID) > 0 {
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh)}
+		var syrName string
+		if dev.Syr != "" {
+			suser, err := models.GetUserByUserid(dev.Syr)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				return
+			}
+			syrName = suser.Name
+		}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
 		appG.Response(http.StatusOK, e.SUCCESS, d)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
@@ -333,7 +348,16 @@ func GetDevinfosByUser(c *gin.Context) {
 	devResps := make([]*DevResp, 0)
 	data := make(map[string]interface{})
 	for _, dev := range resps {
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh)}
+		var syrName string
+		if dev.Syr != "" {
+			suser, err := models.GetUserByUserid(dev.Syr)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				return
+			}
+			syrName = suser.Name
+		}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
 		devResps = append(devResps, d)
 	}
 	data["lists"] = devResps
