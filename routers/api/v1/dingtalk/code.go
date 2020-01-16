@@ -24,6 +24,45 @@ func GetDevstate(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, d)
 }
 
+//查询设备类型代码(树结构)
+func GetDevtypeTree(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	sjdm := c.Query("dm")
+	parentDt, err := models.GetDevtypeByDm(sjdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		return
+	}
+	var dts []interface{}
+	data := map[string]interface{}{
+		"key":      parentDt.Dm,
+		"value":    parentDt.Dm,
+		"title":    parentDt.Mc,
+		"children": dts,
+	}
+	devTypes, err := models.GetDevtypeBySjdm(sjdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	if len(devTypes) > 0 {
+		for _, devType := range devTypes {
+			leaf := models.IsLeafDevtype(devType.Dm)
+			dt := map[string]interface{}{
+				"key":    devType.Dm,
+				"value":  devType.Dm,
+				"title":  devType.Mc,
+				"isLeaf": leaf,
+			}
+			dts = append(dts, dt)
+		}
+		data["children"] = dts
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	} else {
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	}
+}
+
 //查询设备类型代码
 func GetDevtype(c *gin.Context) {
 	appG := app.Gin{C: c}

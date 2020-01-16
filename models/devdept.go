@@ -179,16 +179,24 @@ func GetSyrDepts(userid string) ([]*Devdept, error) {
 	query := `select distinct devuser.jgdm, devdept.jgmc
 			from devdept,devuser
 			where devdept.jgdm = devuser.jgdm and devuser.syr=?`
-	if err := db.Raw(query, userid).Find(&syrDepts).Error; err != nil {
+	err := db.Raw(query, userid).Find(&syrDepts).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
 	}
 	return syrDepts, nil
 }
 
 func GetGlyDepts(userid string) ([]*Devdept, error) {
 	var syrDepts []*Devdept
-	if err := db.Where("gly=?", userid).Find(&syrDepts).Error; err != nil {
+	err := db.Where("gly=?", userid).Find(&syrDepts).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
 	}
 	return syrDepts, nil
 }

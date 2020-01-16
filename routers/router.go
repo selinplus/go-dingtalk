@@ -166,8 +166,10 @@ func InitRouter() *gin.Engine {
 
 		//查询设备状态代码
 		apiv1.GET("/dev/state", dingtalk.GetDevstate)
+		//查询设备类型代码(树结构)
+		apiv1.GET("/dev/type", dingtalk.GetDevtypeTree)
 		//查询设备类型代码
-		apiv1.GET("/dev/type", dingtalk.GetDevtype)
+		//apiv1.GET("/dev/type", dingtalk.GetDevtype)
 		//查询操作类型代码
 		apiv1.GET("/dev/op", dingtalk.GetDevOp)
 		//查询操作属性代码

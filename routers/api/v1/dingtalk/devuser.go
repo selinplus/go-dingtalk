@@ -125,7 +125,7 @@ func DevLoginInfo(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		syrDepts = make([]map[string]string, 0)
 		glyDepts = make([]map[string]string, 0)
-		sfbz     = "0" //0:syr;1:gly;2:super
+		sfbz     = "3" //0:syr;1:gly;2:super;3:undefined
 		userid   string
 	)
 	if c.Query("mobile") != "" {
@@ -150,30 +150,33 @@ func DevLoginInfo(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}
-	for _, sDept := range sDepts {
-		syrDept := map[string]string{
-			"jgdm": sDept.Jgdm,
-			"jgmc": sDept.Jgmc,
+	if len(sDepts) > 0 {
+		sfbz = "0"
+		for _, sDept := range sDepts {
+			syrDept := map[string]string{
+				"jgdm": sDept.Jgdm,
+				"jgmc": sDept.Jgmc,
+			}
+			syrDepts = append(syrDepts, syrDept)
 		}
-		syrDepts = append(syrDepts, syrDept)
 	}
 	gDepts, err := models.GetGlyDepts(userid)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err.Error())
 		return
 	}
-	for _, gDept := range gDepts {
-		if gDept.Jgdm == "00" {
-			sfbz = "2"
-		}
-		glyDept := map[string]string{
-			"jgdm": gDept.Jgdm,
-			"jgmc": gDept.Jgmc,
-		}
-		glyDepts = append(glyDepts, glyDept)
-	}
-	if len(gDepts) > 0 && sfbz != "2" {
+	if len(gDepts) > 0 {
 		sfbz = "1"
+		for _, gDept := range gDepts {
+			if gDept.Jgdm == "00" {
+				sfbz = "2"
+			}
+			glyDept := map[string]string{
+				"jgdm": gDept.Jgdm,
+				"jgmc": gDept.Jgmc,
+			}
+			glyDepts = append(glyDepts, glyDept)
+		}
 	}
 	data := map[string]interface{}{
 		"sfbz":      sfbz,
