@@ -268,6 +268,8 @@ func readXmlToMapType() []map[string]string {
 					case i == 0:
 						m["dm"] = text
 					case i == 1:
+						m["sjdm"] = text
+					case i == 2:
 						m["mc"] = text
 					}
 				}
@@ -458,8 +460,9 @@ func InsertType(devType []map[string]string) {
 	if len(devType) > 0 {
 		for _, d := range devType {
 			dev := Devtype{
-				Dm: d["dm"],
-				Mc: d["mc"],
+				Dm:   d["dm"],
+				Sjdm: d["sjdm"],
+				Mc:   d["mc"],
 			}
 			err := db.Model(Devtype{}).Create(&dev).Error
 			if err != nil {
