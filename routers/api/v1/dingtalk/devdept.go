@@ -134,17 +134,19 @@ func GetDept(c *gin.Context) {
 //获取设备管理机构列表(树结构)
 func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
+	data := make([]models.DevdeptTree, 0)
 	jgdm := c.Query("jgdm")
-	tree, err := models.GetDevdeptTree(jgdm)
-	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
-		return
+	for _, dm := range strings.Split(jgdm, ",") {
+		tree, err := models.GetDevdeptTree(dm)
+		if err != nil {
+			appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+			return
+		}
+		if len(tree) > 0 {
+			data = append(data, tree...)
+		}
 	}
-	if len(tree) > 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, tree)
-	} else {
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
-	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 //获取设备管理机构列表(bz:0-管理员不可选;1-管理员可选)

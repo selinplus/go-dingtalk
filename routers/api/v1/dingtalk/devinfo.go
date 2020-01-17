@@ -264,6 +264,73 @@ func GetDevinfos(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
+//获取设备列表(管理员端,多条件查询设备)
+func GetDevinfosGly(c *gin.Context) {
+	var (
+		appG     = app.Gin{C: c}
+		mobile   = c.Query("mobile")
+		sbbh     = c.Query("sbbh")
+		property = c.Query("property")
+		state    = c.Query("state")
+		devtype  = c.Query("type")
+		xlh      = c.Query("xlh")
+		jgdm     = c.Query("jgdm")
+		err      error
+	)
+	glydm := make([]string, 0)
+	if jgdm == "" {
+		gly, err := models.GetUserByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+			return
+		}
+		depts, err := models.GetDevGly(gly.UserID)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+			return
+		}
+		for _, dept := range depts {
+			glydm = append(glydm, dept.Jgdm)
+		}
+	} else {
+		glydm = strings.Split(jgdm, ",")
+	}
+	devs := make([]*models.DevinfoResp, 0)
+	for _, dm := range glydm {
+		con := map[string]string{
+			"sbbh":     sbbh,
+			"property": property,
+			"state":    state,
+			"type":     devtype,
+			"xlh":      xlh,
+			"jgdm":     dm,
+		}
+		devs, err = models.GetDevinfosGly(con)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+			return
+		}
+	}
+	resps := make([]*DevResp, 0)
+	for _, dev := range devs {
+		var syrName string
+		if dev.Syr != "" {
+			suser, err := models.GetUserByUserid(dev.Syr)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				return
+			}
+			syrName = suser.Name
+		}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
+		resps = append(resps, d)
+	}
+	data := make(map[string]interface{})
+	data["lists"] = resps
+	data["total"] = len(resps)
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
 type DevResp struct {
 	*models.DevinfoResp
 	Idstr   string `json:"idstr"`
@@ -382,7 +449,7 @@ func DevIssued(c *gin.Context) {
 		return
 	}
 	if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr.UserID); err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -428,7 +495,7 @@ func DevAllocate(c *gin.Context) {
 		syr = form.SuserID
 	}
 	if err := models.DevAllocate(form.Ids, form.Dms, form.DstJgdm, syr, form.Cfwz, czr, form.Czlx); err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
