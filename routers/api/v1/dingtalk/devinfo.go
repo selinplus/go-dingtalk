@@ -275,7 +275,6 @@ func GetDevinfosGly(c *gin.Context) {
 		devtype  = c.Query("type")
 		xlh      = c.Query("xlh")
 		jgdm     = c.Query("jgdm")
-		err      error
 	)
 	glydm := make([]string, 0)
 	if jgdm == "" {
@@ -305,11 +304,12 @@ func GetDevinfosGly(c *gin.Context) {
 			"xlh":      xlh,
 			"jgdm":     dm,
 		}
-		devs, err = models.GetDevinfosGly(con)
+		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 			return
 		}
+		devs = append(devs, ds...)
 	}
 	resps := make([]*DevResp, 0)
 	for _, dev := range devs {
