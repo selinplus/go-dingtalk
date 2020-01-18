@@ -25,6 +25,14 @@ func IsDevtypeCorrect(dm string) bool {
 	return true
 }
 
+func GetDevtypeByMc(mc string) (*Devtype, error) {
+	var dt Devtype
+	if err := db.Where("mc=?", mc).First(&dt).Error; err != nil {
+		return nil, err
+	}
+	return &dt, nil
+}
+
 func GetDevtypeByDm(dm string) (*Devtype, error) {
 	var dt Devtype
 	if err := db.Where("dm=?", dm).First(&dt).Error; err != nil {

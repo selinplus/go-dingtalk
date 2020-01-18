@@ -338,13 +338,11 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error)
 				return nil, fmt.Errorf("%s", "文件校验错误，存在未录入项！")
 			}
 			switch {
+			//TODO: import model
 			case i == 0:
 				d.Zcbh = cell
 			case i == 1:
 				d.Lx = cell
-				if !IsDevtypeCorrect(cell) {
-					return nil, fmt.Errorf("%s", "文件校验错误，设备类型代码错误！")
-				}
 			case i == 2:
 				d.Mc = cell
 			case i == 3:
@@ -441,7 +439,6 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 					d := &Devinfo{
 						ID:   dev.ID,
 						Zcbh: dev.Zcbh,
-						Lx:   dev.Lx,
 						Mc:   dev.Mc,
 						Xh:   dev.Xh,
 						Xlh:  dev.Xlh,
@@ -459,34 +456,41 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 						Jgdm: "00",
 						Sx:   "1",
 					}
-					if IsDevXlhExist(dev.Xlh) {
-						logging.Info(fmt.Sprintf("%s:序列号已存在!", dev.Xlh))
+					LxDm, err := GetDevtypeByMc(dev.Lx)
+					if err != nil {
 						errDev = append(errDev, dev)
 					} else {
-						//生成二维码
-						info := dev.ID + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$生产日期[" + dev.Scrq + "]$"
-						name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
-						if err != nil {
-							log.Println(err)
-						}
-						d.QrUrl = qrcode.GetQrCodeFullUrl(name)
-						if err := tx.Table("devinfo").Create(d).Error; err != nil {
-							tx.Rollback()
-							return
-						}
-						dmd := &Devmodetail{
-							Lsh:   lsh,
-							Czlx:  "1",
-							Lx:    dev.Lx,
-							DevID: dev.ID,
-							Zcbh:  dev.Zcbh,
-							Czrq:  time.Now().Format("2006-01-02 15:04:05"),
-						}
-						if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
-							tx.Rollback()
-							return
+						if IsDevXlhExist(dev.Xlh) {
+							//logging.Info(fmt.Sprintf("%s:序列号已存在!", dev.Xlh))
+							errDev = append(errDev, dev)
+						} else {
+							d.Lx = LxDm.Dm
+							//生成二维码
+							info := dev.ID + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$生产日期[" + dev.Scrq + "]$"
+							name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
+							if err != nil {
+								log.Println(err)
+							}
+							d.QrUrl = qrcode.GetQrCodeFullUrl(name)
+							if err := tx.Table("devinfo").Create(d).Error; err != nil {
+								tx.Rollback()
+								return
+							}
+							dmd := &Devmodetail{
+								Lsh:   lsh,
+								Czlx:  "1",
+								Lx:    dev.Lx,
+								DevID: dev.ID,
+								Zcbh:  dev.Zcbh,
+								Czrq:  time.Now().Format("2006-01-02 15:04:05"),
+							}
+							if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+								tx.Rollback()
+								return
+							}
 						}
 					}
+
 				}
 			}()
 		}
