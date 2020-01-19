@@ -335,10 +335,12 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error)
 		d.Czr = czr
 		for i, cell := range row {
 			if cell == "" {
-				return nil, fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+				switch {
+				case i == 1, i == 2, i == 3, i == 4, i == 6, i == 7, i == 8:
+					return nil, fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+				}
 			}
 			switch {
-			//TODO: import model
 			case i == 0:
 				d.Zcbh = cell
 			case i == 1:
@@ -346,22 +348,20 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error)
 			case i == 2:
 				d.Mc = cell
 			case i == 3:
-				d.Xh = cell
-			case i == 4:
 				d.Xlh = cell
+			case i == 4:
+				d.Grrq = cell
 			case i == 5:
-				d.Ly = cell
+				d.Jg = cell
 			case i == 6:
-				d.Scs = cell
+				d.Ly = cell
 			case i == 7:
 				d.Scrq = cell
 			case i == 8:
-				d.Grrq = cell
+				d.Scs = cell
 			case i == 9:
-				d.Bfnx = cell
+				d.Xh = cell
 			case i == 10:
-				d.Jg = cell
-			case i == 11:
 				d.Gys = cell
 			}
 		}
