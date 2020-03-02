@@ -302,7 +302,12 @@ func EditDevinfo(dev *Devinfo) error {
 }
 
 //批量导入
-func ImpDevinfos(fileName io.Reader, czr string) ([]*Devinfo, int, int, error) {
+type DevinfoErr struct {
+	*Devinfo
+	Msg string `json:"msg"`
+}
+
+func ImpDevinfos(fileName io.Reader, czr string) ([]*DevinfoErr, int, int, error) {
 	devs, err := ReadDevinfoXmlToStructs(fileName, czr)
 	if err != nil {
 		return nil, 0, 0, err
@@ -365,14 +370,13 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error)
 				d.Gys = cell
 			}
 		}
-		d.ID = GenerateSbbh(d.Lx, d.Xlh)
 		//logging.Debug(fmt.Sprintf("*: %+v", d))
 		devs = append(devs, &d)
 	}
 	return devs, nil
 }
 
-func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
+func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -380,7 +384,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 		}
 	}()
 	var (
-		errDev   = make([]*Devinfo, 0)
+		errDev   = make([]*DevinfoErr, 0)
 		devsChan = make(chan *Devinfo)
 		cntChan  = make(chan int)
 		wg       = &sync.WaitGroup{}
@@ -437,7 +441,6 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 					//}
 					t := time.Now().Format("2006-01-02 15:04:05")
 					d := &Devinfo{
-						ID:   dev.ID,
 						Zcbh: dev.Zcbh,
 						Mc:   dev.Mc,
 						Xh:   dev.Xh,
@@ -458,15 +461,24 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*Devinfo, int, int) {
 					}
 					LxDm, err := GetDevtypeByMc(dev.Lx)
 					if err != nil {
-						errDev = append(errDev, dev)
+						errDev = append(errDev,
+							&DevinfoErr{
+								Devinfo: dev,
+								Msg:     "获取设备类型代码失败,设备类型名称错误！",
+							})
 					} else {
 						if IsDevXlhExist(dev.Xlh) {
 							//logging.Info(fmt.Sprintf("%s:序列号已存在!", dev.Xlh))
-							errDev = append(errDev, dev)
+							errDev = append(errDev,
+								&DevinfoErr{
+									Devinfo: dev,
+									Msg:     "序列号已存在！",
+								})
 						} else {
 							d.Lx = LxDm.Dm
+							d.ID = GenerateSbbh(d.Lx, d.Xlh)
 							//生成二维码
-							info := dev.ID + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$生产日期[" + dev.Scrq + "]$"
+							info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs + "]$生产日期[" + d.Scrq + "]$"
 							name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 							if err != nil {
 								log.Println(err)
