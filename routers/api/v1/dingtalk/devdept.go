@@ -386,6 +386,21 @@ func DeleteDevdept(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
+//删除当前机构管理员
+func DelDevdeptGly(c *gin.Context) {
+	appG := app.Gin{C: c}
+	devdept := map[string]interface{}{
+		"jgdm": c.Query("jgdm"),
+		"gly":  "",
+		"xgrq": time.Now().Format("2006-01-02 15:04:05"),
+	}
+	if err := models.DelDevdeptGly(devdept); err != nil {
+		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
 //获取当前机构管理员信息
 func GetDevdeptGly(c *gin.Context) {
 	appG := app.Gin{C: c}
