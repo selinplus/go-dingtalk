@@ -136,7 +136,23 @@ func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
 	data := make([]models.DevdeptTree, 0)
 	jgdm := c.Query("jgdm")
-	for _, dm := range strings.Split(jgdm, ",") {
+	jgdms := strings.Split(jgdm, ",")
+	dms := make([]string, 0)
+	for _, dmSrc := range jgdms {
+		flag := true
+		for _, dm := range jgdms {
+			if len(dmSrc) > len(dm) {
+				if strings.Contains(dmSrc, dm) {
+					flag = false
+					break
+				}
+			}
+		}
+		if flag {
+			dms = append(dms, dmSrc)
+		}
+	}
+	for _, dm := range dms {
 		tree, err := models.GetDevdeptTree(dm)
 		if err != nil {
 			appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
