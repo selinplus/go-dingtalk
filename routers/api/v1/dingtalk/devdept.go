@@ -196,7 +196,7 @@ func GetDevdeptGlyList(c *gin.Context) {
 		"gly":         glyName,
 		"children":    dts,
 		"scopedSlots": map[string]string{"title": "custom"},
-		"disabled":    false,
+		"disabled":    true,
 	}
 	departments, err := models.GetDevdeptBySjjgdm(parentDt.Jgdm)
 	if err != nil {
