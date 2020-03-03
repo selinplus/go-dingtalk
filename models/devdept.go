@@ -134,6 +134,7 @@ type DevdeptTree struct {
 	Jgmc        string `json:"jgmc"`
 	Sjjgdm      string `json:"sjjgdm"`
 	Gly         string `json:"gly"`
+	Disabled    bool   `json:"disabled"`
 	ScopedSlots `json:"scopedSlots"`
 	Children    []*DevdeptTree `json:"children"`
 }
@@ -151,6 +152,9 @@ func GetDevdeptTree(jgdm string) ([]DevdeptTree, error) {
 		ScopedSlots: ScopedSlots{Title: "custom"},
 		Gly:         ytsw.Gly,
 		Children:    []*DevdeptTree{},
+	}
+	if ytsw.Gly == "" {
+		child.Disabled = true
 	}
 	if err := getDevdeptTreeNode(jgdm, &child); err != nil {
 		return nil, err
@@ -174,6 +178,9 @@ func getDevdeptTreeNode(sjjgdm string, tree *DevdeptTree) error {
 			Gly:         perms[i].Gly,
 			ScopedSlots: ScopedSlots{Title: "custom"},
 			Children:    []*DevdeptTree{},
+		}
+		if perms[i].Gly == "" {
+			child.Disabled = true
 		}
 		tree.Children = append(tree.Children, &child)
 		err = getDevdeptTreeNode(perms[i].Jgdm, &child)
