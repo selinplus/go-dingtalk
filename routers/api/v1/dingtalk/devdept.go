@@ -379,6 +379,15 @@ func DeleteDevdept(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DEVDETPGYL_NOT_NULL, nil)
 		return
 	}
+	devs, err := models.GetDevinfosByJgdm(jgdm)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, err.Error())
+		return
+	}
+	if len(devs) > 0 {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+		return
+	}
 	if err := models.DeleteDevdept(jgdm); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_DEPARTMENT_FAIL, err.Error())
 		return
@@ -389,13 +398,23 @@ func DeleteDevdept(c *gin.Context) {
 //删除当前机构管理员
 func DelDevdeptGly(c *gin.Context) {
 	appG := app.Gin{C: c}
+	jgdm := c.Query("jgdm")
 	devdept := map[string]interface{}{
-		"jgdm": c.Query("jgdm"),
+		"jgdm": jgdm,
 		"gly":  "",
 		"xgrq": time.Now().Format("2006-01-02 15:04:05"),
 	}
+	devs, err := models.GetDevinfosByJgdm(jgdm)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+		return
+	}
+	if len(devs) > 0 {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+		return
+	}
 	if err := models.DelDevdeptGly(devdept); err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -407,7 +426,7 @@ func GetDevdeptGly(c *gin.Context) {
 	jgdm := c.Query("jgdm")
 	ddept, err := models.GetDevdept(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err.Error())
 		return
 	}
 	resps := make([]*GlyResp, 0)
@@ -417,7 +436,7 @@ func GetDevdeptGly(c *gin.Context) {
 	}
 	user, err := models.GetUserByUserid(ddept.Gly)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err.Error())
 		return
 	}
 	resp := &GlyResp{
@@ -439,7 +458,7 @@ func GetDevGly(c *gin.Context) {
 	}
 	depts, err := models.GetDevGly(gly.UserID)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	data := make(map[string]interface{})

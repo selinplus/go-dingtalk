@@ -663,6 +663,21 @@ func GetDevinfoBySbbh(sbbh uint) (*Devinfo, error) {
 	return nil, nil
 }
 
+func GetDevinfosByJgdm(jgdm string) ([]*Devinfo, error) {
+	var devs []*Devinfo
+	err := db.Table("devinfo").Where("jgdm=?", jgdm).Find(&devs).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	if len(devs) > 0 {
+		return devs, nil
+	}
+	return nil, nil
+}
+
 func ConvSbbhToIdstr(sbbh uint) (idstr string) {
 	switch {
 	case sbbh < 10:

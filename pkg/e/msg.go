@@ -60,7 +60,7 @@ var MsgFlags = map[int]string{
 	ERROR_DELETE_USER_FAIL:           "删除用户失败",
 	ERROR_ADD_USER_FAIL:              "新增人员失败",
 	ERROR_DELETE_DEVDETPGYL_NOT_NULL: "删除失败,该机构存在管理员",
-	ERROR_DELETE_USERDEV_FAIL:        "删除失败,该人员名下有设备未交回",
+	ERROR_DELETE_USERDEV_FAIL:        "删除失败,该人员(机构)名下有设备",
 
 	ERROR_ADD_DEV_FAIL:     "设备登记失败",
 	ERROR_GET_DEV_FAIL:     "获取设备登记信息失败",
