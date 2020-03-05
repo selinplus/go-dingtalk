@@ -101,6 +101,31 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	return tcmprJson
 }
 
+//生成回设备信息通知消息体
+func DeviceDingding(devid, gly string) string {
+	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
+	link := map[string]interface{}{
+		"messageUrl": setting.AppSetting.DingtalkMsgUrl + "#/?id=" + devid,
+		"picUrl":     "@lALOACZwe2Rk",
+		"title":      "交回设备待入库",
+		"text":       "请将交回设备入库",
+	}
+	msgcontent := map[string]interface{}{
+		"msgtype": "link",
+		"link":    link,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": gly,
+		"to_all_user": false,
+		"msg":         msgcontent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
+	return tcmprJson
+}
+
 // 企业会话消息异步发送
 func EappMessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 	var asyncsendReturn AsyncsendReturn

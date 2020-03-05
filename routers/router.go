@@ -293,11 +293,13 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/dev/epptree", dingtalk.GetDevdeptEppTree)
 		//查询设备详情
 		apiv3.GET("/dev/detail", dingtalk.GetDevinfoByID)
+		//获取交回设备待入库列表
+		apiv3.GET("/dev/tobestored", dingtalk.GetDevinfosToBeStored)
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dingtalk.GetDevModList)
-		//设备分配&借出&收回&交回
+		//设备分配(管理员入库)&借出&收回&交回
 		apiv3.POST("/dev/allocate", dingtalk.DevAllocate)
-		// 获取设备列表(管理员查询||eapp使用人查询)
+		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 
 		/*

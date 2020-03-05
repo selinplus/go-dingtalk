@@ -341,7 +341,7 @@ type DevResp struct {
 func GetDevinfoByID(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id := strings.Split(c.Query("id"), "$")[0]
-	dev, err := models.GetDevinfoByID(id)
+	dev, err := models.GetDevinfoRespByID(id)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 		return
@@ -358,6 +358,60 @@ func GetDevinfoByID(c *gin.Context) {
 		}
 		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
 		appG.Response(http.StatusOK, e.SUCCESS, d)
+	} else {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+	}
+}
+
+//获取交回设备待入库列表
+func GetDevinfosToBeStored(c *gin.Context) {
+	appG := app.Gin{C: c}
+	var userid string
+	mobile := c.Query("mobile")
+	if len(mobile) > 0 {
+		user, err := models.GetUserByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		userid = user.UserID
+	} else {
+		u := c.Request.URL.Path
+		if strings.Index(u, "api/v3") != -1 {
+			token := c.GetHeader("Authorization")
+			auth := c.Query("token")
+			if len(auth) > 0 {
+				token = auth
+			}
+			ts := strings.Split(token, ".")
+			userid = ts[3]
+		}
+	}
+
+	devs, err := models.GetDevinfosToBeStored()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+		return
+	}
+	if len(devs) > 0 {
+		data := make([]*models.Devinfo, 0)
+		for _, dev := range devs {
+			ddept, err := models.GetDevdept(dev.Jgdm)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+				continue
+			}
+			if ddept.Gly == userid {
+				user, err := models.GetUserByUserid(dev.Czr)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+					return
+				}
+				dev.Czr = user.Name
+				data = append(data, dev)
+			}
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, data)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 	}

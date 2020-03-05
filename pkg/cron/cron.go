@@ -22,6 +22,10 @@ func Setup() {
 		if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
+		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
+		if err := c.AddFunc("*/30 * * * * *", DeviceDingding); err != nil {
+			logging.Info(fmt.Sprintf("Send DeviceDingding failed：%v", err))
+		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送记事本消息
 		if err := c.AddFunc("*/30 * * * * *", NoteMessageDingding); err != nil {
 			logging.Info(fmt.Sprintf("Send Process NoteMessageDingding failed：%v", err))
@@ -80,6 +84,39 @@ func MessageDingding() {
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateMsgFlag(msg.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update msg_flag err:%v", msg.ID, err))
+			}
+		}
+	}
+}
+
+//遍历一遍发送标志为0的交回设备信息，通知钉钉发送工作通知管理员
+func DeviceDingding() {
+	devs, err := models.GetDevFlag()
+	if err != nil {
+		logging.Info(fmt.Sprintf("get msg_flag err:%v", err))
+		return
+	}
+	for _, dev := range devs {
+		d, err := models.GetDevinfoByID(dev.DevID)
+		if err != nil {
+			logging.Info(err.Error())
+			continue
+		}
+		ddept, err := models.GetDevdept(d.Jgdm)
+		if err != nil {
+			logging.Info(err.Error())
+			continue
+		}
+		if ddept.Gly == "" {
+			logging.Info(fmt.Sprintf("%v gly is nil", ddept.Jgdm))
+			continue
+		}
+		tcmprJson := dingtalk.DeviceDingding(d.ID, ddept.Gly)
+		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
+		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+			if err := models.UpdateDevFlag(d.ID); err != nil {
+				logging.Info(fmt.Sprintf("%v update dev_flag err:%v", dev.ID, err))
 			}
 		}
 	}
