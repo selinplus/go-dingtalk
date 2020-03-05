@@ -595,7 +595,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 			left join devstate on devstate.dm=devinfo.zt 
 			left join devdept on devdept.jgdm=devinfo.jgdm 
 			left join devproperty on devproperty.dm=devinfo.sx 
-			where devinfo.jgdm like '` + con["jgdm"] + `%' `
+			where devinfo.jgdm = '` + con["jgdm"] + `' `
 	if con["sbbh"] != "" {
 		squery += `and devinfo.sbbh = '` + con["sbbh"] + `' `
 	}
