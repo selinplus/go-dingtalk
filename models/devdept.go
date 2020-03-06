@@ -140,7 +140,7 @@ type DevdeptTree struct {
 }
 
 //获取设备管理机构列表
-func GetDevdeptTree(jgdm string) ([]DevdeptTree, error) {
+func GetDevdeptTree(jgdm, bz string) ([]DevdeptTree, error) {
 	ytsw, err := GetDevdept(jgdm)
 	if err != nil {
 		return nil, err
@@ -153,10 +153,15 @@ func GetDevdeptTree(jgdm string) ([]DevdeptTree, error) {
 		Gly:         ytsw.Gly,
 		Children:    []*DevdeptTree{},
 	}
-	if ytsw.Gly == "" {
-		child.Disabled = true
+	if bz == "0" {
+		child.Disabled = false
 	}
-	if err := getDevdeptTreeNode(jgdm, &child); err != nil {
+	if bz == "1" {
+		if ytsw.Gly == "" {
+			child.Disabled = true
+		}
+	}
+	if err := getDevdeptTreeNode(jgdm, bz, &child); err != nil {
 		return nil, err
 	}
 	perms = append(perms, child)
@@ -164,7 +169,7 @@ func GetDevdeptTree(jgdm string) ([]DevdeptTree, error) {
 }
 
 //递归获取子节点
-func getDevdeptTreeNode(sjjgdm string, tree *DevdeptTree) error {
+func getDevdeptTreeNode(sjjgdm, bz string, tree *DevdeptTree) error {
 	var perms []*Devdept
 	err := db.Where("sjjgdm=?", sjjgdm).Find(&perms).Error //根据父结点Id查询数据表，获取相应的子结点信息
 	if err != nil {
@@ -179,11 +184,16 @@ func getDevdeptTreeNode(sjjgdm string, tree *DevdeptTree) error {
 			ScopedSlots: ScopedSlots{Title: "custom"},
 			Children:    []*DevdeptTree{},
 		}
-		if perms[i].Gly == "" {
-			child.Disabled = true
+		if bz == "0" {
+			child.Disabled = false
+		}
+		if bz == "1" {
+			if perms[i].Gly == "" {
+				child.Disabled = true
+			}
 		}
 		tree.Children = append(tree.Children, &child)
-		err = getDevdeptTreeNode(perms[i].Jgdm, &child)
+		err = getDevdeptTreeNode(perms[i].Jgdm, bz, &child)
 	}
 	return err
 }
