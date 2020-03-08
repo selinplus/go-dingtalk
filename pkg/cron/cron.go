@@ -93,29 +93,15 @@ func MessageDingding() {
 func DeviceDingding() {
 	devs, err := models.GetDevFlag()
 	if err != nil {
-		logging.Info(fmt.Sprintf("get msg_flag err:%v", err))
+		logging.Info(fmt.Sprintf("get dev_flag err:%v", err))
 		return
 	}
 	for _, dev := range devs {
-		d, err := models.GetDevinfoByID(dev.DevID)
-		if err != nil {
-			logging.Info(err.Error())
-			continue
-		}
-		ddept, err := models.GetDevdept(d.Jgdm)
-		if err != nil {
-			logging.Info(err.Error())
-			continue
-		}
-		if ddept.Gly == "" {
-			logging.Info(fmt.Sprintf("%v gly is nil", ddept.Jgdm))
-			continue
-		}
-		tcmprJson := dingtalk.DeviceDingding(d.ID, ddept.Gly)
+		tcmprJson := dingtalk.DeviceDingding(dev.DevID, dev.Gly)
 		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
-			if err := models.UpdateDevFlag(d.ID); err != nil {
+			if err := models.UpdateDevtodoFlag(dev.ID); err != nil {
 				logging.Info(fmt.Sprintf("%v update dev_flag err:%v", dev.ID, err))
 			}
 		}

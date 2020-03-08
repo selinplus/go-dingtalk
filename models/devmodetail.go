@@ -1,14 +1,13 @@
 package models
 
 type Devmodetail struct {
-	ID         uint   `gorm:"primary_key;AUTO_INCREMENT"`
-	Lsh        string `json:"lsh" gorm:"COMMENT:'流水号'"`
-	Czlx       string `json:"czlx" gorm:"COMMENT:'操作类型'"`
-	Czrq       string `json:"czrq" gorm:"COMMENT:'操作日期'"`
-	Lx         string `json:"lx" gorm:"COMMENT:'设备类型'"`
-	DevID      string `json:"devid" gorm:"COMMENT:'设备编号';column:devid"` //devinfo ID
-	Zcbh       string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
-	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'0: 未推送 1: 已推送';size:1;default:'0'"`
+	ID    uint   `gorm:"primary_key;AUTO_INCREMENT"`
+	Lsh   string `json:"lsh" gorm:"COMMENT:'流水号'"`
+	Czlx  string `json:"czlx" gorm:"COMMENT:'操作类型'"`
+	Czrq  string `json:"czrq" gorm:"COMMENT:'操作日期'"`
+	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`
+	DevID string `json:"devid" gorm:"COMMENT:'设备编号';column:devid"` //devinfo ID
+	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 }
 
 func GetDevModetails(devid string, pageNo, pageSize int) ([]*Devmodetail, error) {
@@ -53,22 +52,4 @@ func GetDevModsByDevid(devid string) ([]*DevmodResp, error) {
 		return nil, err
 	}
 	return devs, nil
-}
-
-func GetDevFlag() ([]*Devmodetail, error) {
-	var msgs []*Devmodetail
-	if err := db.Table("devmodetail").
-		Where("czlx=8 and flag_notice=0").Scan(&msgs).Error; err != nil {
-		return nil, err
-	}
-	return msgs, nil
-}
-
-func UpdateDevFlag(devid string) error {
-	if err := db.Table("devmodetail").
-		Where("devid = ? and czlx=8 and flag_notice = 0", devid).
-		Update("flag_notice", 1).Error; err != nil {
-		return err
-	}
-	return nil
 }

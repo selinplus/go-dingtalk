@@ -266,6 +266,28 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx string) error {
 			tx.Rollback()
 			return err
 		}
+		if czlx == "8" { //设备交回,创建待办任务并发送消息给设备机构管理员
+			dto := &Devtodo{
+				Czlx:  czlx,
+				Lsh:   lsh,
+				Czr:   czr,
+				Czrq:  t,
+				Jgdm:  dev["jgdm"],
+				DevID: id,
+			}
+			if err := tx.Table("devtodo").Create(dto).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+		if czlx == "1" { //交回设备入库,修改待办标志为已办
+			if err := tx.Table("devtodo").
+				Where("done = 0 and flag_notice = 1 and devid = ? ", id).
+				Update("done", 1).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
 	}
 	if czlx == "7" { //设备收回时,同步进行入库操作
 		czlx = "1"

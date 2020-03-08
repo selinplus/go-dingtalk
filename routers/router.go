@@ -149,6 +149,10 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 		//设备流水记录查询
 		apiv1.GET("/devmod/list", dingtalk.GetDevModList)
+		//获取待办列表
+		apiv1.GET("/dev/todolist", dingtalk.GetDevtodos)
+		//获取已办列表
+		apiv1.GET("/dev/donelist", dingtalk.GetDevdones)
 
 		/*
 			//单项录入
@@ -301,6 +305,10 @@ func InitRouter() *gin.Engine {
 		apiv3.POST("/dev/allocate", dingtalk.DevAllocate)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
+		//获取待办列表
+		apiv3.GET("/dev/todolist", dingtalk.GetDevtodos)
+		//获取已办列表
+		apiv3.GET("/dev/donelist", dingtalk.GetDevdones)
 
 		/*
 			//获取当前用户设备列表

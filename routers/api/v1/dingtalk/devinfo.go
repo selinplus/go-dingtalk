@@ -554,3 +554,89 @@ func DevAllocate(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
+
+//获取待办列表
+func GetDevtodos(c *gin.Context) {
+	var (
+		appG   = app.Gin{C: c}
+		mobile = c.Query("mobile")
+		userid string
+	)
+	if len(mobile) > 0 {
+		user, err := models.GetUserByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		userid = user.UserID
+	} else {
+		u := c.Request.URL.Path
+		if strings.Index(u, "api/v3") != -1 {
+			token := c.GetHeader("Authorization")
+			auth := c.Query("token")
+			if len(auth) > 0 {
+				token = auth
+			}
+			ts := strings.Split(token, ".")
+			userid = ts[3]
+		}
+	}
+
+	todolist, err := models.GetDevtodos()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	data := make([]interface{}, 0)
+	for _, p := range todolist {
+		if p.Gly == userid {
+			data = append(data, p)
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//获取已办列表
+func GetDevdones(c *gin.Context) {
+	var (
+		appG   = app.Gin{C: c}
+		mobile = c.Query("mobile")
+		userid string
+	)
+	if len(mobile) > 0 {
+		user, err := models.GetUserByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		userid = user.UserID
+	} else {
+		u := c.Request.URL.Path
+		if strings.Index(u, "api/v3") != -1 {
+			token := c.GetHeader("Authorization")
+			auth := c.Query("token")
+			if len(auth) > 0 {
+				token = auth
+			}
+			ts := strings.Split(token, ".")
+			userid = ts[3]
+		}
+	}
+
+	donelist, err := models.GetDevdones()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	data := make([]interface{}, 0)
+	if len(donelist) > 0 {
+		log.Println(donelist)
+		for _, p := range donelist {
+			if p.Gly == userid {
+				data = append(data, p)
+			}
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+		return
+	}
+}
