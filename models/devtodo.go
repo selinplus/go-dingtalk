@@ -48,7 +48,7 @@ func GetDevdones() ([]*DevtodoResp, error) {
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
 		Joins("left join devinfo on devinfo.id=devtodo.devid").
 		Joins("left join user on user.userid=devtodo.czr").
-		Where("devtodo.done=0").Scan(&dtos).Error
+		Where("devtodo.done=1").Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
