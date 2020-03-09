@@ -105,7 +105,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 func DeviceDingding(devid, gly string) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	link := map[string]interface{}{
-		"messageUrl": setting.AppSetting.DingtalkMsgUrl + " /pages/myreport/myreport?sbid=" + devid,
+		"messageUrl": setting.AppSetting.DingtalkMsgUrl + "/pages/myreport/myreport?sbid=" + devid,
 		"picUrl":     "@lALOACZwe2Rk",
 		"title":      "交回设备待入库",
 		"text":       "请将交回设备入库",
