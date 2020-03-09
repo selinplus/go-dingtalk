@@ -640,7 +640,6 @@ func GetDevdones(c *gin.Context) {
 	}
 	data := make([]interface{}, 0)
 	if len(donelist) > 0 {
-		log.Println(donelist)
 		for _, p := range donelist {
 			if p.Gly == userid {
 				data = append(data, p)
