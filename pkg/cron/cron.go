@@ -9,6 +9,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"log"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -97,7 +98,7 @@ func DeviceDingding() {
 		return
 	}
 	for _, dev := range devs {
-		tcmprJson := dingtalk.DeviceDingding(dev.DevID, dev.Gly)
+		tcmprJson := dingtalk.DeviceDingding(dev.DevID, dev.Gly, strconv.Itoa(dev.Done))
 		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
