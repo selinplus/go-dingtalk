@@ -24,7 +24,7 @@ type DevtodoResp struct {
 func GetDevtodos() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc").
+		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc,devtodo.done").
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
 		Joins("left join devinfo on devinfo.id=devtodo.devid").
 		Joins("left join user on user.userid=devtodo.czr").
@@ -38,7 +38,7 @@ func GetDevtodos() ([]*DevtodoResp, error) {
 func GetDevdones() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc").
+		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc,devtodo.done").
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
 		Joins("left join devinfo on devinfo.id=devtodo.devid").
 		Joins("left join user on user.userid=devtodo.czr").
