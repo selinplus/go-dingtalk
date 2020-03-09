@@ -15,16 +15,10 @@ type Devtodo struct {
 }
 
 type DevtodoResp struct {
-	ID    uint   `json:"id"`
-	Czlx  string `json:"czlx"`
-	Lsh   string `json:"lsh"`
-	Czr   string `json:"czr"`
-	Czrq  string `json:"czrq"`
-	Jgdm  string `json:"jgdm"`
-	Gly   string `json:"gly"`
-	DevID string `json:"devid"`
-	Zcbh  string `json:"zcbh"`
-	Mc    string `json:"mc"`
+	*Devtodo
+	Gly  string `json:"gly"`
+	Zcbh string `json:"zcbh"`
+	Mc   string `json:"mc"`
 }
 
 func GetDevtodos() ([]*DevtodoResp, error) {

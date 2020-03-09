@@ -98,7 +98,7 @@ func DeviceDingding() {
 	}
 	for _, dev := range devs {
 		tcmprJson := dingtalk.DeviceDingding(dev.DevID, dev.Gly)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
 			if err := models.UpdateDevtodoFlag(dev.ID); err != nil {
