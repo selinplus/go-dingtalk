@@ -665,9 +665,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 }
 
 func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
-	var (
-		devs []*DevinfoResp
-	)
+	var devs []*DevinfoResp
 	squery := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,

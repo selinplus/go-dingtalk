@@ -275,18 +275,28 @@ func GetDevinfosGly(c *gin.Context) {
 		devtype  = c.Query("type")
 		xlh      = c.Query("xlh")
 		jgdm     = c.Query("jgdm")
+		depts    = make([]*models.Devdept, 0)
+		err      error
 	)
 	glydm := make([]string, 0)
 	if jgdm == "" {
-		gly, err := models.GetUserByMobile(mobile)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
-			return
-		}
-		depts, err := models.GetDevGly(gly.UserID)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
-			return
+		if len(mobile) > 0 {
+			gly, err := models.GetUserByMobile(mobile)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+				return
+			}
+			depts, err = models.GetDevdeptsHasGlyByUserid(gly.UserID)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+				return
+			}
+		} else {
+			depts, err = models.GetDevdeptsHasGly()
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+				return
+			}
 		}
 		for _, dept := range depts {
 			glydm = append(glydm, dept.Jgdm)

@@ -478,7 +478,7 @@ func GetDevGly(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 		return
 	}
-	depts, err := models.GetDevGly(gly.UserID)
+	depts, err := models.GetDevdeptsHasGlyByUserid(gly.UserID)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return

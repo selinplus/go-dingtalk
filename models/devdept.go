@@ -94,9 +94,17 @@ func GetDevdept(jgdm string) (*Devdept, error) {
 	return &dd, nil
 }
 
-func GetDevGly(gly string) ([]*Devdept, error) {
+func GetDevdeptsHasGlyByUserid(gly string) ([]*Devdept, error) {
 	var dds []*Devdept
 	if err := db.Where("gly=?", gly).Find(&dds).Error; err != nil {
+		return nil, err
+	}
+	return dds, nil
+}
+
+func GetDevdeptsHasGly() ([]*Devdept, error) {
+	var dds []*Devdept
+	if err := db.Where("gly is not null and gly != ''").Find(&dds).Error; err != nil {
 		return nil, err
 	}
 	return dds, nil
