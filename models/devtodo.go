@@ -52,7 +52,7 @@ func GetDevdones() ([]*DevtodoResp, error) {
 func GetDevFlag() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	if err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid").
+		Select("devtodo.id,devtodo.czlx,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devtodo.done").
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
 		Where("devtodo.flag_notice=0").Scan(&dtos).Error; err != nil {
 		return nil, err
