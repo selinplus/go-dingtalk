@@ -47,7 +47,7 @@ func GetUpDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
 		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.devid,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").
-		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
+		Joins("left join devdept on devdept.jgdm=devmod.jgdm").
 		Joins("left join user on user.userid=devtodo.czr").
 		Joins("left join devmod on devmod.lsh=devtodo.lsh").
 		Where("devtodo.done=?", done).Scan(&dtos).Error
