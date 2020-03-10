@@ -22,7 +22,6 @@ type DevtodoResp struct {
 	Zcbh    string `json:"zcbh"`
 	Mc      string `json:"mc"`
 	Zt      string `json:"zt"`
-	Lsh     string `json:"lsh"`
 	Czlx    string `json:"czlx"`
 	Num     int    `json:"num"`
 	SrcJgdm string `json:"src_jgdm"`
