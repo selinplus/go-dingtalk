@@ -574,7 +574,7 @@ func DevAllocate(c *gin.Context) {
 }
 
 //获取待办&已办列表(交回设备)
-func GetDevTodoOrDones(c *gin.Context) {
+func GetDevTodosOrDones(c *gin.Context) {
 	var (
 		appG   = app.Gin{C: c}
 		url    = c.Request.URL.Path
@@ -607,7 +607,7 @@ func GetDevTodoOrDones(c *gin.Context) {
 	if strings.Contains(url, "dev/donelist") {
 		done = 1
 	}
-	donelist, err := models.GetDevTodoOrDones(done)
+	donelist, err := models.GetDevTodosOrDones(done)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
@@ -625,7 +625,7 @@ func GetDevTodoOrDones(c *gin.Context) {
 }
 
 //获取待办列表(上交设备)
-func GetUpDevTodoOrDones(c *gin.Context) {
+func GetUpDevTodosOrDones(c *gin.Context) {
 	var (
 		appG   = app.Gin{C: c}
 		url    = c.Request.URL.Path
@@ -643,7 +643,7 @@ func GetUpDevTodoOrDones(c *gin.Context) {
 	if strings.Contains(url, "dev/updonelist") {
 		done = 1
 	}
-	todolist, err := models.GetUpDevTodoOrDones(done)
+	todolist, err := models.GetUpDevTodosOrDones(done)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return

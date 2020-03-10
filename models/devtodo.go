@@ -29,7 +29,7 @@ type DevtodoResp struct {
 	Jgmc    string `json:"jgmc"`
 }
 
-func GetDevTodoOrDones(done int) ([]*DevtodoResp, error) {
+func GetDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
 		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done").
@@ -43,7 +43,7 @@ func GetDevTodoOrDones(done int) ([]*DevtodoResp, error) {
 	return dtos, nil
 }
 
-func GetUpDevTodoOrDones(done int) ([]*DevtodoResp, error) {
+func GetUpDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
 		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.devid,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").

@@ -40,7 +40,7 @@ func AddDevdept(c *gin.Context) {
 	if len(form.Mobile) > 0 {
 		u, err := models.GetUserByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
 			return
 		}
 		userid = u.UserID
@@ -55,7 +55,7 @@ func AddDevdept(c *gin.Context) {
 	}
 	jgdm, err := models.GenDevdeptDmBySjjgdm(form.Sjjgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
 	t := time.Now().Format("2006-01-02 15:04:05")
@@ -70,7 +70,7 @@ func AddDevdept(c *gin.Context) {
 		Xgrq:   t,
 	}
 	if err := models.AddDevdept(&devdept); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_ADD_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -91,7 +91,7 @@ func UpdateDevdept(c *gin.Context) {
 	if len(form.Mobile) > 0 {
 		u, err := models.GetUserByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err.Error())
 			return
 		}
 		userid = u.UserID
@@ -114,7 +114,7 @@ func UpdateDevdept(c *gin.Context) {
 		Xgrq:   t,
 	}
 	if err := models.UpdateDevdept(&devdept); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -125,7 +125,7 @@ func GetDept(c *gin.Context) {
 	appG := app.Gin{C: c}
 	d, err := models.GetDevdept(c.Query("jgdm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, d)
@@ -138,7 +138,7 @@ func GetParentDept(c *gin.Context) {
 	sjjgdm := jgdm[:len(jgdm)-2]
 	d, err := models.GetDevdept(sjjgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	if len(d.Gly) > 0 {
@@ -147,7 +147,7 @@ func GetParentDept(c *gin.Context) {
 	}
 	d, err = models.GetDevdept(sjjgdm[:len(sjjgdm)-2])
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, d)
@@ -178,7 +178,7 @@ func GetDevdeptTree(c *gin.Context) {
 	for _, dm := range dms {
 		tree, err := models.GetDevdeptTree(dm, bz)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 			return
 		}
 		if len(tree) > 0 {
@@ -198,14 +198,14 @@ func GetDevdeptGlyList(c *gin.Context) {
 	bz := c.Query("bz")
 	parentDt, err := models.GetDevdept(c.Query("jgdm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	var dts []interface{}
 	if parentDt.Gly != "" {
 		gly, err := models.GetUserByUserid(parentDt.Gly)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err.Error())
 			return
 		}
 		glyName = gly.Name
@@ -228,7 +228,7 @@ func GetDevdeptGlyList(c *gin.Context) {
 	}
 	departments, err := models.GetDevdeptBySjjgdm(parentDt.Jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	if len(departments) > 0 {
@@ -238,7 +238,7 @@ func GetDevdeptGlyList(c *gin.Context) {
 			if !leaf {
 				departs, err := models.GetDevdeptBySjjgdm(department.Jgdm)
 				if err != nil {
-					appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, department.Jgdm)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, department.Jgdm)
 					return
 				}
 				if len(departs) > 0 {
@@ -260,7 +260,7 @@ func GetDevdeptGlyList(c *gin.Context) {
 						if depart.Gly != "" {
 							gly, err := models.GetUserByUserid(depart.Gly)
 							if err != nil {
-								appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+								appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err.Error())
 								return
 							}
 							glyName = gly.Name
@@ -297,7 +297,7 @@ func GetDevdeptGlyList(c *gin.Context) {
 			if department.Gly != "" {
 				gly, err := models.GetUserByUserid(department.Gly)
 				if err != nil {
-					appG.Response(http.StatusOK, e.ERROR_GET_USER_FAIL, err.Error())
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err.Error())
 					return
 				}
 				glyName = gly.Name
@@ -328,7 +328,7 @@ func GetDevdeptBySjjgdm(c *gin.Context) {
 	jgdm := c.Query("jgdm")
 	parentDt, err := models.GetDevdept(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	var dts []interface{}
@@ -340,7 +340,7 @@ func GetDevdeptBySjjgdm(c *gin.Context) {
 	}
 	departments, err := models.GetDevdeptBySjjgdm(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	if len(departments) > 0 {
@@ -368,7 +368,7 @@ func GetDevdeptEppTree(c *gin.Context) {
 	var data []interface{}
 	departments, err := models.GetDevdeptBySjjgdm(jgdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
 		return
 	}
 	if len(departments) > 0 {
@@ -384,7 +384,7 @@ func GetDevdeptEppTree(c *gin.Context) {
 		}
 		dus, err := models.GetDevuser(jgdm)
 		if err != nil {
-			appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVUSER_FAIL, err.Error())
 			return
 		}
 		if len(dus) > 0 {

@@ -147,18 +147,18 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/issued", dingtalk.DevIssued)
 		//设备分配&借出&收回&交回&上交
 		apiv1.POST("/dev/allocate", dingtalk.DevAllocate)
-		// 获取设备列表(管理员查询||eapp使用人查询)
+		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv1.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 		//设备流水记录查询
 		apiv1.GET("/devmod/list", dingtalk.GetDevModList)
 		//获取待办列表(交回设备)
-		apiv1.GET("/dev/todolist", dingtalk.GetDevTodoOrDones)
+		apiv1.GET("/dev/todolist", dingtalk.GetDevTodosOrDones)
 		//获取已办列表(交回设备)
-		apiv1.GET("/dev/donelist", dingtalk.GetDevTodoOrDones)
+		apiv1.GET("/dev/donelist", dingtalk.GetDevTodosOrDones)
 		//获取待办列表(上交设备)
-		apiv1.GET("/dev/uptodolist", dingtalk.GetUpDevTodoOrDones)
+		apiv1.GET("/dev/uptodolist", dingtalk.GetUpDevTodosOrDones)
 		//获取已办列表(上交设备)
-		apiv1.GET("/dev/updonelist", dingtalk.GetUpDevTodoOrDones)
+		apiv1.GET("/dev/updonelist", dingtalk.GetUpDevTodosOrDones)
 
 		/*
 			//单项录入
@@ -312,9 +312,9 @@ func InitRouter() *gin.Engine {
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 		//获取待办列表(交回设备)
-		apiv3.GET("/dev/todolist", dingtalk.GetDevTodoOrDones)
+		apiv3.GET("/dev/todolist", dingtalk.GetDevTodosOrDones)
 		//获取已办列表(交回设备)
-		apiv3.GET("/dev/donelist", dingtalk.GetDevTodoOrDones)
+		apiv3.GET("/dev/donelist", dingtalk.GetDevTodosOrDones)
 
 		/*
 			//获取当前用户设备列表
