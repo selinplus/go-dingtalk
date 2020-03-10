@@ -131,7 +131,19 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
 		tx.Rollback()
 		return err
 	}
+	zt, sx := getState(czlx)
 	for _, id := range ids {
+		dev := &Devinfo{
+			ID:   id,
+			Czrq: t,
+			Czr:  czr,
+			Zt:   zt,
+			Sx:   sx,
+		}
+		if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 		d, err := GetDevinfoByID(id)
 		if err != nil {
 			tx.Rollback()
@@ -176,7 +188,7 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
 			tx.Rollback()
 			return err
 		}
-		zt, sx := getState("1")
+		zt, sx = getState("1")
 		for _, id := range ids {
 			dev := &Devinfo{
 				ID:   id,
