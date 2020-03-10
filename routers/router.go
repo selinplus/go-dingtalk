@@ -100,6 +100,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/upddept", dingtalk.UpdateDevdept)
 		//获取设备管理机构信息
 		apiv1.GET("/dev/deptinfo", dingtalk.GetDept)
+		//获取设备管理机构上级有管理员的机构信息
+		apiv1.GET("/dev/ptdeptinfo", dingtalk.GetParentDept)
 		//获取设备管理机构列表(树结构)
 		apiv1.GET("/dev/tree", dingtalk.GetDevdeptTree)
 		//获取设备管理机构列表(循环遍历)
@@ -143,16 +145,20 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/devmod/lsdetail", dingtalk.GetDevModetails)
 		//设备下发
 		apiv1.POST("/dev/issued", dingtalk.DevIssued)
-		//设备分配&借出&收回&交回
+		//设备分配&借出&收回&交回&上交
 		apiv1.POST("/dev/allocate", dingtalk.DevAllocate)
 		// 获取设备列表(管理员查询||eapp使用人查询)
 		apiv1.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
 		//设备流水记录查询
 		apiv1.GET("/devmod/list", dingtalk.GetDevModList)
-		//获取待办列表
-		apiv1.GET("/dev/todolist", dingtalk.GetDevtodos)
-		//获取已办列表
-		apiv1.GET("/dev/donelist", dingtalk.GetDevdones)
+		//获取待办列表(交回设备)
+		apiv1.GET("/dev/todolist", dingtalk.GetDevTodoOrDones)
+		//获取已办列表(交回设备)
+		apiv1.GET("/dev/donelist", dingtalk.GetDevTodoOrDones)
+		//获取待办列表(上交设备)
+		apiv1.GET("/dev/uptodolist", dingtalk.GetUpDevTodoOrDones)
+		//获取已办列表(上交设备)
+		apiv1.GET("/dev/updonelist", dingtalk.GetUpDevTodoOrDones)
 
 		/*
 			//单项录入
@@ -305,10 +311,10 @@ func InitRouter() *gin.Engine {
 		apiv3.POST("/dev/allocate", dingtalk.DevAllocate)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
-		//获取待办列表
-		apiv3.GET("/dev/todolist", dingtalk.GetDevtodos)
-		//获取已办列表
-		apiv3.GET("/dev/donelist", dingtalk.GetDevdones)
+		//获取待办列表(交回设备)
+		apiv3.GET("/dev/todolist", dingtalk.GetDevTodoOrDones)
+		//获取已办列表(交回设备)
+		apiv3.GET("/dev/donelist", dingtalk.GetDevTodoOrDones)
 
 		/*
 			//获取当前用户设备列表

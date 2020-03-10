@@ -10,7 +10,7 @@ type Devmodetail struct {
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 }
 
-func GetDevModetails(devid string, pageNo, pageSize int) ([]*Devmodetail, error) {
+func GetDevModetails(lsh string, pageNo, pageSize int) ([]*Devmodetail, error) {
 	var devs []*Devmodetail
 	offset := (pageNo - 1) * pageSize
 	query := `	select devmodetail.id,devmodetail.lsh,devmodetail.devid,devoperation.mc as czlx,
@@ -19,7 +19,7 @@ func GetDevModetails(devid string, pageNo, pageSize int) ([]*Devmodetail, error)
 				left join devoperation on devoperation.dm=devmodetail.czlx 
 				left join devtype on devtype.dm=devmodetail.lx  
 				where devmodetail.lsh = ? order by devmodetail.id desc LIMIT ?,?`
-	if err := db.Raw(query, devid, offset, pageSize).Scan(&devs).Error; err != nil {
+	if err := db.Raw(query, lsh, offset, pageSize).Scan(&devs).Error; err != nil {
 		return nil, err
 	}
 	return devs, nil

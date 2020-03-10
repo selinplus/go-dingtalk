@@ -92,18 +92,28 @@ func MessageDingding() {
 
 //遍历一遍发送标志为0的交回设备信息，通知钉钉发送工作通知管理员
 func DeviceDingding() {
-	devs, err := models.GetDevFlag()
+	todos, err := models.GetDevFlag()
 	if err != nil {
 		logging.Info(fmt.Sprintf("get dev_flag err:%v", err))
 		return
 	}
-	for _, dev := range devs {
-		tcmprJson := dingtalk.DeviceDingding(dev.DevID, dev.Gly, strconv.Itoa(dev.Done))
+	for _, todo := range todos {
+		var tcmprJson string
+		if todo.Czlx == "8" { //交回,发送link
+			tcmprJson = dingtalk.DeviceDingding(todo.DevID, todo.Gly, strconv.Itoa(todo.Done))
+		}
+		if todo.Czlx == "10" { //上交,发送text
+			dept, err := models.GetDevdept(todo.SrcJgdm)
+			if err != nil {
+				logging.Info(fmt.Sprintf("%v GetDevdept err:%v", todo.ID, err))
+			}
+			tcmprJson = dingtalk.UpDeviceDingding(todo.Num, dept.Jgmc, todo.Gly)
+		}
 		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
 		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
-			if err := models.UpdateDevtodoFlag(dev.ID); err != nil {
-				logging.Info(fmt.Sprintf("%v update dev_flag err:%v", dev.ID, err))
+			if err := models.UpdateDevtodoFlag(todo.ID); err != nil {
+				logging.Info(fmt.Sprintf("%v update dev_flag err:%v", todo.ID, err))
 			}
 		}
 	}

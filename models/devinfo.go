@@ -106,8 +106,8 @@ func AddDevinfo(dev *Devinfo) error {
 	return tx.Commit().Error
 }
 
-//设备下发
-func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
+//设备下发&上交
+func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -122,7 +122,7 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
 	dm := &Devmod{
 		Lsh:  ckLsh,
 		Czrq: t,
-		Czlx: "2",
+		Czlx: czlx,
 		Num:  len(ids),
 		Czr:  czr,
 		Jgdm: srcJgdm,
@@ -139,7 +139,7 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
 		}
 		dmd := &Devmodetail{
 			Lsh:   ckLsh,
-			Czlx:  "2",
+			Czlx:  czlx,
 			Czrq:  t,
 			Lx:    d.Lx,
 			DevID: d.ID,
@@ -150,56 +150,70 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr string) error {
 			return err
 		}
 	}
-	rkLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
-	dm2 := &Devmod{
-		Lsh:  rkLsh,
-		Czrq: t,
-		Czlx: "1",
-		Num:  len(ids),
-		Czr:  czr,
-		Jgdm: dstJgdm,
-	}
-	if err := tx.Table("devmod").Create(dm2).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-	zt, sx := getState("1")
-	for _, id := range ids {
-		dev := &Devinfo{
-			ID:   id,
+	if czlx == "10" { //设备上交,创建待办任务并发送消息给设备机构管理员
+		dto := &Devtodo{
+			Czlx: czlx,
+			Lsh:  ckLsh,
+			Czr:  czr,
 			Czrq: t,
+			Jgdm: dstJgdm,
+		}
+		if err := tx.Table("devtodo").Create(dto).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else { //设备下发,同时创建入库
+		rkLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+		dm2 := &Devmod{
+			Lsh:  rkLsh,
+			Czrq: t,
+			Czlx: "1",
+			Num:  len(ids),
 			Czr:  czr,
 			Jgdm: dstJgdm,
-			Zt:   zt,
-			Sx:   sx,
 		}
-		if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+		if err := tx.Table("devmod").Create(dm2).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
-		d, err := GetDevinfoByID(id)
-		if err != nil {
-			tx.Rollback()
-			return err
-		}
-		dmd := &Devmodetail{
-			Lsh:   rkLsh,
-			Czlx:  "1",
-			Czrq:  t,
-			Lx:    d.Lx,
-			DevID: d.ID,
-			Zcbh:  d.Zcbh,
-		}
-		if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
-			tx.Rollback()
-			return err
+		zt, sx := getState("1")
+		for _, id := range ids {
+			dev := &Devinfo{
+				ID:   id,
+				Czrq: t,
+				Czr:  czr,
+				Jgdm: dstJgdm,
+				Zt:   zt,
+				Sx:   sx,
+			}
+			if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+			d, err := GetDevinfoByID(id)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+			dmd := &Devmodetail{
+				Lsh:   rkLsh,
+				Czlx:  "1",
+				Czrq:  t,
+				Lx:    d.Lx,
+				DevID: d.ID,
+				Zcbh:  d.Zcbh,
+			}
+			if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 	return tx.Commit().Error
 }
 
 //设备分配&借出&收回&交回
-func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx string) error {
+func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -219,6 +233,9 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx string) error {
 		Czr:  czr,
 		Jgdm: jgdm,
 	}
+	if czlx == "8" { //设备交回
+		dm.Jgdm = dms[0]
+	}
 	if err := tx.Table("devmod").Create(dm).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -229,6 +246,14 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx string) error {
 	}
 	if cfwz == " " {
 		cfwz = ""
+	}
+	if len(todoLsh) > 0 { // todoLsh:上交入库,用于修改devtodo表done
+		if err := tx.Table("devtodo").
+			Where("done = 0 and flag_notice = 1 and lsh = ? ", todoLsh).
+			Update("done", 1).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 	for i, id := range ids {
 		dev := map[string]string{
@@ -357,7 +382,7 @@ func getState(czlx string) (zt, sx string) {
 	switch czlx {
 	case "1":
 		zt, sx = "1", "1"
-	case "2":
+	case "2", "10":
 		zt, sx = "4", "1"
 	case "3":
 		zt, sx = "2", "3"
@@ -367,9 +392,7 @@ func getState(czlx string) (zt, sx string) {
 		zt, sx = "3", "3"
 	case "6":
 		zt, sx = "3", "4"
-	case "7":
-		zt, sx = "4", "2"
-	case "8":
+	case "7", "8":
 		zt, sx = "4", "2"
 	case "9":
 		zt, sx = "5", "5"

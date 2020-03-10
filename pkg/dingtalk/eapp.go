@@ -101,7 +101,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	return tcmprJson
 }
 
-//生成回设备信息通知消息体
+//生成交回设备信息通知消息体
 func DeviceDingding(devid, gly, done string) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	link := map[string]interface{}{
@@ -113,6 +113,29 @@ func DeviceDingding(devid, gly, done string) string {
 	msgcontent := map[string]interface{}{
 		"msgtype": "link",
 		"link":    link,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": gly,
+		"to_all_user": false,
+		"msg":         msgcontent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
+	return tcmprJson
+}
+
+//生成上交设备信息通知消息体
+func UpDeviceDingding(num int, jgmc, gly string) string {
+	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
+	text := map[string]interface{}{
+		"content": fmt.Sprintf("%s上交了%d台设备，请在内网管理平台确认入库！",
+			jgmc, num),
+	}
+	msgcontent := map[string]interface{}{
+		"msgtype": "text",
+		"text":    text,
 	}
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,

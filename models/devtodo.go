@@ -1,6 +1,8 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Devtodo struct {
 	ID         uint   `gorm:"primary_key;size:11;AUTO_INCREMENT"`
@@ -16,34 +18,39 @@ type Devtodo struct {
 
 type DevtodoResp struct {
 	*Devtodo
-	Gly  string `json:"gly"`
-	Zcbh string `json:"zcbh"`
-	Mc   string `json:"mc"`
-	Zt   string `json:"zt"`
+	Gly     string `json:"gly"`
+	Zcbh    string `json:"zcbh"`
+	Mc      string `json:"mc"`
+	Zt      string `json:"zt"`
+	Lsh     string `json:"lsh"`
+	Czlx    string `json:"czlx"`
+	Num     int    `json:"num"`
+	SrcJgdm string `json:"src_jgdm"`
+	Jgmc    string `json:"jgmc"`
 }
 
-func GetDevtodos() ([]*DevtodoResp, error) {
+func GetDevTodoOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
 		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done").
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
 		Joins("left join devinfo on devinfo.id=devtodo.devid").
 		Joins("left join user on user.userid=devtodo.czr").
-		Where("devtodo.done=0").Scan(&dtos).Error
+		Where("devtodo.done=?", done).Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	return dtos, nil
 }
 
-func GetDevdones() ([]*DevtodoResp, error) {
+func GetUpDevTodoOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done").
+		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.devid,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
-		Joins("left join devinfo on devinfo.id=devtodo.devid").
 		Joins("left join user on user.userid=devtodo.czr").
-		Where("devtodo.done=1").Scan(&dtos).Error
+		Joins("left join devdetail on devmod.lsh=devtodo.lsh").
+		Where("devtodo.done=?", done).Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -53,8 +60,9 @@ func GetDevdones() ([]*DevtodoResp, error) {
 func GetDevFlag() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	if err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devtodo.done").
+		Select("devtodo.id,devtodo.czlx,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devtodo.done,devmod.czlx,devmod.num,devmod.jgdm as src_jgdm").
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
+		Joins("left join devdetail on devmod.lsh=devtodo.lsh").
 		Where("devtodo.flag_notice=0").Scan(&dtos).Error; err != nil {
 		return nil, err
 	}

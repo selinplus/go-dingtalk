@@ -131,6 +131,28 @@ func GetDept(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, d)
 }
 
+//获取设备管理机构上级有管理员的机构信息
+func GetParentDept(c *gin.Context) {
+	appG := app.Gin{C: c}
+	jgdm := c.Query("jgdm")
+	sjjgdm := jgdm[:len(jgdm)-2]
+	d, err := models.GetDevdept(sjjgdm)
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	if len(d.Gly) > 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, d)
+		return
+	}
+	d, err = models.GetDevdept(sjjgdm[:len(sjjgdm)-2])
+	if err != nil {
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, d)
+}
+
 //获取设备管理机构列表(树结构)
 func GetDevdeptTree(c *gin.Context) {
 	appG := app.Gin{C: c}
