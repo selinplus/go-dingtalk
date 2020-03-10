@@ -520,7 +520,7 @@ func DevIssued(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-//设备分配&借出&收回&交回&上交
+//设备分配(管理员入库)&借出&收回&交回&上交
 func DevAllocate(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}

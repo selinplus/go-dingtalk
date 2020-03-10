@@ -145,7 +145,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/devmod/lsdetail", dingtalk.GetDevModetails)
 		//设备下发
 		apiv1.POST("/dev/issued", dingtalk.DevIssued)
-		//设备分配&借出&收回&交回&上交
+		//设备分配(管理员入库)&借出&收回&交回&上交
 		apiv1.POST("/dev/allocate", dingtalk.DevAllocate)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv1.GET("/dev/listbybz", dingtalk.GetDevinfosByUser)
