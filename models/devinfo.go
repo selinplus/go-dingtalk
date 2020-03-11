@@ -259,9 +259,8 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 	if cfwz == " " {
 		cfwz = ""
 	}
-	if len(todoLsh) > 0 { // todoLsh:上交入库,用于修改devtodo表done
-		if err := tx.Table("devtodo").
-			Where("done = 0 and flag_notice = 1 and lsh = ? ", todoLsh).
+	if len(todoLsh) > 0 { // todoLsh:上交入库,根据todoLsh修改待办标志为已办
+		if err := tx.Table("devtodo").Where("done = 0 and lsh = ? ", todoLsh).
 			Update("done", 1).Error; err != nil {
 			tx.Rollback()
 			return err
@@ -317,9 +316,8 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 				return err
 			}
 		}
-		if czlx == "1" { //交回设备入库,修改待办标志为已办
-			if err := tx.Table("devtodo").
-				Where("done = 0 and flag_notice = 1 and devid = ? ", id).
+		if czlx == "1" && len(todoLsh) == 0 { //交回设备入库,修改待办标志为已办
+			if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
 				Update("done", 1).Error; err != nil {
 				tx.Rollback()
 				return err
