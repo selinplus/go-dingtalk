@@ -129,9 +129,10 @@ func DeviceDingding(devid, gly, done string) string {
 //生成上交设备信息通知消息体
 func UpDeviceDingding(num int, jgmc, gly string) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
+	t := time.Now().Format("2006-01-02 15:04:05")
 	text := map[string]interface{}{
-		"content": fmt.Sprintf("%s上交了%d台设备，请在内网管理平台确认入库！",
-			jgmc, num),
+		"content": fmt.Sprintf("%s:%s上交了%d台设备，请在内网管理平台确认入库！",
+			t, jgmc, num),
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "text",
