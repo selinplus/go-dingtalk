@@ -40,7 +40,7 @@ func GetDevMods(c *gin.Context) {
 }
 
 type LsResp struct {
-	*models.Devmodetail
+	*models.DevmodResp
 	Xh int `json:"xh"`
 }
 

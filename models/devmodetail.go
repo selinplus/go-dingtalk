@@ -10,29 +10,32 @@ type Devmodetail struct {
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 }
 
-func GetDevModetails(lsh string, pageNo, pageSize int) ([]*Devmodetail, error) {
-	var devs []*Devmodetail
-	offset := (pageNo - 1) * pageSize
-	query := `	select devmodetail.id,devmodetail.lsh,devmodetail.devid,devoperation.mc as czlx,
-				devmodetail.czrq,devtype.mc as lx,devmodetail.devid,devmodetail.zcbh from devmodetail 
-				left join devinfo on devinfo.id=devmodetail.devid 
-				left join devoperation on devoperation.dm=devmodetail.czlx 
-				left join devtype on devtype.dm=devmodetail.lx  
-				where devmodetail.lsh = ? order by devmodetail.id desc LIMIT ?,?`
-	if err := db.Raw(query, lsh, offset, pageSize).Scan(&devs).Error; err != nil {
-		return nil, err
-	}
-	return devs, nil
-}
-
 type DevmodResp struct {
 	*Devmodetail
 	Mc   string `json:"mc"`
+	Zt   string `json:"zt"`
 	Rkrq string `json:"rkrq"`
 	Ly   string `json:"ly"`
 	Czr  string `json:"czr"`
 	Jgdm string `json:"jgdm"`
 	Jgmc string `json:"jgmc"`
+}
+
+func GetDevModetails(lsh string, pageNo, pageSize int) ([]*DevmodResp, error) {
+	var devs []*DevmodResp
+	offset := (pageNo - 1) * pageSize
+	query := `	select devmodetail.id,devmodetail.lsh,devmodetail.devid,devoperation.mc as czlx,
+				devinfo.mc,devstate.mc as zt,devmodetail.czrq,devtype.mc as lx,devmodetail.devid,devmodetail.zcbh 
+				from devmodetail 
+				left join devinfo on devinfo.id=devmodetail.devid 
+				left join devoperation on devoperation.dm=devmodetail.czlx 
+				left join devtype on devtype.dm=devmodetail.lx  
+				left join devstate on devstate.dm=devinfo.zt 
+				where devmodetail.lsh = ? order by devmodetail.id desc LIMIT ?,?`
+	if err := db.Raw(query, lsh, offset, pageSize).Scan(&devs).Error; err != nil {
+		return nil, err
+	}
+	return devs, nil
 }
 
 func GetDevModsByDevid(devid string) ([]*DevmodResp, error) {
