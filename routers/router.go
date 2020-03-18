@@ -54,6 +54,8 @@ func InitRouter() *gin.Engine {
 		//获取部门用户列表
 		apiv1.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
+		//获取最近联系人列表
+		apiv1.GET("/msg/userlist", dingtalk.GetRecentContacter)
 		//发消息(内网)
 		apiv1.POST("/msg/sendmobile", dingtalk.SendMsgMobile)
 		//获取消息列表
@@ -214,6 +216,8 @@ func InitRouter() *gin.Engine {
 		//获取部门用户列表
 		apiv2.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
+		//获取最近联系人列表
+		apiv2.GET("/msg/userlist", dingtalk.GetRecentContacter)
 		//发消息
 		apiv2.POST("/msg/send", dingtalk.SendMsg)
 		//获取消息列表

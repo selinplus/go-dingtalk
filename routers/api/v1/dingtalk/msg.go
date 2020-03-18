@@ -379,3 +379,33 @@ func DeleteMsg(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
+
+//获取最近联系人列表
+func GetRecentContacter(c *gin.Context) {
+	var (
+		session = sessions.Default(c)
+		appG    = app.Gin{C: c}
+		userID  string
+	)
+	mobile := c.Query("mobile")
+	pageSize := 10
+	if len(c.Query("pageSize")) > 0 {
+		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
+	}
+	if len(mobile) > 0 {
+		user, err := models.GetUserByMobile(mobile)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			return
+		}
+		userID = user.UserID
+	} else {
+		userID = fmt.Sprintf("%v", session.Get("userid"))
+	}
+	users, err := models.GetRecentContacter(userID, pageSize)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, users)
+}

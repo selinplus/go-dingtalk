@@ -1,6 +1,9 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"fmt"
+	"github.com/jinzhu/gorm"
+)
 
 /*消息*/
 type Msg struct {
@@ -61,4 +64,20 @@ func GetMsgFlag() ([]*Msg, error) {
 		return nil, err
 	}
 	return msgs, nil
+}
+
+func GetRecentContacter(userID string, pageSize int) ([]*User, error) {
+	var users []*User
+	qu := `SELECT t.to_id as userid,t.name,t.mobile FROM (
+			SELECT distinct msg.to_id,user.name,user.mobile, max(msg.time) FROM msg
+			LEFT JOIN msg_tag ON msg.id = msg_tag.msg_id
+			LEFT JOIN user ON msg.to_id = user.userid
+			WHERE msg_tag.tag = 2 and msg.from_id = '%s'
+			group by msg.to_id,user.name,user.mobile
+			order by max(msg.time) desc limit %d ) t`
+	err := db.Raw(fmt.Sprintf(qu, userID, pageSize)).Scan(&users).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return users, nil
 }
