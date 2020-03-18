@@ -41,6 +41,13 @@ type Devinfo struct {
 	Sx    string `json:"sx" gorm:"COMMENT:'设备属性'"`
 }
 
+//生成设备编号
+func GenerateSbbh(lx, xlh string) string {
+	timeStamp := strconv.Itoa(int(time.Now().UnixNano()))
+	sbbh := lx + xlh + timeStamp[:13]
+	return sbbh
+}
+
 //判断序列号是否存在
 func IsDevXlhExist(xlh string) bool {
 	var dev Devinfo

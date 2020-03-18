@@ -382,29 +382,27 @@ func GetDevdeptEppTree(c *gin.Context) {
 				data = append(data, dt)
 			}
 		}
-		dus, err := models.GetDevuser(jgdm)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVUSER_FAIL, err.Error())
-			return
-		}
-		if len(dus) > 0 {
-			for _, du := range dus {
-				user, err := models.GetUserByUserid(du.Syr)
-				if err != nil {
-					log.Println(err)
-				}
-				u := map[string]interface{}{
-					"dm":     user.UserID,
-					"mc":     user.Name,
-					"isDept": false,
-				}
-				data = append(data, u)
-			}
-		}
-		appG.Response(http.StatusOK, e.SUCCESS, data)
-	} else {
-		appG.Response(http.StatusOK, e.SUCCESS, data)
 	}
+	dus, err := models.GetDevuser(jgdm)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVUSER_FAIL, err.Error())
+		return
+	}
+	if len(dus) > 0 {
+		for _, du := range dus {
+			user, err := models.GetUserByUserid(du.Syr)
+			if err != nil {
+				log.Println(err)
+			}
+			u := map[string]interface{}{
+				"dm":     user.UserID,
+				"mc":     user.Name,
+				"isDept": false,
+			}
+			data = append(data, u)
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 //删除设备管理机构

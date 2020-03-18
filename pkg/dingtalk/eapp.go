@@ -104,11 +104,12 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 //生成交回设备信息通知消息体
 func DeviceDingding(devid, gly, done string) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
+	t := time.Now().Format("2006-01-02 15:04:05")
 	link := map[string]interface{}{
 		"messageUrl": fmt.Sprintf("eapp://pages/myreport/myreport?sbid=%s&done=%s", devid, done),
 		"picUrl":     "@lALOACZwe2Rk",
 		"title":      "交回设备待入库",
-		"text":       "请将交回设备入库",
+		"text":       fmt.Sprintf("%s:请将交回设备入库", t),
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "link",

@@ -35,7 +35,7 @@ func GetDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
 		Joins("left join devinfo on devinfo.id=devtodo.devid").
 		Joins("left join user on user.userid=devtodo.czr").
-		Where("devtodo.done=?", done).Scan(&dtos).Error
+		Where("devtodo.done=?", done).Order("devtodo.czrq desc").Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func GetUpDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 		Joins("left join user on user.userid=devtodo.czr").
 		Joins("left join devmod on devmod.lsh=devtodo.lsh").
 		Joins("left join devdept on devdept.jgdm=devmod.jgdm").
-		Where("devtodo.done=?", done).Scan(&dtos).Error
+		Where("devtodo.done=?", done).Order("devtodo.czrq desc").Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

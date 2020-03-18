@@ -81,11 +81,6 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(User{})
 	}
-	if !db.HasTable("device") {
-		db.CreateTable(Device{})
-	} else {
-		db.AutoMigrate(Device{})
-	}
 	if !db.HasTable("devinfo") {
 		db.CreateTable(Devinfo{})
 	} else {
@@ -110,11 +105,6 @@ func CheckTable() {
 		db.CreateTable(Devmodetail{})
 	} else {
 		db.AutoMigrate(Devmodetail{})
-	}
-	if !db.HasTable("devmodify") {
-		db.CreateTable(Devmodify{})
-	} else {
-		db.AutoMigrate(Devmodify{})
 	}
 	if !db.HasTable("devtodo") {
 		db.CreateTable(Devtodo{})

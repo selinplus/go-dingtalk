@@ -23,7 +23,7 @@ func Setup() {
 		if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
 			logging.Info(fmt.Sprintf("Send MessageDingding failed：%v", err))
 		}
-		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
+		// 遍历一遍发送标志为0的交回设备信息，通知钉钉发送工作通知管理员
 		if err := c.AddFunc("*/30 * * * * *", DeviceDingding); err != nil {
 			logging.Info(fmt.Sprintf("Send DeviceDingding failed：%v", err))
 		}
