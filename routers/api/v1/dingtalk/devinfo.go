@@ -622,6 +622,7 @@ func GetDevTodosOrDones(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, data)
 		return
 	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 //获取待办列表(上交设备)
