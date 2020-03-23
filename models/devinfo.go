@@ -685,16 +685,18 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 	} else {
 		jgdmCon = "= '" + con["jgdm"] + "'"
 	}
-	if bz == "0" {
-		ztCon = " and devinfo.zt = '1'"
-	} else if bz == "3" {
-		ztCon = " and devinfo.zt = '2' and devinfo.sx = '3'"
-	} else if bz == "4" {
-		ztCon = " and devinfo.zt = '2' and devinfo.sx = '4'"
-	} else if bz == "6" {
-		ztCon = " and devinfo.zt = '3' and devinfo.sx = '4'"
-	} else if bz == "10" {
-		ztCon = " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
+	if len(bz) > 0 {
+		if bz == "0" {
+			ztCon = " and devinfo.zt = '1'"
+		} else if bz == "3" {
+			ztCon = " and devinfo.zt = '2' and devinfo.sx = '3'"
+		} else if bz == "4" {
+			ztCon = " and devinfo.zt = '2' and devinfo.sx = '4'"
+		} else if bz == "6" {
+			ztCon = " and devinfo.zt = '3' and devinfo.sx = '4'"
+		} else if bz == "10" {
+			ztCon = " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
+		}
 	}
 	squery := fmt.Sprintf(query,
 		con["mc"], con["rkrqq"], con["rkrqz"], con["sbbh"], con["xlh"], con["syr"], jgdmCon, ztCon, offset, pageSize)

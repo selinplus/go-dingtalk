@@ -16,7 +16,7 @@ import (
 	"net/http"
 )
 
-// InitRouter initialize routing information
+//InitRouter initialize routing information
 func InitRouter() *gin.Engine {
 	r := gin.New()
 
@@ -189,13 +189,13 @@ func InitRouter() *gin.Engine {
 
 		//注册事件回调
 		apiv2.GET("/callback/reg", dingtalk.RegisterCallback)
-		// 查询事件回调
+		//查询事件回调
 		apiv2.GET("/callback/query", dingtalk.QueryCallback)
-		// 更新事件回调
+		//更新事件回调
 		apiv2.POST("/callback/update", dingtalk.UpdateCallback)
-		// 删除事件回调
+		//删除事件回调
 		apiv2.GET("/callback/delete", dingtalk.DeleteCallback)
-		// 获取回调失败的结果
+		//获取回调失败的结果
 		apiv2.GET("/callback/failed", dingtalk.GetFailedCallbacks)
 		//获取回调的结果
 		apiv2.POST("/callback/detail", dingtalk.GetCallbacks)

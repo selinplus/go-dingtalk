@@ -240,7 +240,7 @@ func GetDevinfos(c *gin.Context) {
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
-	devs, err := models.GetDevinfos(con, pageNo, pageSize, "0")
+	devs, err := models.GetDevinfos(con, pageNo, pageSize, "")
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
