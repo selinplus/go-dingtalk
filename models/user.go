@@ -1,6 +1,9 @@
 package models
 
-import "strings"
+import (
+	"github.com/jinzhu/gorm"
+	"strings"
+)
 
 type User struct {
 	UserID     string `json:"userid" gorm:"primary_key;column:userid;COMMENT:'用户标识'"`
@@ -77,4 +80,16 @@ func GetUserByUserid(userid string) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func GetUserByMc(mc string) ([]*User, error) {
+	var us []*User
+	err := db.Table("user").
+		Select("user.userid,user.name,department.name as deptId,user.mobile").
+		Joins("join department on user.deptId=department.id").
+		Where("user.name like ? ", "%"+mc+"%").Scan(&us).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return us, nil
 }

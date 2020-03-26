@@ -51,3 +51,23 @@ func GetDepartmentByUserMobile(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, dts)
 }
+
+//模糊查询用户
+func GetUserByMc(c *gin.Context) {
+	appG := app.Gin{C: c}
+	mc := c.Query("mc")
+	if len(mc) == 0 {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, "名称不能为空")
+		return
+	}
+	users, err := models.GetUserByMc(mc)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+		return
+	}
+	if len(users) == 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, users)
+}

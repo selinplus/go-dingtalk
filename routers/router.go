@@ -53,6 +53,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/department/innerlist", dingtalk.GetDepartmentByParentIDWithNoOuter)
 		//获取部门用户列表
 		apiv1.GET("/user/list", dingtalk.GetUserByDepartmentID)
+		//模糊查询用户
+		apiv1.GET("/user/mc", dingtalk.GetUserByMc)
 
 		//获取最近联系人列表
 		apiv1.GET("/msg/userlist", dingtalk.GetRecentContacter)
