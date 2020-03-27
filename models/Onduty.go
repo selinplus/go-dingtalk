@@ -5,7 +5,7 @@ type Onduty struct {
 	UserID     string `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 	Content    string `json:"content" gorm:"COMMENT:'内容';size:65535"`
 	Tsrq       string `json:"tsrq" gorm:"COMMENT:'推送日期'"`
-	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'1: 未推送 2: 已推送';size:1;default:'2'"`
+	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'1: 未推送 2: 已推送';size:1;default:'1'"`
 }
 
 func AddOnduty(data interface{}) error {
