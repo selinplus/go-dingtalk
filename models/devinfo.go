@@ -614,9 +614,9 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 							dmd := &Devmodetail{
 								Lsh:   lsh,
 								Czlx:  "1",
-								Lx:    dev.Lx,
-								DevID: dev.ID,
-								Zcbh:  dev.Zcbh,
+								Lx:    d.Lx,
+								DevID: d.ID,
+								Zcbh:  d.Zcbh,
 								Czrq:  time.Now().Format("2006-01-02 15:04:05"),
 							}
 							if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
@@ -679,7 +679,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
 			and devinfo.id like '%%%s%%' and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
 			and devinfo.jgdm %s %s
-			order by devinfo.czrq desc LIMIT %d,%d`
+			order by devinfo.sbbh LIMIT %d,%d`
 	if con["jgdm"] == "" {
 		jgdmCon = "like '00%'"
 	} else {
@@ -734,6 +734,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	if con["xlh"] != "" {
 		squery += `and devinfo.xlh = '` + con["xlh"] + `' `
 	}
+	squery += ` order by devinfo.sbbh`
 	//log.Println(squery)
 	if err := db.Raw(squery).Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
