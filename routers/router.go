@@ -36,6 +36,8 @@ func InitRouter() *gin.Engine {
 	r.POST("/file/upload", api.UploadFile)
 	//清理文件
 	r.GET("/file/cleanup", api.CleanUpFile)
+	//接收值班通知推送消息
+	r.POST("/onduty", api.OnDuty)
 
 	//内网
 	apiv1 := r.Group("/api/v1")
@@ -77,9 +79,6 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/note/list", dingtalk.GetNoteList)
 		//查询记事本详情
 		apiv1.GET("/note/detail", dingtalk.GetNoteDetail)
-
-		//接收值班通知推送消息
-		apiv1.POST("/onduty", dingtalk.OnDuty)
 
 		//获取当前文件夹文件列表
 		apiv1.GET("/netdisk/list", dingtalk.GetFileListByDir)
