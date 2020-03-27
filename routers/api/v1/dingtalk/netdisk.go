@@ -9,7 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -249,7 +248,6 @@ func DeleteNetdiskFile(c *gin.Context) {
 		appG    = app.Gin{C: c}
 		userID  string
 	)
-	ids := strings.Split(c.Query("ids"), ",")
 	mobile := c.Query("mobile")
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
@@ -262,8 +260,11 @@ func DeleteNetdiskFile(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	fail := make([]string, 0)
+	ids := strings.Split(c.Query("ids"), ",")
 	for _, id := range ids {
-		log.Println(id)
+		if len(id) == 0 {
+			continue
+		}
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
@@ -277,14 +278,15 @@ func DeleteNetdiskFile(c *gin.Context) {
 			fail = append(fail, msg)
 		} else {
 			if err = models.DeleteNetdiskFile(i); err != nil {
-				appG.Response(http.StatusOK, e.ERROR_DELETE_NDFILE_FAIL, err.Error())
-				return
+				msg := fmt.Sprintf("%s删除失败,err:%v", file.FileName, err.Error())
+				fail = append(fail, msg)
+				continue
 			}
 			spareCap, err := models.GetNetdiskSpareCap(file.UserID)
 			if err = models.ModNetdiskCap(file.UserID, spareCap+file.FileSize); err != nil {
 				msg := fmt.Sprintf("文件删除成功，网盘容量大小修改失败：%v", err.Error())
-				appG.Response(http.StatusOK, e.ERROR, msg)
-				return
+				fail = append(fail, msg)
+				continue
 			}
 		}
 	}
