@@ -260,11 +260,8 @@ func DeleteNetdiskFile(c *gin.Context) {
 		userID = fmt.Sprintf("%v", session.Get("userid"))
 	}
 	fail := make([]string, 0)
-	ids := strings.Split(c.Query("ids"), ",")
+	ids := strings.Split(strings.TrimRight(c.Query("ids"), ","), ",")
 	for _, id := range ids {
-		if len(id) == 0 {
-			continue
-		}
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
