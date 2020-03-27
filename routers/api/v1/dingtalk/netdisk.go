@@ -9,6 +9,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -262,11 +263,13 @@ func DeleteNetdiskFile(c *gin.Context) {
 	}
 	fail := make([]string, 0)
 	for _, id := range ids {
+		log.Println(id)
 		i, _ := strconv.Atoi(id)
 		file, _ := models.GetNetdiskFileDetail(i)
 		if !strings.Contains(file.UserID, userID) {
-			appG.Response(http.StatusUnauthorized, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
-			return
+			msg := fmt.Sprintf("%s删除失败,操作人对文件无操作权限", file.FileName)
+			fail = append(fail, msg)
+			continue
 		}
 		dirUrl := upload.GetImageFullPath() + file.FileUrl
 		if err := os.Remove(dirUrl); err != nil {
