@@ -78,6 +78,9 @@ func InitRouter() *gin.Engine {
 		//查询记事本详情
 		apiv1.GET("/note/detail", dingtalk.GetNoteDetail)
 
+		//接收值班通知推送消息
+		apiv1.POST("/onduty", dingtalk.OnDuty)
+
 		//获取当前文件夹文件列表
 		apiv1.GET("/netdisk/list", dingtalk.GetFileListByDir)
 		//上传网盘文件

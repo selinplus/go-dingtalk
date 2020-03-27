@@ -192,6 +192,28 @@ func NoteMseesageToDingding(p *models.Note) string {
 	return tcmprJson
 }
 
+//生成值班通知消息体
+func OndutyMseesageToDingding(p *models.Onduty) string {
+	agentID, _ := strconv.Atoi(setting.MsgAppSetting.AgentID)
+	text := map[string]interface{}{
+		"content": p.Tsrq + ":" + p.Content,
+	}
+	msgcontent := map[string]interface{}{
+		"msgtype": "text",
+		"text":    text,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": p.UserID,
+		"to_all_user": false,
+		"msg":         msgcontent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
+	return tcmprJson
+}
+
 // 企业会话消息异步发送
 type AsyncsendReturn struct {
 	Errcode int    `json:"errcode"`

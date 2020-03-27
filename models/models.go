@@ -157,6 +157,11 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Proctype{})
 	}
+	if !db.HasTable("onduty") {
+		db.CreateTable(Onduty{})
+	} else {
+		db.AutoMigrate(Onduty{})
+	}
 }
 
 func InitDb() {
