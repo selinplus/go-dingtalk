@@ -601,7 +601,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 							d.Lx = LxDm.Dm
 							d.ID = GenerateSbbh(d.Lx, d.Xlh)
 							//生成二维码
-							info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs + "]$生产日期[" + d.Scrq + "]$"
+							info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs + "]$设备型号[" + d.Xh + "]$生产日期[" + d.Scrq + "]$"
 							name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 							if err != nil {
 								log.Println(err)

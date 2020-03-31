@@ -93,7 +93,7 @@ func AddDevinfo(c *gin.Context) {
 		return
 	}
 	//生成二维码
-	info := sbbh + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$生产日期[" + dev.Scrq + "]$"
+	info := sbbh + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$设备型号[" + dev.Xh + "]$生产日期[" + dev.Scrq + "]$"
 	name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 	if err != nil {
 		log.Println(err)
