@@ -447,6 +447,7 @@ func GetDevinfosByUser(c *gin.Context) {
 		appG   = app.Gin{C: c}
 		jgdm   = c.Query("jgdm")
 		bz     = c.Query("bz")
+		mc     = c.Query("mc")
 		userid string
 	)
 	//使用人查看名下设备
@@ -466,6 +467,7 @@ func GetDevinfosByUser(c *gin.Context) {
 		"rkrqz": "2099-01-01 00:00:00",
 		"syr":   "",
 		"jgdm":  "",
+		"mc":    mc,
 	}
 	resps := make([]*models.DevinfoResp, 0)
 	if jgdm != "" {
