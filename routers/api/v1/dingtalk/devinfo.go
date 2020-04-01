@@ -164,10 +164,17 @@ func UpdateDevinfo(c *gin.Context) {
 		}
 		syr = suser.UserID
 	}
+	var lxdm string
+	if strings.Contains(form.Lx, "1") {
+		lxdm = form.Lx
+	} else {
+		lx, _ := models.GetDevtypeByMc(form.Lx)
+		lxdm = lx.Dm
+	}
 	dev := &models.Devinfo{
 		ID:   form.ID,
 		Zcbh: form.Zcbh,
-		Lx:   form.Lx,
+		Lx:   lxdm,
 		Mc:   form.Mc,
 		Xh:   form.Xh,
 		Xlh:  form.Xlh,
