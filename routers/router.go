@@ -139,6 +139,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/imp", dingtalk.ImpDevinfos)
 		//更新设备信息
 		apiv1.POST("/dev/update", dingtalk.UpdateDevinfo)
+		//删除设备信息
+		apiv1.GET("/dev/del", dingtalk.DelDevinfo)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dingtalk.GetDevinfoByID)
 		//获取设备列表(inner多条件查询设备)

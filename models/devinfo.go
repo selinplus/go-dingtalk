@@ -424,6 +424,13 @@ func EditDevinfo(dev *Devinfo) error {
 	return nil
 }
 
+func DelDevinfo(id string) error {
+	if err := db.Where("id=?", id).Delete(Devinfo{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 //批量导入
 type DevinfoErr struct {
 	*Devinfo

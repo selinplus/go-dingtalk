@@ -193,6 +193,16 @@ func UpdateDevinfo(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
+//删除设备信息
+func DelDevinfo(c *gin.Context) {
+	appG := app.Gin{C: c}
+	if err := models.DelDevinfo(c.Query("id")); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
 //获取设备列表(inner多条件查询设备)
 func GetDevinfos(c *gin.Context) {
 	var (
