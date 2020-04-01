@@ -185,12 +185,19 @@ func UpdateDevinfo(c *gin.Context) {
 		Syr:  syr,
 		Sx:   form.Sx,
 	}
-	err = models.EditDevinfo(dev)
+	//生成二维码
+	info := form.ID + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$设备型号[" + dev.Xh + "]$生产日期[" + dev.Scrq + "]$"
+	name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err.Error())
 		return
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	dev.QrUrl = qrcode.GetQrCodeFullUrl(name)
+	if err = models.EditDevinfo(dev); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err.Error())
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, "修改成功，请重新打印二维码！")
 }
 
 //删除设备信息
