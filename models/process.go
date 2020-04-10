@@ -119,7 +119,8 @@ func GetProcSaveList(tbr string) ([]*ProcResponse, error) {
          	left join procmodify on process.id = procmodify.procid
          	left join proctype on process.dm = proctype.dm
          	left join user on user.mobile = procmodify.czr
-			where process.mobile = ?  and (procmodify.node is null or procmodify.node = '')`
+			where process.mobile = ?  and (procmodify.node is null or procmodify.node = '')
+			order by process.id desc`
 	err := db.Raw(sql, tbr).Scan(&pr).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
