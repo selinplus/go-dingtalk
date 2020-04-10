@@ -47,6 +47,7 @@ func AddProc(c *gin.Context) {
 		flag   = c.Query("flag")
 		form   ProcForm
 		tsr, t string
+		devid  string
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
@@ -54,17 +55,20 @@ func AddProc(c *gin.Context) {
 		return
 	}
 	sj := time.Now().Format("2006-01-02")
-	sbbh, _ := strconv.Atoi(form.DevID)
-	dev, err := models.GetDevinfoBySbbh(uint(sbbh))
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
-		return
+	if len(form.DevID) > 0 {
+		sbbh, _ := strconv.Atoi(form.DevID)
+		dev, err := models.GetDevinfoBySbbh(uint(sbbh))
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+			return
+		}
+		devid = dev.ID
 	}
 	proc := models.Process{
 		Dm:      form.Dm,
 		Tbr:     form.Tbr,
 		Mobile:  form.Mobile,
-		DevID:   dev.ID,
+		DevID:   devid,
 		Title:   form.Title,
 		Xq:      form.Xq,
 		Zp:      form.Zp,
@@ -189,6 +193,7 @@ func UpdateProc(c *gin.Context) {
 		flag   = c.Query("flag")
 		form   ProcForm
 		tsr, t string
+		devid  string
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
@@ -196,18 +201,21 @@ func UpdateProc(c *gin.Context) {
 		return
 	}
 	sj := time.Now().Format("2006-01-02")
-	sbbh, _ := strconv.Atoi(form.DevID)
-	dev, err := models.GetDevinfoBySbbh(uint(sbbh))
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
-		return
+	if len(form.DevID) > 0 {
+		sbbh, _ := strconv.Atoi(form.DevID)
+		dev, err := models.GetDevinfoBySbbh(uint(sbbh))
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+			return
+		}
+		devid = dev.ID
 	}
 	proc := models.Process{
 		ID:     form.ID,
 		Dm:     form.Dm,
 		Tbr:    form.Tbr,
 		Mobile: form.Mobile,
-		DevID:  dev.ID,
+		DevID:  devid,
 		Title:  form.Title,
 		Xq:     form.Xq,
 		Zp:     form.Zp,
