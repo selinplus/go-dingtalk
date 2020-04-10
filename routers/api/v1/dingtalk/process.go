@@ -56,21 +56,11 @@ func AddProc(c *gin.Context) {
 	}
 	sj := time.Now().Format("2006-01-02")
 	if len(form.DevID) > 0 {
-		var dev *models.Devinfo
-		var flag = false
-		sbbh, err := strconv.Atoi(form.DevID)
-		if err == nil {
-			dev = models.GetDevinfoBySbbh(uint(sbbh))
-			if dev != nil {
-				flag = true
-			}
-		}
-		if !flag {
-			dev, err = models.GetDevinfoByID(form.DevID)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
-				return
-			}
+		sbbh, _ := strconv.Atoi(form.DevID)
+		dev := models.GetDevinfoBySbbh(uint(sbbh))
+		if dev == nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+			return
 		}
 		devid = dev.ID
 	}
@@ -212,21 +202,11 @@ func UpdateProc(c *gin.Context) {
 	}
 	sj := time.Now().Format("2006-01-02")
 	if len(form.DevID) > 0 {
-		var dev *models.Devinfo
-		var flag = false
-		sbbh, err := strconv.Atoi(form.DevID)
-		if err == nil {
-			dev = models.GetDevinfoBySbbh(uint(sbbh))
-			if dev != nil {
-				flag = true
-			}
-		}
-		if !flag {
-			dev, err = models.GetDevinfoByID(form.DevID)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
-				return
-			}
+		sbbh, _ := strconv.Atoi(form.DevID)
+		dev := models.GetDevinfoBySbbh(uint(sbbh))
+		if dev == nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
+			return
 		}
 		devid = dev.ID
 	}
