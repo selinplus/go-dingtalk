@@ -55,6 +55,7 @@ func UpdateDevdept(devd *Devdept) error {
 	}
 	return nil
 }
+
 func DelDevdeptGly(devd map[string]interface{}) error {
 	if err := db.Table("devdept").
 		Where("jgdm=?", devd["jgdm"]).Updates(devd).Error; err != nil {

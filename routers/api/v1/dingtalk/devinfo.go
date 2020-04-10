@@ -228,6 +228,7 @@ func GetDevinfos(c *gin.Context) {
 		syr      = c.Query("syr")
 		mc       = c.Query("mc")
 		jgdm     = c.Query("jgdm")
+		bz       = c.Query("bz")
 		pageNo   int
 		pageSize int
 	)
@@ -264,23 +265,23 @@ func GetDevinfos(c *gin.Context) {
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
-	devs, err := models.GetDevinfos(con, pageNo, pageSize, "")
+	devs, err := models.GetDevinfos(con, pageNo, pageSize, bz)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
 	resps := make([]*DevResp, 0)
 	for _, dev := range devs {
-		var syrName string
+		var syrName, syrMobile string
 		if dev.Syr != "" {
 			suser, err := models.GetUserByUserid(dev.Syr)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
 				return
 			}
-			syrName = suser.Name
+			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		resps = append(resps, d)
 	}
 	data := make(map[string]interface{})
@@ -348,16 +349,16 @@ func GetDevinfosGly(c *gin.Context) {
 	}
 	resps := make([]*DevResp, 0)
 	for _, dev := range devs {
-		var syrName string
+		var syrName, syrMobile string
 		if dev.Syr != "" {
 			suser, err := models.GetUserByUserid(dev.Syr)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
 				return
 			}
-			syrName = suser.Name
+			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		resps = append(resps, d)
 	}
 	data := make(map[string]interface{})
@@ -368,8 +369,9 @@ func GetDevinfosGly(c *gin.Context) {
 
 type DevResp struct {
 	*models.DevinfoResp
-	Idstr   string `json:"idstr"`
-	SyrName string `json:"syr_name"`
+	Idstr     string `json:"idstr"`
+	SyrName   string `json:"syr_name"`
+	SyrMobile string `json:"syr_mobile"`
 }
 
 //获取设备详情
@@ -382,16 +384,16 @@ func GetDevinfoByID(c *gin.Context) {
 		return
 	}
 	if len(dev.ID) > 0 {
-		var syrName string
+		var syrName, syrMobile string
 		if dev.Syr != "" {
 			suser, err := models.GetUserByUserid(dev.Syr)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
 				return
 			}
-			syrName = suser.Name
+			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		appG.Response(http.StatusOK, e.SUCCESS, d)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
@@ -506,16 +508,16 @@ func GetDevinfosByUser(c *gin.Context) {
 	devResps := make([]*DevResp, 0)
 	data := make(map[string]interface{})
 	for _, dev := range resps {
-		var syrName string
+		var syrName, syrMobile string
 		if dev.Syr != "" {
 			suser, err := models.GetUserByUserid(dev.Syr)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
 				return
 			}
-			syrName = suser.Name
+			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName}
+		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		devResps = append(devResps, d)
 	}
 	data["lists"] = devResps

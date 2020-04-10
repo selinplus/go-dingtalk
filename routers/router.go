@@ -68,6 +68,20 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
 		apiv1.GET("/msg/delete", dingtalk.DeleteMsg)
+		//增加通讯录组
+		apiv1.POST("/msg/addbook", dingtalk.AddAddressbook)
+		//删除通讯录组
+		apiv1.GET("/msg/delbook", dingtalk.DeleteAddressbook)
+		//修改通讯录组名称
+		apiv1.POST("/msg/updbook", dingtalk.UpdateAddressbook)
+		//获取通讯组列表
+		apiv1.GET("/msg/getbooks", dingtalk.GetAddressbooks)
+		//增加联系人
+		apiv1.POST("/msg/addcontacter", dingtalk.AddContacter)
+		//删除联系人
+		apiv1.POST("/msg/delcontacter", dingtalk.DeleteContacter)
+		//获取通讯组联系人列表
+		apiv1.GET("/msg/getcontacters", dingtalk.GetContacters)
 
 		//新建记事本
 		apiv1.POST("/note/add", dingtalk.AddNote)
@@ -232,6 +246,10 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/msg/detail", dingtalk.GetMsgByID)
 		//删除消息
 		apiv2.GET("/msg/delete", dingtalk.DeleteMsg)
+		//获取通讯组列表
+		apiv2.GET("/msg/getbooks", dingtalk.GetAddressbooks)
+		//获取通讯组联系人列表
+		apiv2.GET("/msg/getcontacters", dingtalk.GetContacters)
 
 		//新建记事本
 		apiv2.POST("/note/add", dingtalk.AddNote)

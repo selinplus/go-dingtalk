@@ -47,6 +47,21 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Msg{})
 	}
+	if !db.HasTable("msg_tag") {
+		db.CreateTable(MsgTag{})
+	} else {
+		db.AutoMigrate(MsgTag{})
+	}
+	if !db.HasTable("msg_addressbook") {
+		db.CreateTable(MsgAddressbook{})
+	} else {
+		db.AutoMigrate(MsgAddressbook{})
+	}
+	if !db.HasTable("msg_contacter") {
+		db.CreateTable(MsgContacter{})
+	} else {
+		db.AutoMigrate(MsgContacter{})
+	}
 	if !db.HasTable("note") {
 		db.CreateTable(Note{})
 	} else {
@@ -66,11 +81,6 @@ func CheckTable() {
 		db.CreateTable(NetdiskTree{})
 	} else {
 		db.AutoMigrate(NetdiskTree{})
-	}
-	if !db.HasTable("msg_tag") {
-		db.CreateTable(MsgTag{})
-	} else {
-		db.AutoMigrate(MsgTag{})
 	}
 	if !db.HasTable("department") {
 		db.CreateTable(Department{})
