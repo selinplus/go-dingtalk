@@ -798,15 +798,16 @@ func GetDevinfosToBeStored() ([]*Devinfo, error) {
 	return devs, nil
 }
 
-func GetDevinfoBySbbh(sbbh uint) (*Devinfo, error) {
+func GetDevinfoBySbbh(sbbh uint) *Devinfo {
 	var dev Devinfo
-	if err := db.Table("devinfo").Where("sbbh=?", sbbh).First(&dev).Error; err != nil {
-		return nil, err
+	err := db.Table("devinfo").Where("sbbh=?", sbbh).First(&dev).Error
+	if err != nil {
+		return nil
 	}
 	if len(dev.ID) > 0 {
-		return &dev, nil
+		return &dev
 	}
-	return nil, nil
+	return nil
 }
 
 func GetDevinfosByJgdm(jgdm string) ([]*Devinfo, error) {

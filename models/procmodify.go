@@ -1,7 +1,5 @@
 package models
 
-import "log"
-
 type Procmodify struct {
 	ID         uint   `gorm:"primary_key;AUTO_INCREMENT"`
 	ProcID     uint   `json:"procid" gorm:"COMMENT:'流程实例ID';column:procid"`
@@ -22,7 +20,7 @@ func AddProcMod(data interface{}) error {
 }
 
 func UpdateProcMod(pm *Procmodify) error {
-	log.Println(pm)
+	//log.Println(pm)
 	if err := db.Table("procmodify").Where("id=?", pm.ID).Updates(&pm).Error; err != nil {
 		return err
 	}
