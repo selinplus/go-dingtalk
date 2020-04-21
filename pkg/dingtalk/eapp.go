@@ -152,8 +152,8 @@ func UpDeviceDingding(num int, jgmc, gly string) string {
 }
 
 // 企业会话消息异步发送
-func EappMessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
-	var asyncsendReturn AsyncsendReturn
+func EappMessageCorpconversationAsyncsend(mpar string) *AsyncsendResponse {
+	var asyncsendResponse AsyncsendResponse
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetEappAccessToken()).
 		Type("json").Send(mpar).End()
@@ -161,12 +161,12 @@ func EappMessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 		util.ShowError("MessageCorpconversationAsyncsend failed:", errs[0])
 		return nil
 	} else {
-		err := json.Unmarshal([]byte(body), &asyncsendReturn)
-		log.Println("asyncsendReturn is", asyncsendReturn)
+		err := json.Unmarshal([]byte(body), &asyncsendResponse)
+		log.Println("asyncsendResponse is", asyncsendResponse)
 		if err != nil {
-			log.Printf("unmarshall asyncsendReturn info error:%v", err)
+			log.Printf("unmarshall asyncsendResponse info error:%v", err)
 			return nil
 		}
 	}
-	return &asyncsendReturn
+	return &asyncsendResponse
 }

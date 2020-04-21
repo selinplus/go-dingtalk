@@ -16,18 +16,6 @@ import (
 	"time"
 )
 
-type AccessToken struct {
-	AccessToken string `json:"access_token"`
-	ExpiresTime int64  `json:"expires_time"`
-}
-type UserInfo struct {
-	UserID     string `json:"userid"`
-	Name       string `json:"name"`
-	Avatar     string `json:"avatar"`
-	Department []int  `json:"department"`
-	Mobile     string `json:"mobile"`
-}
-
 var Token = &AccessToken{}
 
 func GetAccessToken() string {
@@ -115,7 +103,7 @@ func getJsApiTicket() string {
 
 func genJsApiSign(ticket string, nonceStr string, timeStamp string, url string) string {
 	s := fmt.Sprintf("jsapi_ticket=%s&noncestr=%s&timestamp=%s&url=%s", ticket, nonceStr, timeStamp, url)
-	return util.Sha1Sign(s)
+	return Sha1Sign(s)
 }
 
 func GetJsApiConfig(url string) string {
@@ -215,15 +203,8 @@ func OndutyMseesageToDingding(p *models.Onduty) string {
 }
 
 // 企业会话消息异步发送
-type AsyncsendReturn struct {
-	Errcode int    `json:"errcode"`
-	Errmsg  string `json:"errmsg"`
-	TaskId  int    `json:"task_id"`
-}
-
-// 企业会话消息异步发送
-func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
-	var asyncsendReturn AsyncsendReturn
+func MessageCorpconversationAsyncsend(mpar string) *AsyncsendResponse {
+	var asyncsendResponse AsyncsendResponse
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/message/corpconversation/asyncsend_v2?access_token=" + GetAccessToken()).
 		Type("json").Send(mpar).End()
@@ -231,14 +212,14 @@ func MessageCorpconversationAsyncsend(mpar string) *AsyncsendReturn {
 		util.ShowError("MessageCorpconversationAsyncsend failed:", errs[0])
 		return nil
 	} else {
-		err := json.Unmarshal([]byte(body), &asyncsendReturn)
-		log.Println("asyncsendReturn is", asyncsendReturn)
+		err := json.Unmarshal([]byte(body), &asyncsendResponse)
+		log.Println("asyncsendResponse is", asyncsendResponse)
 		if err != nil {
-			log.Printf("unmarshall asyncsendReturn info error:%v", err)
+			log.Printf("unmarshall asyncsendResponse info error:%v", err)
 			return nil
 		}
 	}
-	return &asyncsendReturn
+	return &asyncsendResponse
 }
 
 // 获取子部门Id列表
@@ -389,7 +370,7 @@ func DepartmentUserDetail(id, pageNum, wt int) *[]models.User {
 	return &usersList
 }
 
-//获取部门用户userid列表
+// 获取部门用户userid列表
 func DepartmentUserIdsDetail(id, wt int) []string {
 	var (
 		useridslice []string
@@ -435,7 +416,7 @@ func DepartmentUserIdsDetail(id, wt int) []string {
 	return useridslice
 }
 
-//获取用户详情
+// 获取用户详情
 func UserDetail(userid string, wt int) *models.User {
 	var (
 		user     models.User
@@ -529,4 +510,95 @@ func OrgUserCount(wt int) (int, error) {
 		return 0, errors.New(fmt.Sprintf("%v", data["errmsg"]))
 	}
 	return int(data["count"].(float64)), nil
+}
+
+// 创建待办任务
+func WorkrecordAdd(req WorkrecordAddRequest) (*WorkrecordAddResponse, error) {
+	/*func WorkrecordAdd(userid, workrecordTitle, title, content string) (*WorkrecordAddResponse, error) {
+	formItemLists := make([]FormItemList, 0)
+	formItemList := FormItemList{
+		Title:   title,   //表单标题
+		Content: content, //表单内容
+	}
+	formItemLists = append(formItemLists, formItemList)
+	var req = WorkrecordAddRequest{
+		UserID:       userid,
+		CreateTime:   time.Now().Unix(),
+		Title:        workrecordTitle,
+		Url:          "", //待办事项的跳转链接
+		PcUrl:        "", //pc端跳转url,不传则使用url参数
+		FormItemList: formItemLists,
+	}*/
+
+	reqJson, err := util.ToJson(req)
+	if err != nil {
+		return nil, err
+	}
+	_, body, errs := gorequest.New().
+		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/add?access_token=" + GetAccessToken()).
+		Type("json").Send(reqJson).End()
+	//log.Printf("body is %s\n", body)
+	if len(errs) > 0 {
+		util.ShowError("workrecord add err:", errs[0])
+		return nil, errs[0]
+	} else {
+		resp := &WorkrecordAddResponse{}
+		err = util.FromJson(body, resp)
+		return resp, err
+	}
+}
+
+// 更新任务状态
+func WorkrecordUpdate(req WorkrecordUpdateRequest) (*WorkrecordUpdateResponse, error) {
+	/*func WorkrecordUpdate(userid, record_id string) (*WorkrecordUpdateResponse, error) {
+	var req = WorkrecordUpdateRequest{
+		UserID:   userid,
+		RecordId: record_id,
+	}*/
+
+	reqJson, err := util.ToJson(req)
+	fmt.Println(reqJson)
+	if err != nil {
+		return nil, err
+	}
+	_, body, errs := gorequest.New().
+		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/update?access_token=" + GetAccessToken()).
+		Type("json").Send(reqJson).End()
+	//log.Printf("body is %s\n", body)
+	if len(errs) > 0 {
+		util.ShowError("workrecord update err:", errs[0])
+		return nil, errs[0]
+	} else {
+		resp := &WorkrecordUpdateResponse{}
+		err = util.FromJson(body, resp)
+		return resp, err
+	}
+}
+
+// 分页获取用户的待办任务列表
+func WorkrecordQuery(req WorkrecordQueryRequest) (*WorkrecordQueryResponse, error) {
+	/*func WorkrecordQuery(userid string, offset, limit, status int) (*WorkrecordQueryResponse, error) {
+	var req = WorkrecordQueryRequest{
+		UserID: userid,
+		Offset: offset,
+		Limit:  limit,
+		Status: status,
+	}*/
+	reqJson, err := util.ToJson(req)
+	fmt.Println(reqJson)
+	if err != nil {
+		return nil, err
+	}
+	_, body, errs := gorequest.New().
+		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/getbyuserid?access_token=" + GetAccessToken()).
+		Type("json").Send(reqJson).End()
+	//log.Printf("body is %s\n", body)
+	if len(errs) > 0 {
+		util.ShowError("workrecord getbyuserid err:", errs[0])
+		return nil, errs[0]
+	} else {
+		resp := &WorkrecordQueryResponse{}
+		err = util.FromJson(body, resp)
+		return resp, err
+	}
 }

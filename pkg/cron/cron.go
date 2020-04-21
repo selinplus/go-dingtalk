@@ -84,9 +84,9 @@ func MessageDingding() {
 	}
 	for _, msg := range msgs {
 		tcmprJson := dingtalk.MseesageToDingding(msg)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
-		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
-		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+		asyncsendResponse := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		//log.Printf("asyncsendResponse is :%v", asyncsendResponse)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateMsgFlag(msg.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update msg_flag err:%v", msg.ID, err))
 			}
@@ -113,9 +113,9 @@ func DeviceDingding() {
 			}
 			tcmprJson = dingtalk.UpDeviceDingding(todo.Num, dept.Jgmc, todo.Gly)
 		}
-		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
-		//log.Printf("asyncsendReturn is :%v", asyncsendReturn)
-		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+		asyncsendResponse := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
+		//log.Printf("asyncsendResponse is :%v", asyncsendResponse)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateDevtodoFlag(todo.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update dev_flag err:%v", todo.ID, err))
 			}
@@ -132,8 +132,8 @@ func NoteMessageDingding() {
 	}
 	for _, note := range notes {
 		tcmprJson := dingtalk.NoteMseesageToDingding(note)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
-		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+		asyncsendResponse := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateNoteFlag(note.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update note_flag err:%v", note.ID, err))
 			}
@@ -150,8 +150,8 @@ func OndutyMessageDingding() {
 	}
 	for _, od := range ods {
 		tcmprJson := dingtalk.OndutyMseesageToDingding(od)
-		asyncsendReturn := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
-		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+		asyncsendResponse := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateOndutyFlag(od.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update onduty_flag err:%v", od.ID, err))
 			}
@@ -172,8 +172,8 @@ func ProcessMessageDingding() {
 			logging.Error(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
 		}
 		tcmprJson := dingtalk.ProcessMseesageToDingding(p, proc.Czr)
-		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
-		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+		asyncsendResponse := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateProcessFlag(proc.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
 			}
@@ -194,8 +194,8 @@ func ProcessBcmsMessageDingding() {
 			logging.Error(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ProcID, err))
 		}
 		tcmprJson := dingtalk.ProcessBcmsMseesageToDingding(p)
-		asyncsendReturn := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
-		if asyncsendReturn != nil && asyncsendReturn.Errcode == 0 {
+		asyncsendResponse := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateProcessBcmsFlag(proc.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
 			}

@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"sort"
 )
@@ -14,8 +16,6 @@ import (
 const (
 	AES_ENCODE_KEY_LENGTH = 43
 )
-
-var DefaultDingtalkCrypto *DingTalkCrypto
 
 type DingTalkCrypto struct {
 	Token          string
@@ -117,7 +117,7 @@ func (c *DingTalkCrypto) CreateSignature(token, timeStamp, nonce, secretStr stri
 	params = append(params, timeStamp)
 	params = append(params, nonce)
 	sort.Strings(params)
-	return util.Sha1Sign(params[0] + params[1] + params[2] + params[3])
+	return Sha1Sign(params[0] + params[1] + params[2] + params[3])
 }
 
 // 校验数据签名
@@ -137,4 +137,25 @@ func pkCS7Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
+}
+
+func Sha1Sign(s string) string {
+	// The pattern for generating a hash is `sha1.New()`,
+	// `sha1.Write(bytes)`, then `sha1.Sum([]byte{})`.
+	// Here we start with a new hash.
+	h := sha1.New()
+
+	// `Write` expects bytes. If you have a string `s`,
+	// use `[]byte(s)` to coerce it to bytes.
+	h.Write([]byte(s))
+
+	// This gets the finalized hash result as a byte
+	// slice. The argument to `Sum` can be used to append
+	// to an existing byte slice: it usually isn't needed.
+	bs := h.Sum(nil)
+
+	// SHA1 values are often printed in hex, for example
+	// in git commits. Use the `%x` format verb to convert
+	// a hash results to a hex string.
+	return fmt.Sprintf("%x", bs)
 }

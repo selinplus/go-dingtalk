@@ -10,36 +10,6 @@ import (
 	"log"
 )
 
-type OpenAPIResponse struct {
-	ErrCode int    `json:"errcode"`
-	ErrMsg  string `json:"errmsg"`
-}
-
-type CallBackResponse struct {
-	OpenAPIResponse
-}
-
-type QueryCallbackResponse struct {
-	OpenAPIResponse
-	CallbackTag []string `json:"call_back_tag"`
-	Token       string   `json:"token"`
-	AesKey      string   `json:"aes_key"`
-	URL         string   `json:"url"`
-}
-
-type GetFailedCallbackResponse struct {
-	OpenAPIResponse
-	HasMore    bool              `json:"has_more"`
-	FailedList []FailedCallbacks `json:"failed_list"`
-}
-
-type FailedCallbacks struct {
-	EventTime   int      `json:"event_time"`
-	CallbackTag string   `json:"call_back_tag"`
-	UserID      []string `json:"userid"`
-	CorpID      string   `json:"corpid"`
-}
-
 // 注册事件回调接口
 func RegisterCallback(request map[string]interface{}) (*CallBackResponse, error) {
 	var data CallBackResponse

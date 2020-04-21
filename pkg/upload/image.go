@@ -26,6 +26,11 @@ func GetAppImageFullUrl(name string) string {
 	return setting.AppSetting.AppPrefixUrl + "/api/v2/" + GetImagePath() + name
 }
 
+// GetEappImageFullUrl get the full access path for internet eapp:without token
+func GetEappImageFullUrl(name string) string {
+	return setting.AppSetting.AppPrefixUrl + "/api/v3/" + GetImagePath() + name
+}
+
 // GetImageName get image name
 func GetImageName(name string) string {
 	ext := path.Ext(name)

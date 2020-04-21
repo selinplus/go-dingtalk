@@ -3,12 +3,12 @@ package api
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"net/http"
-
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"net/http"
+	"strings"
 )
 
 func UploadFile(c *gin.Context) {
@@ -49,10 +49,20 @@ func UploadFile(c *gin.Context) {
 
 	session := sessions.Default(c)
 	var url string
-	if session.Get("userid") != nil {
+	if session.Get("userid") != nil { //if H5 return internetIP/api/v2/...
 		url = upload.GetAppImageFullUrl(imageName)
 	} else {
-		url = upload.GetImageFullUrl(imageName)
+		token := c.GetHeader("Authorization")
+		auth := c.Query("token")
+		if len(auth) > 0 {
+			token = auth
+		}
+		ts := strings.Split(token, ".")
+		if len(ts) == 4 { //if token.length==4 then eapp, return internetIP/api/v3/...
+			url = upload.GetEappImageFullUrl(imageName)
+		} else { //inner  return innerIP/...
+			url = upload.GetImageFullUrl(imageName)
+		}
 	}
 
 	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
