@@ -32,11 +32,7 @@ func GetYdksAccessToken() string {
 }
 
 // 创建待办任务
-func YdksWorkrecordAdd(req WorkrecordAddRequest) (*WorkrecordAddResponse, error) {
-	reqJson, err := util.ToJson(req)
-	if err != nil {
-		return nil, err
-	}
+func YdksWorkrecordAdd(reqJson string) (*WorkrecordAddResponse, error) {
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/add?access_token=" + GetYdksAccessToken()).
 		Type("json").Send(reqJson).End()
@@ -46,7 +42,7 @@ func YdksWorkrecordAdd(req WorkrecordAddRequest) (*WorkrecordAddResponse, error)
 		return nil, errs[0]
 	} else {
 		resp := &WorkrecordAddResponse{}
-		err = util.FormJson(body, resp)
+		err := util.FormJson(body, resp)
 		return resp, err
 	}
 }
