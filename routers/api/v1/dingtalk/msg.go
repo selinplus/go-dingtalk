@@ -9,7 +9,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -629,7 +628,6 @@ func GetContacters(c *gin.Context) {
 		for _, contacter := range contacters {
 			user, err := models.GetUserByUserid(contacter.UserID)
 			if err != nil {
-				log.Println(contacter.UserID)
 				continue
 			}
 			user.Department = contacter.DeptName

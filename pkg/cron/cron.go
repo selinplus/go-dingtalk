@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"github.com/selinplus/go-dingtalk/pkg/ydksrv"
 	"log"
 	"os"
 	"strconv"
@@ -14,42 +15,63 @@ import (
 	"time"
 )
 
-func Setup() {
+// dmz区 crontab
+func DmzSetup() {
 	go func() {
-		log.Println("Cron starting...")
+		log.Println("dmz crontab starting...")
 		// 定义一个cron运行器
 		c := cron.New()
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送工作通知
 		if err := c.AddFunc("*/30 * * * * *", MessageDingding); err != nil {
-			logging.Error(fmt.Sprintf("Send MessageDingding failed：%v", err))
+			log.Printf("Send MessageDingding failed：%v", err)
 		}
 		// 遍历一遍发送标志为0的交回设备信息，通知钉钉发送工作通知管理员
 		if err := c.AddFunc("*/30 * * * * *", DeviceDingding); err != nil {
-			logging.Error(fmt.Sprintf("Send DeviceDingding failed：%v", err))
+			log.Printf("Send DeviceDingding failed：%v", err)
 		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送记事本消息
 		if err := c.AddFunc("*/30 * * * * *", NoteMessageDingding); err != nil {
-			logging.Error(fmt.Sprintf("Send Process NoteMessageDingding failed：%v", err))
+			log.Printf("Send Process NoteMessageDingding failed：%v", err)
 		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送值班通知消息
 		if err := c.AddFunc("*/30 * * * * *", OndutyMessageDingding); err != nil {
-			logging.Error(fmt.Sprintf("Send Process OndutyMessageDingding failed：%v", err))
+			log.Printf("Send Process OndutyMessageDingding failed：%v", err)
 		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项待办工作通知消息
 		if err := c.AddFunc("*/30 * * * * *", ProcessMessageDingding); err != nil {
-			logging.Error(fmt.Sprintf("Send Process ProcessMessageDingding failed：%v", err))
+			log.Printf("Send Process ProcessMessageDingding failed：%v", err)
 		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送提报事项补充描述工作通知
 		if err := c.AddFunc("*/30 * * * * *", ProcessBcmsMessageDingding); err != nil {
-			logging.Error(fmt.Sprintf("Send ProcessBcms ProcessBcmsMessageDingding failed：%v", err))
+			log.Printf("Send ProcessBcms ProcessBcmsMessageDingding failed：%v", err)
+		}
+		// 每30秒遍历一遍 ydks 消息，通知钉钉发送待办任务
+		if err := c.AddFunc("*/30 * * * * *", ydksrv.Ydksworkrecord); err != nil {
+			log.Printf("Send Ydksworkrecord failed：%v", err)
 		}
 		// 每天半夜同步一次部门和人员信息
 		if err := c.AddFunc("@midnight", Sync); err != nil {
-			logging.Error(fmt.Sprintf("DepartmentUserSync failed：%v", err))
+			log.Printf("DepartmentUserSync failed：%v", err)
 		}
 		// 每个月执行一遍网盘回收站清理
 		if err := c.AddFunc("@monthly", CleanUpNetdiskFile); err != nil {
-			logging.Error(fmt.Sprintf("CleanUp NetdiskFile failed：%v", err))
+			log.Printf("CleanUp NetdiskFile failed：%v", err)
+		}
+
+		// 开始
+		c.Run()
+	}()
+}
+
+// app区 crontab
+func AppSetup() {
+	go func() {
+		log.Println("app crontab starting...")
+		// 定义一个cron运行器
+		c := cron.New()
+		// 每天半夜将前一天 ydks 数据写入文件
+		if err := c.AddFunc("@midnight", ydksrv.WriteIntoFile); err != nil {
+			log.Printf("WriteIntoFile crontab failed：%v", err)
 		}
 		// 开始
 		c.Run()
@@ -213,7 +235,7 @@ func Sync() {
 	)
 	count, e := dingtalk.OrgUserCount(wt)
 	if e != nil {
-		logging.Error(e)
+		log.Println(e)
 	}
 	for i := 0; i < 10; i++ {
 		time.Sleep(time.Second * 90)

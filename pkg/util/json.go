@@ -12,6 +12,6 @@ func ToJson(obj interface{}) (string, error) {
 	return string(bs), nil
 }
 
-func FromJson(jsonStr string, obj interface{}) error {
+func FormJson(jsonStr string, obj interface{}) error {
 	return json.Unmarshal([]byte(jsonStr), obj)
 }

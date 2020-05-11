@@ -172,6 +172,16 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Onduty{})
 	}
+	if !db.HasTable("ydksworkrecord") {
+		db.CreateTable(Ydksworkrecord{})
+	} else {
+		db.AutoMigrate(Ydksworkrecord{})
+	}
+	if !db.HasTable("ydksdata") {
+		db.CreateTable(Ydksdata{})
+	} else {
+		db.AutoMigrate(Ydksdata{})
+	}
 }
 
 func InitDb() {

@@ -2,9 +2,7 @@ package dingtalk
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/parnurzeal/gorequest"
-	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
@@ -40,7 +38,7 @@ func QueryCallback() (*QueryCallbackResponse, error) {
 		return nil, nil
 	} else {
 		err := json.Unmarshal([]byte(body), &data)
-		logging.Info(fmt.Sprintf("%v", data))
+		//logging.Info(fmt.Sprintf("%v", data))
 		if err != nil {
 			log.Printf("unmarshall CBQueryCallback info error:%v", err)
 			return nil, err
@@ -60,7 +58,7 @@ func UpdateCallback(request map[string]interface{}) (*CallBackResponse, error) {
 		return nil, nil
 	} else {
 		err := json.Unmarshal([]byte(body), &data)
-		logging.Info(fmt.Sprintf("%v", data))
+		//logging.Info(fmt.Sprintf("%v", data))
 		if err != nil {
 			log.Printf("unmarshall CBUpdateCallback info error:%v", err)
 			return nil, err
@@ -79,7 +77,7 @@ func DeleteCallback() (*CallBackResponse, error) {
 		return nil, nil
 	} else {
 		err := json.Unmarshal([]byte(body), &data)
-		logging.Info(fmt.Sprintf("%v", data))
+		//logging.Info(fmt.Sprintf("%v", data))
 		if err != nil {
 			log.Printf("unmarshall CBDeleteCallback info error:%v", err)
 			return nil, err
@@ -98,7 +96,7 @@ func GetFailedCallbacks() (*GetFailedCallbackResponse, error) {
 		return nil, nil
 	} else {
 		err := json.Unmarshal([]byte(body), &data)
-		logging.Info(fmt.Sprintf("%v", data))
+		//logging.Info(fmt.Sprintf("%v", data))
 		if err != nil {
 			log.Printf("unmarshall CBGetFailedCallbacks info error:%v", err)
 			return nil, err
@@ -122,8 +120,8 @@ func RegCallbackInit() {
 		return
 	}
 	if response.ErrCode == 0 {
-		logging.Info(fmt.Sprintf("RegisterCallback success!"))
+		log.Println("RegisterCallback success!")
 	} else {
-		logging.Info(fmt.Sprintf("RegisterCallback failed:%v!", response.ErrMsg))
+		log.Printf("RegisterCallback failed:%v!", response.ErrMsg)
 	}
 }

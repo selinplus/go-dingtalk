@@ -9,7 +9,6 @@ import (
 
 type App struct {
 	JwtSecret      string
-	PageSize       int
 	PrefixUrl      string
 	AppPrefixUrl   string
 	TokenTimeout   int64
@@ -91,6 +90,18 @@ type EApp struct {
 
 var EAppSetting = &EApp{}
 
+type YdksApp struct {
+	AgentID   string
+	AppKey    string
+	AppSecret string
+	Domain    string
+
+	YdksSavePath string
+	FlowLimit    int
+}
+
+var YdksAppSetting = &YdksApp{}
+
 var cfg *ini.File
 
 // Setup initialize the configuration instance
@@ -108,6 +119,7 @@ func Setup() {
 	mapTo("dingtalk", DingtalkSetting)
 	mapTo("msgapp", MsgAppSetting)
 	mapTo("eapp", EAppSetting)
+	mapTo("ydks", YdksAppSetting)
 
 	AppSetting.ImageMaxSize = AppSetting.ImageMaxSize * 1024 * 1024
 	ServerSetting.ReadTimeout = ServerSetting.ReadTimeout * time.Second

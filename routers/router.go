@@ -11,8 +11,10 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/export"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
+	"github.com/selinplus/go-dingtalk/pkg/ydksrv"
 	"github.com/selinplus/go-dingtalk/routers/api"
 	"github.com/selinplus/go-dingtalk/routers/api/v1/dingtalk"
+	"github.com/selinplus/go-dingtalk/routers/api/ydks"
 	"net/http"
 )
 
@@ -355,6 +357,25 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/proc/czr", dingtalk.GetProcCzr)
 		//查询提报类型代码
 		apiv3.GET("/proc/type", dingtalk.GetProcType)
+	}
+
+	//以地控税
+	apiydks := r.Group("/api/ydks")
+	//apiydks.Use(ydksjwt.Check())
+	{
+		//内网数据文件下载路径
+		apiydks.StaticFS("/inner/file", http.Dir(ydksrv.GetYdksFullPath()))
+		//内网生成数据文件
+		apiydks.GET("/inner/datafile", ydks.GenDataFile)
+		//内网发送待办任务
+		apiydks.POST("/inner/workrecord", ydks.Workrecord)
+		//内网获取已推送待办任务
+		apiydks.GET("/inner/workrecords", ydks.GetWorkrecordSend)
+
+		//外网接收业务数据
+		apiydks.POST("/outer/recv", ydks.Recv)
+		//外网获取已推送待办任务
+		apiydks.GET("/outer/workrecords", ydks.GetWorkrecordSend)
 	}
 	return r
 }

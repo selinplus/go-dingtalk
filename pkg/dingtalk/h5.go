@@ -513,8 +513,7 @@ func OrgUserCount(wt int) (int, error) {
 }
 
 // 创建待办任务
-func WorkrecordAdd(req WorkrecordAddRequest) (*WorkrecordAddResponse, error) {
-	/*func WorkrecordAdd(userid, workrecordTitle, title, content string) (*WorkrecordAddResponse, error) {
+func WorkrecordAdd(userid, workrecordTitle, title, content string) (*WorkrecordAddResponse, error) {
 	formItemLists := make([]FormItemList, 0)
 	formItemList := FormItemList{
 		Title:   title,   //表单标题
@@ -528,7 +527,7 @@ func WorkrecordAdd(req WorkrecordAddRequest) (*WorkrecordAddResponse, error) {
 		Url:          "", //待办事项的跳转链接
 		PcUrl:        "", //pc端跳转url,不传则使用url参数
 		FormItemList: formItemLists,
-	}*/
+	}
 
 	reqJson, err := util.ToJson(req)
 	if err != nil {
@@ -543,19 +542,17 @@ func WorkrecordAdd(req WorkrecordAddRequest) (*WorkrecordAddResponse, error) {
 		return nil, errs[0]
 	} else {
 		resp := &WorkrecordAddResponse{}
-		err = util.FromJson(body, resp)
+		err = util.FormJson(body, resp)
 		return resp, err
 	}
 }
 
 // 更新任务状态
-func WorkrecordUpdate(req WorkrecordUpdateRequest) (*WorkrecordUpdateResponse, error) {
-	/*func WorkrecordUpdate(userid, record_id string) (*WorkrecordUpdateResponse, error) {
+func WorkrecordUpdate(userid, record_id string) (*WorkrecordUpdateResponse, error) {
 	var req = WorkrecordUpdateRequest{
 		UserID:   userid,
 		RecordId: record_id,
-	}*/
-
+	}
 	reqJson, err := util.ToJson(req)
 	fmt.Println(reqJson)
 	if err != nil {
@@ -570,20 +567,19 @@ func WorkrecordUpdate(req WorkrecordUpdateRequest) (*WorkrecordUpdateResponse, e
 		return nil, errs[0]
 	} else {
 		resp := &WorkrecordUpdateResponse{}
-		err = util.FromJson(body, resp)
+		err = util.FormJson(body, resp)
 		return resp, err
 	}
 }
 
 // 分页获取用户的待办任务列表
-func WorkrecordQuery(req WorkrecordQueryRequest) (*WorkrecordQueryResponse, error) {
-	/*func WorkrecordQuery(userid string, offset, limit, status int) (*WorkrecordQueryResponse, error) {
+func WorkrecordQuery(userid string, offset, limit, status int) (*WorkrecordQueryResponse, error) {
 	var req = WorkrecordQueryRequest{
 		UserID: userid,
 		Offset: offset,
 		Limit:  limit,
 		Status: status,
-	}*/
+	}
 	reqJson, err := util.ToJson(req)
 	fmt.Println(reqJson)
 	if err != nil {
@@ -598,7 +594,7 @@ func WorkrecordQuery(req WorkrecordQueryRequest) (*WorkrecordQueryResponse, erro
 		return nil, errs[0]
 	} else {
 		resp := &WorkrecordQueryResponse{}
-		err = util.FromJson(body, resp)
+		err = util.FormJson(body, resp)
 		return resp, err
 	}
 }
