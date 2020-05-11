@@ -6,7 +6,6 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
-	"github.com/selinplus/go-dingtalk/pkg/util"
 	"github.com/selinplus/go-gin-web/pkg/logging"
 	"log"
 	"os"
@@ -27,15 +26,7 @@ func Ydksworkrecord() {
 		return
 	}
 	for _, record := range records {
-		log.Println(record)
-		req := dingtalk.WorkrecordAddRequest{}
-		err = util.FormJson(record.Req, &req)
-		if err != nil {
-			logging.Error(fmt.Sprintf("%v formart request to json err:%v", record.ID, err))
-			continue
-		}
-		log.Println(req)
-		asyncsendResponse, err := dingtalk.YdksWorkrecordAdd(req)
+		asyncsendResponse, err := dingtalk.YdksWorkrecordAdd(record.Req)
 		if err != nil {
 			logging.Error(fmt.Sprintf("%v add Workrecord err:%v", record.ID, err))
 			continue
