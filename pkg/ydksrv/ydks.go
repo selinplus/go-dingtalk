@@ -26,7 +26,6 @@ func Ydksworkrecord() {
 		return
 	}
 	for _, record := range records {
-		log.Println(record.Req)
 		asyncsendResponse, err := dingtalk.YdksWorkrecordAdd(record.Req)
 		if err != nil {
 			logging.Error(fmt.Sprintf("%v add Workrecord err:%v", record.ID, err))

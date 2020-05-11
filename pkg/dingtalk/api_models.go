@@ -59,7 +59,7 @@ type WorkrecordAddRequest struct {
 	Url          string         `json:"url"`          //待办事项的跳转链接
 	PcUrl        string         `json:"pcUrl"`        //pc端跳转url,不传则使用url参数
 	FormItemList []FormItemList `json:"formItemList"` //待办事项表单
-	PcOpenType   int            `json:"pc_open_type"` //可选,待办的pc打开方式。2表示在pc端打开，4表示在浏览器打开
+	//PcOpenType   int            `json:"pc_open_type"` //可选,待办的pc打开方式。2表示在pc端打开，4表示在浏览器打开
 }
 type WorkrecordAddResponse struct {
 	OpenAPIResponse

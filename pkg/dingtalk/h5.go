@@ -590,7 +590,7 @@ func WorkrecordQuery(userid string, offset, limit, status int) (*WorkrecordQuery
 		Type("json").Send(reqJson).End()
 	//log.Printf("body is %s\n", body)
 	if len(errs) > 0 {
-		util.ShowError("workrecord getbyuserid err:", errs[0])
+		util.ShowError("Workrecord query  err:", errs[0])
 		return nil, errs[0]
 	} else {
 		resp := &WorkrecordQueryResponse{}

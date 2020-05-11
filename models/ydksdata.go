@@ -18,7 +18,7 @@ func AddYdksdata(data interface{}) error {
 
 func GetYdksdata(rq, lb string) ([]*Ydksdata, error) {
 	var list []*Ydksdata
-	err := db.Where("rq like ? and lb=?", rq, lb).Find(&list).Error
+	err := db.Table("ydksdata").Where("rq like ? and lb=?", rq+"%", lb).Find(&list).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

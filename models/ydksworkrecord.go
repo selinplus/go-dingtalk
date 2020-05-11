@@ -44,7 +44,7 @@ func UpdateWorkrecordFlag(id uint, upd map[string]interface{}) error {
 func GetYtstworkrecords(rq string, flag int) ([]*Ydksworkrecord, error) {
 	var records []*Ydksworkrecord
 	err := db.Table("ydksworkrecord").
-		Where("crrq like ? and flag_notice=?", rq, flag).
+		Where("crrq like ? and flag_notice=?", rq+"%", flag).
 		Order("tsrq desc").Find(&records).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err

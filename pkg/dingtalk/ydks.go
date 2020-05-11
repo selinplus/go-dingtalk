@@ -36,7 +36,6 @@ func YdksWorkrecordAdd(reqJson string) (*WorkrecordAddResponse, error) {
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/add?access_token=" + GetYdksAccessToken()).
 		Send(reqJson).End()
-	//log.Printf("body is %s\n", body)
 	if len(errs) > 0 {
 		util.ShowError("workrecord add err:", errs[0])
 		return nil, errs[0]
