@@ -8,6 +8,7 @@ import (
 	"github.com/selinplus/go-dingtalk/middleware/jwt"
 	"github.com/selinplus/go-dingtalk/middleware/ot"
 	"github.com/selinplus/go-dingtalk/middleware/sec"
+	"github.com/selinplus/go-dingtalk/middleware/ydksjwt"
 	"github.com/selinplus/go-dingtalk/pkg/export"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
@@ -361,7 +362,7 @@ func InitRouter() *gin.Engine {
 
 	//以地控税
 	apiydks := r.Group("/api/ydks")
-	//apiydks.Use(ydksjwt.Check())
+	apiydks.Use(ydksjwt.Check())
 	{
 		//内网数据文件下载路径
 		apiydks.StaticFS("/inner/file", http.Dir(ydksrv.GetYdksFullPath()))
