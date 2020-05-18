@@ -26,20 +26,41 @@ func Ydksworkrecord() {
 		return
 	}
 	for _, record := range records {
-		asyncsendResponse, err := dingtalk.YdksWorkrecordAdd(record.Req)
-		if err != nil {
-			logging.Error(fmt.Sprintf("%v add Workrecord err:%v", record.ID, err))
-			continue
-		}
-		log.Println(asyncsendResponse)
-		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
-			upd := map[string]interface{}{
-				"flag_notice": 2,
-				"tsrq":        time.Now().Format("2006-01-02 15:04:05"),
-			}
-			err := models.UpdateWorkrecordFlag(record.ID, upd)
+		if record.Lb == "updRecord" { //更新待办任务状态
+			asyncsendResponse, err := dingtalk.YdksWorkrecordUpdate(record.UserID, record.RecordID)
 			if err != nil {
-				logging.Error(fmt.Sprintf("%v update Workrecord Flag err:%v", record.ID, err))
+				log.Printf("%v update Workrecord err:%v", record.ID, err)
+				continue
+			}
+			log.Println(asyncsendResponse)
+			if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
+				upd := map[string]interface{}{
+					"flag_notice": "2",
+					"result":      asyncsendResponse.Result,
+					"tsrq":        time.Now().Format("2006-01-02 15:04:05"),
+				}
+				err := models.UpdateWorkrecordFlag(record.ID, upd)
+				if err != nil {
+					log.Printf("%v update Workrecord Flag err:%v", record.ID, err)
+				}
+			}
+		} else { //发起待办任务
+			asyncsendResponse, err := dingtalk.YdksWorkrecordAdd(record.Req)
+			if err != nil {
+				log.Printf("%v add Workrecord err:%v", record.ID, err)
+				continue
+			}
+			log.Println(asyncsendResponse)
+			if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
+				upd := map[string]interface{}{
+					"flag_notice": "2",
+					"record_id":   asyncsendResponse.RecordId,
+					"tsrq":        time.Now().Format("2006-01-02 15:04:05"),
+				}
+				err := models.UpdateWorkrecordFlag(record.ID, upd)
+				if err != nil {
+					log.Printf("%v update Workrecord Flag err:%v", record.ID, err)
+				}
 			}
 		}
 	}
@@ -50,8 +71,7 @@ type WriteData struct {
 	ErrMsg string   `json:"err_msg"`
 }
 
-func WriteIntoFile() {
-	date := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+func WriteIntoFile(date string) {
 	lbs := []string{"td", "cjfc", "czfc"}
 	for _, lb := range lbs {
 		fileName := GetYdksFullPath() + "ydks-" + lb + "data-" + date + ".json"

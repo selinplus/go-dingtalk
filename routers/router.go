@@ -370,13 +370,22 @@ func InitRouter() *gin.Engine {
 		apiydks.GET("/inner/datafile", ydks.GenDataFile)
 		//内网发送待办任务
 		apiydks.POST("/inner/workrecord", ydks.Workrecord)
-		//内网获取已推送待办任务
-		apiydks.GET("/inner/workrecords", ydks.GetWorkrecordSend)
+		//内网更新待办任务
+		apiydks.POST("/inner/updworkrecord", ydks.UpdWorkrecord)
+		//内网获取待办任务推送及更新情况
+		apiydks.GET("/inner/workrecords", ydks.GetWorkrecords)
+
+		//获取部门列表
+		apiydks.GET("/inner/depts", dingtalk.GetDepartmentByParentID)
+		//获取部门用户列表
+		apiydks.GET("/inner/users", dingtalk.GetUserByDepartmentID)
+		//模糊查询用户
+		apiydks.GET("/inner/user/mc", dingtalk.GetUserByMc)
 
 		//外网接收业务数据
 		apiydks.POST("/outer/recv", ydks.Recv)
 		//外网获取已推送待办任务
-		apiydks.GET("/outer/workrecords", ydks.GetWorkrecordSend)
+		//apiydks.GET("/outer/workrecords", ydks.GetWorkrecords)
 	}
 	return r
 }

@@ -2,6 +2,7 @@ package dingtalk
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/parnurzeal/gorequest"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
@@ -35,13 +36,38 @@ func GetYdksAccessToken() string {
 func YdksWorkrecordAdd(reqJson string) (*WorkrecordAddResponse, error) {
 	_, body, errs := gorequest.New().
 		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/add?access_token=" + GetYdksAccessToken()).
-		Send(reqJson).End()
+		Type(gorequest.TypeJSON).Send(reqJson).End()
 	if len(errs) > 0 {
 		util.ShowError("workrecord add err:", errs[0])
 		return nil, errs[0]
 	} else {
 		resp := &WorkrecordAddResponse{}
 		err := util.FormJson(body, resp)
+		return resp, err
+	}
+}
+
+// 更新任务状态
+func YdksWorkrecordUpdate(userid, record_id string) (*WorkrecordUpdateResponse, error) {
+	var req = WorkrecordUpdateRequest{
+		UserID:   userid,
+		RecordId: record_id,
+	}
+	reqJson, err := util.ToJson(req)
+	fmt.Println(reqJson)
+	if err != nil {
+		return nil, err
+	}
+	_, body, errs := gorequest.New().
+		Post(setting.DingtalkSetting.OapiHost + "/topapi/workrecord/update?access_token=" + GetYdksAccessToken()).
+		Type(gorequest.TypeJSON).Send(reqJson).End()
+	//log.Printf("body is %s\n", body)
+	if len(errs) > 0 {
+		util.ShowError("workrecord update err:", errs[0])
+		return nil, errs[0]
+	} else {
+		resp := &WorkrecordUpdateResponse{}
+		err = util.FormJson(body, resp)
 		return resp, err
 	}
 }

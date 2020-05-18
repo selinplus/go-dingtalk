@@ -7,13 +7,14 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/ydksrv"
 	"net/http"
-	"strconv"
 	"time"
 )
 
 type DataForm struct {
-	Lb   string `json:"lb"`
-	Data string `json:"data"`
+	Lb       string `json:"lb"`
+	Data     string `json:"data"`
+	Nsrsbh   string `json:"nsrsbh"`
+	RecordID string `json:"record_id"`
 }
 
 func Workrecord(c *gin.Context) {
@@ -27,9 +28,10 @@ func Workrecord(c *gin.Context) {
 		return
 	}
 	data := &models.Ydksworkrecord{
-		Lb:   form.Lb,
-		Req:  form.Data,
-		Crrq: time.Now().Format("2006-01-02 15:04:05"),
+		Lb:     form.Lb,
+		Req:    form.Data,
+		UserID: form.Nsrsbh,
+		Crrq:   time.Now().Format("2006-01-02 15:04:05"),
 	}
 	if err := models.AddWorkrecord(&data); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
@@ -37,16 +39,41 @@ func Workrecord(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
-
-func GetWorkrecordSend(c *gin.Context) {
-	appG := app.Gin{C: c}
-	rq := c.Query("rq")
-	flag, err := strconv.Atoi(c.Query("flag"))
-	if err != nil {
-		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
+func UpdWorkrecord(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form DataForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	records, err := models.GetYtstworkrecords(rq, flag)
+	data := &models.Ydksworkrecord{
+		Lb:       "updRecord",
+		UserID:   form.Nsrsbh,
+		RecordID: form.RecordID,
+		Crrq:     time.Now().Format("2006-01-02 15:04:05"),
+	}
+	if err := models.AddWorkrecord(&data); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+func GetWorkrecords(c *gin.Context) {
+	var (
+		appG   = app.Gin{C: c}
+		rq     = c.Query("rq")
+		flag   = c.Query("flag") //""全部,"1"未推送,"2"已推送
+		lbCond string            //发起待办||更新待办
+	)
+	if c.Query("lb") == "" {
+		lbCond = "lb!='updRecord'"
+	} else {
+		lbCond = "lb='updRecord'"
+	}
+	records, err := models.GetYtstworkrecords(rq, flag, lbCond)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
@@ -57,7 +84,6 @@ func GetWorkrecordSend(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
-
 func Recv(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
@@ -79,9 +105,8 @@ func Recv(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
-
 func GenDataFile(c *gin.Context) {
 	appG := app.Gin{C: c}
-	ydksrv.WriteIntoFile()
+	ydksrv.WriteIntoFile(c.Query("date"))
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }

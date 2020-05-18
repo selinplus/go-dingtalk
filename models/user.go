@@ -26,7 +26,8 @@ func UserSync(user interface{}) error {
 
 func CountUserSyncNum(t string) (int, error) {
 	var userNum int
-	if err := db.Table("user").Where("sync_time>=?", t).Count(&userNum).Error; err != nil {
+	if err := db.Table("user").
+		Where("sync_time>=?", t).Count(&userNum).Error; err != nil {
 		return 0, err
 	}
 	return userNum, nil
@@ -37,7 +38,8 @@ func GetUserByDepartmentID(deptId string) ([]*User, error) {
 		users    []*User
 		usersAll []*User
 	)
-	if err := db.Table("user").Where("deptId like ?", "%"+deptId+"%").Find(&usersAll).Error; err != nil {
+	if err := db.Table("user").
+		Where("deptId like ?", "%"+deptId+"%").Find(&usersAll).Error; err != nil {
 		return nil, err
 	}
 	for _, user := range usersAll {
@@ -52,7 +54,8 @@ func GetUserByDepartmentID(deptId string) ([]*User, error) {
 
 func GetUserByMobile(mobile string) (*User, error) {
 	var user User
-	if err := db.Table("user").Where("mobile=?", mobile).First(&user).Error; err != nil {
+	if err := db.Table("user").
+		Where("mobile=?", mobile).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -76,7 +79,8 @@ func DeleteUser(userid string) error {
 
 func GetUserByUserid(userid string) (*User, error) {
 	var user User
-	if err := db.Table("user").Where("userid=?", userid).First(&user).Error; err != nil {
+	if err := db.Table("user").
+		Where("userid=?", userid).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

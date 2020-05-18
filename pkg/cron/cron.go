@@ -70,7 +70,10 @@ func AppSetup() {
 		// 定义一个cron运行器
 		c := cron.New()
 		// 每天半夜将前一天 ydks 数据写入文件
-		if err := c.AddFunc("@midnight", ydksrv.WriteIntoFile); err != nil {
+		if err := c.AddFunc("@midnight", func() {
+			date := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+			ydksrv.WriteIntoFile(date)
+		}); err != nil {
 			log.Printf("WriteIntoFile crontab failed：%v", err)
 		}
 		// 开始
