@@ -742,7 +742,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 		squery += `and devinfo.zt = '` + con["state"] + `' `
 	}
 	if con["type"] != "" {
-		squery += `and devinfo.lx = '` + con["type"] + `' `
+		squery += `and devinfo.lx like '` + con["type"] + `%' `
 	}
 	if con["xlh"] != "" {
 		squery += `and devinfo.xlh = '` + con["xlh"] + `' `
