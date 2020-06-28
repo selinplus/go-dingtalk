@@ -2,7 +2,7 @@ package ydksjwt
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/selinplus/go-dingtalk/middleware/sec"
+	"github.com/selinplus/go-dingtalk/middleware/h5m"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var t = &sec.TokenVertify{}
+var t = &h5m.TokenVertify{}
 
 func Check() gin.HandlerFunc {
 	return func(c *gin.Context) {

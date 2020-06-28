@@ -182,6 +182,46 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Ydksdata{})
 	}
+	if !db.HasTable("study_group") {
+		db.CreateTable(StudyGroup{})
+	} else {
+		db.AutoMigrate(StudyGroup{})
+	}
+	if !db.HasTable("study_member") {
+		db.CreateTable(StudyMember{})
+	} else {
+		db.AutoMigrate(StudyMember{})
+	}
+	if !db.HasTable("study_act") {
+		db.CreateTable(StudyAct{})
+	} else {
+		db.AutoMigrate(StudyAct{})
+	}
+	if !db.HasTable("study_actdetail") {
+		db.CreateTable(StudyActdetail{})
+	} else {
+		db.AutoMigrate(StudyActdetail{})
+	}
+	if !db.HasTable("study_hlt") {
+		db.CreateTable(StudyHlt{})
+	} else {
+		db.AutoMigrate(StudyHlt{})
+	}
+	if !db.HasTable("study_hlt_star") {
+		db.CreateTable(StudyHltStar{})
+	} else {
+		db.AutoMigrate(StudyHltStar{})
+	}
+	if !db.HasTable("study_signin") {
+		db.CreateTable(StudySignin{})
+	} else {
+		db.AutoMigrate(StudySignin{})
+	}
+	if !db.HasTable("study_topic") {
+		db.CreateTable(StudyTopic{})
+	} else {
+		db.AutoMigrate(StudyTopic{})
+	}
 }
 
 func InitDb() {
@@ -234,6 +274,14 @@ func InitDb() {
 	}
 	if cnt == 0 {
 		AddProcType()
+	}
+	err = db.Select("id").Model(&StudyGroup{}).Count(&cnt).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init StudyGroup error: %v", err))
+		return
+	}
+	if cnt == 0 {
+		initGrouproot()
 	}
 }
 

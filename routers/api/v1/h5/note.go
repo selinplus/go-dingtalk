@@ -1,4 +1,4 @@
-package dingtalk
+package h5
 
 import (
 	"fmt"

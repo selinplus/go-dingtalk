@@ -76,3 +76,11 @@ func DeleteDepartment(deptId int) error {
 	}
 	return nil
 }
+
+func CleanUpDepartment() error {
+	err := db.Where("DATEDIFF(NOW(),sync_time)>7").Delete(Department{}).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	return nil
+}

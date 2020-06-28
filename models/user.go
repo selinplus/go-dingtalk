@@ -97,3 +97,11 @@ func GetUserByMc(mc string) ([]*User, error) {
 	}
 	return us, nil
 }
+
+func CleanUpUser() error {
+	err := db.Where("DATEDIFF(NOW(),sync_time)>7").Delete(User{}).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return err
+	}
+	return nil
+}

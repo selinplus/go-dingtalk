@@ -5,12 +5,15 @@ import (
 	"github.com/robfig/cron"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
+	"github.com/selinplus/go-dingtalk/pkg/export"
+	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"github.com/selinplus/go-dingtalk/pkg/ydksrv"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -76,9 +79,51 @@ func AppSetup() {
 		}); err != nil {
 			log.Printf("WriteIntoFile crontab failed：%v", err)
 		}
+		// 每天1点清理超过1天的导出记录
+		if err := c.AddFunc("0 0 1 * * *", CleanUpExportFiles); err != nil {
+			log.Printf("WriteIntoFile crontab failed：%v", err)
+		}
+		// 每天2点清理同步时间超过7天的部门用户记录
+		if err := c.AddFunc("0 0 2 * * *", CleanUpDepartmentUser); err != nil {
+			log.Printf("CleanUp Department&User crontab failed：%v", err)
+		}
+		// 每个月清理一遍超过30天的以地控税文件
+		if err := c.AddFunc("@monthly", ydksrv.CleanUpYdksFiles); err != nil {
+			log.Printf("CleanUp YdksFiles failed：%v", err)
+		}
 		// 开始
 		c.Run()
 	}()
+}
+
+//清理超过一天的导出文件
+func CleanUpExportFiles() {
+	dirpath := export.GetExcelFullPath()
+	files, err := file.FindFilesOlderThanDate(dirpath, 1)
+	errNotExist := "open : The system cannot find the file specified."
+	if err != nil && err.Error() != errNotExist {
+		log.Println("CleanUp ExportFiles err:", err)
+		return
+	}
+	for _, fileInfo := range files {
+		if strings.Contains(fileInfo.Name(), "device.xlsx") {
+			continue
+		}
+		err = os.Remove(dirpath + fileInfo.Name())
+		if err != nil {
+			log.Println("CleanUp ExportFiles err:", err)
+		}
+	}
+}
+
+//清理同步时间超过7天的部门用户记录
+func CleanUpDepartmentUser() {
+	if err := models.CleanUpDepartment(); err != nil {
+		logging.Error(fmt.Sprintf("CleanUp Department err:%v", err))
+	}
+	if err := models.CleanUpUser(); err != nil {
+		logging.Error(fmt.Sprintf("CleanUp User err:%v", err))
+	}
 }
 
 //清理网盘回收站30天以上文件

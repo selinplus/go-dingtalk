@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
+	"github.com/selinplus/go-dingtalk/pkg/file"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-gin-web/pkg/logging"
 	"log"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-// 每30秒遍历一遍 ydks 消息，通知钉钉发送待办任务
+// 遍历 ydks 消息，通知钉钉发送待办任务
 func Ydksworkrecord() {
 	if models.GetWorkrecordSendCnt() > setting.YdksAppSetting.FlowLimit {
 		logging.Info("****以地控税****待办任务推送已超过流量限制!!!")
@@ -51,11 +52,21 @@ func Ydksworkrecord() {
 				continue
 			}
 			log.Println(asyncsendResponse)
-			if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
-				upd := map[string]interface{}{
-					"flag_notice": "2",
-					"record_id":   asyncsendResponse.RecordId,
-					"tsrq":        time.Now().Format("2006-01-02 15:04:05"),
+			if asyncsendResponse != nil {
+				var upd = map[string]interface{}{}
+				if asyncsendResponse.ErrCode == 0 {
+					upd = map[string]interface{}{
+						"flag_notice": "2",
+						"record_id":   asyncsendResponse.RecordId,
+						"tsrq":        time.Now().Format("2006-01-02 15:04:05"),
+					}
+				}
+				if asyncsendResponse.ErrCode == 854001 { //重复任务
+					upd = map[string]interface{}{
+						"flag_notice": "2",
+						"record_id":   asyncsendResponse.ErrMsg,
+						"tsrq":        time.Now().Format("2006-01-02 15:04:05"),
+					}
 				}
 				err := models.UpdateWorkrecordFlag(record.ID, upd)
 				if err != nil {
@@ -71,6 +82,7 @@ type WriteData struct {
 	ErrMsg string   `json:"err_msg"`
 }
 
+// 将前一天 ydks 数据写入文件
 func WriteIntoFile(date string) {
 	lbs := []string{"td", "cjfc", "czfc"}
 	for _, lb := range lbs {
@@ -109,4 +121,21 @@ func WriteIntoFile(date string) {
 // GetYdksFullPath get full save path
 func GetYdksFullPath() string {
 	return setting.AppSetting.RuntimeRootPath + setting.YdksAppSetting.YdksSavePath
+}
+
+// 清理超过30天的以地控税文件
+func CleanUpYdksFiles() {
+	dirpath := GetYdksFullPath()
+	files, err := file.FindFilesOlderThanDate(dirpath, 30)
+	errNotExist := "open : The system cannot find the file specified."
+	if err != nil && err.Error() != errNotExist {
+		log.Println("CleanUp Ydks Files err:", err)
+		return
+	}
+	for _, fileInfo := range files {
+		err = os.Remove(dirpath + fileInfo.Name())
+		if err != nil {
+			log.Println("CleanUp Ydks Files err:", err)
+		}
+	}
 }

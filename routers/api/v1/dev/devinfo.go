@@ -1,4 +1,4 @@
-package dingtalk
+package dev
 
 import (
 	"github.com/gin-gonic/gin"
@@ -62,7 +62,7 @@ func AddDevinfo(c *gin.Context) {
 	}
 	czr, err := models.GetUserByMobile(form.Czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 		return
 	}
 	sbbh := models.GenerateSbbh(form.Lx, form.Xlh)
@@ -101,7 +101,7 @@ func AddDevinfo(c *gin.Context) {
 	dev.QrUrl = qrcode.GetQrCodeFullUrl(name)
 	err = models.AddDevinfo(dev)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -113,18 +113,18 @@ func ImpDevinfos(c *gin.Context) {
 	czr := c.Query("czr")
 	user, err := models.GetUserByMobile(czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 		return
 	}
 	file, _, err := c.Request.FormFile("file")
 	if err != nil {
 		logging.Warn(err)
-		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
 	errDev, success, failed, err := models.ImpDevinfos(file, user.UserID)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_DEV_FAIL, err)
 		return
 	}
 	if success == 0 && failed == 0 {
@@ -153,13 +153,13 @@ func UpdateDevinfo(c *gin.Context) {
 	}
 	czr, err := models.GetUserByMobile(form.Czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 		return
 	}
 	if form.Syr != "" {
 		suser, err := models.GetUserByMobile(form.Syr)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 			return
 		}
 		syr = suser.UserID
@@ -196,12 +196,12 @@ func UpdateDevinfo(c *gin.Context) {
 	info := form.ID + "$序列号[" + dev.Xlh + "]$生产商[" + dev.Scs + "]$设备型号[" + dev.Xh + "]$生产日期[" + dev.Scrq + "]$"
 	name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
 		return
 	}
 	dev.QrUrl = qrcode.GetQrCodeFullUrl(name)
 	if err = models.EditDevinfo(dev); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, "修改成功，请重新打印二维码！")
@@ -309,18 +309,18 @@ func GetDevinfosGly(c *gin.Context) {
 		if len(mobile) > 0 {
 			gly, err := models.GetUserByMobile(mobile)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err.Error())
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
 				return
 			}
 			depts, err = models.GetDevdeptsHasGlyByUserid(gly.UserID)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
 				return
 			}
 		} else {
 			depts, err = models.GetDevdeptsHasGly()
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
 				return
 			}
 		}
@@ -435,7 +435,7 @@ func GetDevinfosToBeStored(c *gin.Context) {
 		for _, dev := range devs {
 			ddept, err := models.GetDevdept(dev.Jgdm)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+				appG.Response(http.StatusInternalServerError, e.ERROR, err)
 				continue
 			}
 			if ddept.Gly == userid {
@@ -542,7 +542,7 @@ func DevIssued(c *gin.Context) {
 		return
 	}
 	if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr.UserID, "2"); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -589,12 +589,12 @@ func DevAllocate(c *gin.Context) {
 	}
 	if form.Czlx == "10" { //上交
 		if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr, form.Czlx); err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 			return
 		}
 	} else {
 		if err := models.DevAllocate(form.Ids, form.Dms, form.DstJgdm, syr, form.Cfwz, czr, form.Czlx, form.Lsh); err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 			return
 		}
 	}

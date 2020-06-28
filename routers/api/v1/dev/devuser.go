@@ -1,4 +1,4 @@
-package dingtalk
+package dev
 
 import (
 	"github.com/gin-gonic/gin"
@@ -41,7 +41,7 @@ func AddDevuser(c *gin.Context) {
 				Syr:  syr,
 			}
 			if err := models.AddDevuser(&devuser); err != nil {
-				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err.Error())
+				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
 				return
 			}
 		}
@@ -66,7 +66,7 @@ func UpdateDevuser(c *gin.Context) {
 		Syr:  form.Syr,
 	}
 	if err := models.UpdateDevuser(&devuser); err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -77,7 +77,7 @@ func GetDevuserList(c *gin.Context) {
 	appG := app.Gin{C: c}
 	dus, err := models.GetDevuser(c.Query("jgdm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err.Error())
+		appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err)
 		return
 	}
 	if len(dus) > 0 {
@@ -105,7 +105,7 @@ func DeleteDevuser(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
 	if models.IsUserDevExist(c.Query("id")) {
@@ -113,7 +113,7 @@ func DeleteDevuser(c *gin.Context) {
 		return
 	}
 	if err := models.DeleteDevuser(uint(id)); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USER_FAIL, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USER_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -147,7 +147,7 @@ func DevLoginInfo(c *gin.Context) {
 
 	sDepts, err := models.GetSyrDepts(userid)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusOK, e.ERROR, err)
 		return
 	}
 	if len(sDepts) > 0 {
@@ -162,7 +162,7 @@ func DevLoginInfo(c *gin.Context) {
 	}
 	gDepts, err := models.GetGlyDepts(userid)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusOK, e.ERROR, err)
 		return
 	}
 	if len(gDepts) > 0 {

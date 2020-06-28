@@ -37,7 +37,7 @@ func Workrecord(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	appG.Response(http.StatusOK, e.SUCCESS, data.ID)
 }
 func UpdWorkrecord(c *gin.Context) {
 	var (
@@ -59,21 +59,29 @@ func UpdWorkrecord(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
+	appG.Response(http.StatusOK, e.SUCCESS, data.ID)
 }
 func GetWorkrecords(c *gin.Context) {
 	var (
 		appG   = app.Gin{C: c}
 		rq     = c.Query("rq")
+		id     = c.Query("id")
 		flag   = c.Query("flag") //""全部,"1"未推送,"2"已推送
 		lbCond string            //发起待办||更新待办
+		Cond   string            //id||rq=
 	)
 	if c.Query("lb") == "" {
-		lbCond = "lb!='updRecord'"
-	} else {
 		lbCond = "lb='updRecord'"
+	} else {
+		lbCond = "lb!='updRecord'"
 	}
-	records, err := models.GetYtstworkrecords(rq, flag, lbCond)
+	if rq != "" {
+		Cond = "crrq like '" + rq + "%'"
+	}
+	if id != "" {
+		Cond = "id = " + id
+	}
+	records, err := models.GetYtstworkrecords(flag, Cond, lbCond)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return

@@ -18,10 +18,10 @@ func CleanUpFile(c *gin.Context) {
 		fNum int
 	)
 	dirpath := upload.GetImageFullPath()
-	files, err := file.FindFilesOlderThanDate(dirpath, int64(365))
+	files, err := file.FindFilesOlderThanDate(dirpath, 365)
 	errNotExist := "open : The system cannot find the file specified."
 	if err != nil && err.Error() != errNotExist {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusOK, e.ERROR, err)
 		return
 	}
 	for _, fileInfo := range files {

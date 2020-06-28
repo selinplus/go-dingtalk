@@ -1,4 +1,4 @@
-package dingtalk
+package dev
 
 import (
 	"github.com/gin-gonic/gin"
@@ -30,7 +30,7 @@ func GetDevtypeTree(c *gin.Context) {
 	sjdm := c.Query("dm")
 	parentDt, err := models.GetDevtypeByDm(sjdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR, err.Error())
+		appG.Response(http.StatusOK, e.ERROR, err)
 		return
 	}
 	var dts []interface{}
@@ -42,7 +42,7 @@ func GetDevtypeTree(c *gin.Context) {
 	}
 	devTypes, err := models.GetDevtypeBySjdm(sjdm)
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err.Error())
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
 	if len(devTypes) > 0 {

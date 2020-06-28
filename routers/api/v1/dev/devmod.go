@@ -1,4 +1,4 @@
-package dingtalk
+package dev
 
 import (
 	"github.com/gin-gonic/gin"

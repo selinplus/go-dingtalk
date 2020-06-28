@@ -34,7 +34,7 @@ func OnDuty(c *gin.Context) {
 		Tsrq:    time.Now().Format("2006-01-02 15:04:05"),
 	}
 	if err := models.AddOnduty(&d); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
