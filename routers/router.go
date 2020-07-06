@@ -212,6 +212,9 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/prop", dev.GetDevProp)
 
 		//======================== 福山品牌党建 ==========================//
+		//模糊查询福山区用户
+		apiv1.GET("/fsdj/user/mc", fsdj.GetFsdjUserByMc)
+
 		//增加学习小组
 		apiv1.POST("/fsdj/group/add", fsdj.AddGroup)
 		//修改学习小组
@@ -224,7 +227,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/fsdj/group/del", fsdj.DelGroup)
 
 		//设置学习小组管理员
-		apiv1.GET("/fsdj/gly/add", fsdj.UpdGroup)
+		apiv1.POST("/fsdj/gly/add", fsdj.UpdGroup)
 		//删除学习小组管理员
 		apiv1.GET("/fsdj/gly/del", fsdj.DelGroupGly)
 		//获取学习小组管理员信息

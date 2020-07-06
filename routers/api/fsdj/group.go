@@ -37,12 +37,16 @@ func AddGroup(c *gin.Context) {
 		return
 	}
 	if len(form.Mobile) > 0 {
-		user, err := models.GetUserByMobile(form.Mobile)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
-			return
+		if form.Mobile == "0000" {
+			userid = "fsdj_admin"
+		} else {
+			user, err := models.GetUserByMobile(form.Mobile)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+				return
+			}
+			userid = user.UserID
 		}
-		userid = user.UserID
 	} else {
 		token := c.GetHeader("Authorization")
 		auth := c.Query("token")
@@ -88,12 +92,16 @@ func UpdGroup(c *gin.Context) {
 		return
 	}
 	if len(form.Mobile) > 0 {
-		user, err := models.GetUserByMobile(form.Mobile)
-		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
-			return
+		if form.Mobile == "0000" {
+			userid = "fsdj_admin"
+		} else {
+			user, err := models.GetUserByMobile(form.Mobile)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+				return
+			}
+			userid = user.UserID
 		}
-		userid = user.UserID
 	} else {
 		token := c.GetHeader("Authorization")
 		auth := c.Query("token")
@@ -139,12 +147,20 @@ func GetGroup(c *gin.Context) {
 			d.Gly = u.Name
 		}
 		if d.Lrr != "" {
-			u, _ := models.GetUserByUserid(d.Lrr)
-			d.Lrr = u.Name
+			if d.Lrr == "fsdj_admin" {
+				d.Lrr = "超级管理员"
+			} else {
+				u, _ := models.GetUserByUserid(d.Lrr)
+				d.Lrr = u.Name
+			}
 		}
 		if d.Xgr != "" {
-			gly, _ := models.GetUserByUserid(d.Xgr)
-			d.Xgr = gly.Name
+			if d.Xgr == "fsdj_admin" {
+				d.Xgr = "超级管理员"
+			} else {
+				u, _ := models.GetUserByUserid(d.Xgr)
+				d.Xgr = u.Name
+			}
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, d)
 		return
@@ -224,27 +240,34 @@ func DelGroupGly(c *gin.Context) {
 //获取当前学习小组管理员信息
 func GetGroupGly(c *gin.Context) {
 	appG := app.Gin{C: c}
-	dm := c.Query("dm")
-	ddept, err := models.GetStudyGroup(dm)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
-		return
-	}
+	dms := c.Query("dm")
 	resps := make([]*GlyResp, 0)
-	if ddept.Gly == "" {
-		appG.Response(http.StatusOK, e.SUCCESS, resps)
-		return
+	for _, dm := range strings.Split(dms, ",") {
+		ddept, err := models.GetStudyGroup(dm)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			return
+		}
+		if ddept.Gly == "" {
+			resps = append(resps, &GlyResp{})
+		} else if ddept.Gly == "fsdj_admin" {
+			resps = append(resps, &GlyResp{
+				UserID: "fsdj_admin",
+				Name:   "超级管理员",
+				Mobile: "0000",
+			})
+		} else {
+			user, err := models.GetUserByUserid(ddept.Gly)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				return
+			}
+			resps = append(resps, &GlyResp{
+				UserID: user.UserID,
+				Name:   user.Name,
+				Mobile: user.Mobile,
+			})
+		}
 	}
-	user, err := models.GetUserByUserid(ddept.Gly)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
-		return
-	}
-	resp := &GlyResp{
-		UserID: user.UserID,
-		Name:   user.Name,
-		Mobile: user.Mobile,
-	}
-	resps = append(resps, resp)
 	appG.Response(http.StatusOK, e.SUCCESS, resps)
 }

@@ -47,7 +47,7 @@ func GetStudyTopic(id string) (*StudyTopic, error) {
 
 func GetStudyTopics(rflag, share, status string, pageNo, pageSize int) ([]*StudyTopic, error) {
 	var topics []*StudyTopic
-	err := db.
+	err := db.Table("study_topic").
 		Where("rflag like ? and share like ? and status like ?",
 			rflag+"%", share+"%", status+"%").
 		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&topics).Error
@@ -58,7 +58,7 @@ func GetStudyTopics(rflag, share, status string, pageNo, pageSize int) ([]*Study
 }
 
 func GetStudyTopicsCnt(rflag, share, status string) (cnt int) {
-	err := db.
+	err := db.Table("study_topic").
 		Where("rflag like ? and share like ? and status like ?",
 			rflag+"%", share+"%", status+"%").Count(&cnt).Error
 	if err != nil {

@@ -86,16 +86,24 @@ func GetGroupMembers(c *gin.Context) {
 	if len(members) > 0 {
 		resp := make([]*StudyMemberResp, 0)
 		for _, member := range members {
-			user, err := models.GetUserByUserid(member.UserID)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
-				return
+			if member.UserID == "fsdj_admin" {
+				resp = append(resp, &StudyMemberResp{
+					StudyMember: member,
+					Name:        "超级管理员",
+					Mobile:      "0000",
+				})
+			} else {
+				user, err := models.GetUserByUserid(member.UserID)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+					return
+				}
+				resp = append(resp, &StudyMemberResp{
+					StudyMember: member,
+					Name:        user.Name,
+					Mobile:      user.Mobile,
+				})
 			}
-			resp = append(resp, &StudyMemberResp{
-				StudyMember: member,
-				Name:        user.Name,
-				Mobile:      user.Mobile,
-			})
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, resp)
 		return
@@ -121,4 +129,83 @@ func DelGroupMember(c *gin.Context) {
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//模糊查询福山区用户(简单排除)
+func GetFsdjUserByMc(c *gin.Context) {
+	appG := app.Gin{C: c}
+	mc := c.Query("mc")
+	if len(mc) == 0 {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, "名称不能为空")
+		return
+	}
+	users, err := models.GetFsdjUserByMc(mc)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+		return
+	}
+	if len(users) == 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		return
+	}
+	var data []*models.User
+	for _, user := range users {
+		if strings.Contains(user.Name, "_") ||
+			strings.Contains(user.Name, "烟台") ||
+			strings.Contains(user.Name, "芝罘") ||
+			strings.Contains(user.Name, "莱山") ||
+			strings.Contains(user.Name, "福山") ||
+			strings.Contains(user.Name, "牟平") ||
+			strings.Contains(user.Name, "保税") ||
+			strings.Contains(user.Name, "开发区") ||
+			strings.Contains(user.Name, "海阳") ||
+			strings.Contains(user.Name, "栖霞") ||
+			strings.Contains(user.Name, "招远") ||
+			strings.Contains(user.Name, "莱阳") ||
+			strings.Contains(user.Name, "莱州") ||
+			strings.Contains(user.Name, "海阳") ||
+			strings.Contains(user.Name, "龙口") ||
+			strings.Contains(user.Name, "蓬莱") ||
+			strings.Contains(user.Name, "长岛") ||
+			strings.Contains(user.Name, "公司") ||
+			strings.Contains(user.Name, "财务") ||
+			strings.Contains(user.Name, "服务部") ||
+			strings.Contains(user.Name, "商店") ||
+			strings.Contains(user.Name, "超市") ||
+			strings.Contains(user.Name, "法人") {
+			continue
+		}
+		deptId, _ := strconv.Atoi(user.Department)
+		//if deptId == 29464267 {
+		//	data = append(data, user)
+		//	continue
+		//}
+		if deptId < 29464267 {
+			continue
+		}
+		dept, _ := models.GetDepartmentByID(deptId)
+		if dept.OuterDept {
+			continue
+		}
+		//if IsFsq(dept.Parentid) {
+		user.Department = dept.Name
+		data = append(data, user)
+		//}
+	}
+	if len(data) > 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+func IsFsq(deptId int) bool {
+	dept, _ := models.GetDepartmentByID(deptId)
+	if dept.ID == 29464267 {
+		return true
+	} else if dept.ID > 29464267 {
+		return IsFsq(dept.Parentid)
+	} else {
+		return false
+	}
 }
