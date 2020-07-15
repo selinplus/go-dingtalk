@@ -4,7 +4,7 @@ import "github.com/selinplus/go-dingtalk/pkg/setting"
 
 // GetFsdjImageFullUrl get the full access path
 func GetFsdjImageFullUrl(name string) string {
-	return setting.AppSetting.PrefixUrl + "/fsdj/dj_image/" + GetFsdjImagePath() + name
+	return setting.AppSetting.PrefixUrl + "/fsdj/" + GetFsdjImagePath() + name
 }
 
 // GetFsdjEappImageFullUrl get the full access path for internet eapp:without token

@@ -104,13 +104,18 @@ func UpdStudyAct(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
+type ActResp struct {
+	*models.StudyAct
+	StudyHlts []*HltResp
+}
+
 //获取活动详情
 func GetStudyAct(c *gin.Context) {
 	var (
-		appG = app.Gin{C: c}
-		id   = c.Param("id")
-		urls = make([]string, 0)
-		url  = c.Request.URL.Path
+		appG   = app.Gin{C: c}
+		id     = c.Param("id")
+		url    = c.Request.URL.Path
+		userid = ""
 	)
 	act, err := models.GetStudyAct(id)
 	if err != nil {
@@ -119,17 +124,102 @@ func GetStudyAct(c *gin.Context) {
 	}
 	if act.ID > 0 {
 		if strings.Contains(url, "v1") {
-			for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
-				urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+			urls := make([]string, 0)
+			if act.ImageUrl != "" {
+				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
+					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+				}
+				act.ImageUrls = urls
 			}
-			act.ImageUrls = urls
+			if strings.Contains(act.Content, "fsdj/dj_image") {
+				if strings.Contains(act.Content, "api/fsdj/dj_image") {
+					act.Content = strings.ReplaceAll(
+						act.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+				}
+			}
 		} else {
-			for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
-				urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+			urls := make([]string, 0)
+			if act.ImageUrl != "" {
+				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
+					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+				}
+				act.ImageUrls = urls
 			}
-			act.ImageUrls = urls
+			if strings.Contains(act.Content, "fsdj/dj_image") {
+				if !strings.Contains(act.Content, "api/fsdj/dj_image") {
+					act.Content = strings.ReplaceAll(
+						act.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+				}
+			}
+
+			token := c.GetHeader("Authorization")
+			auth := c.Query("token")
+			if len(auth) > 0 {
+				token = auth
+			}
+			ts := strings.Split(token, ".")
+			userid = ts[3]
 		}
-		appG.Response(http.StatusOK, e.SUCCESS, act)
+
+		act.JoinNum = len(act.StudyActdetails)
+		joined := false //参与标志
+		if len(userid) > 0 {
+			if models.IsJoinStrudyAct(act.ID, userid) == "Y" {
+				joined = true
+			}
+		}
+
+		act.Joined = joined
+		hltResps := make([]*HltResp, 0)
+		hlts := act.StudyHlts
+		if len(hlts) > 0 {
+			for _, hlt := range hlts {
+				if strings.Contains(url, "v1") {
+					urls := make([]string, 0)
+					if hlt.HltUrl != "" {
+						for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+							urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+						}
+						hlt.HltUrls = urls
+					}
+					if strings.Contains(hlt.Content, "fsdj/dj_image") {
+						if strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+							hlt.Content = strings.ReplaceAll(
+								hlt.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+						}
+					}
+				} else {
+					urls := make([]string, 0)
+					if hlt.HltUrl != "" {
+						for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+							urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+						}
+						hlt.HltUrls = urls
+					}
+					if strings.Contains(hlt.Content, "fsdj/dj_image") {
+						if !strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+							hlt.Content = strings.ReplaceAll(
+								hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+						}
+					}
+				}
+				hlt.StarNum = len(hlt.StudyHltStars)
+				user, err := models.GetUserByUserid(hlt.UserID)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+					return
+				}
+				hltResps = append(hltResps, &HltResp{
+					StudyHlt: &hlt,
+					Name:     user.Name,
+					Mobile:   user.Mobile,
+				})
+			}
+		}
+		appG.Response(http.StatusOK, e.SUCCESS, &ActResp{
+			StudyAct:  act,
+			StudyHlts: hltResps,
+		})
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
@@ -142,7 +232,6 @@ func GetStudyActs(c *gin.Context) {
 		share    = c.Query("share")
 		status   = c.Query("status")   //0:未审核 1:审核通过(发布) 2:撤销发布
 		dFlag    = c.Query("deadline") //Y:到期
-		urls     = make([]string, 0)
 		url      = c.Request.URL.Path
 		pageSize int
 		pageNo   int
@@ -171,24 +260,116 @@ func GetStudyActs(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
+	var (
+		data   []*ActResp
+		userid = ""
+	)
+	if !strings.Contains(url, "v1") {
+		token := c.GetHeader("Authorization")
+		auth := c.Query("token")
+		if len(auth) > 0 {
+			token = auth
+		}
+		ts := strings.Split(token, ".")
+		userid = ts[3]
+	}
+
 	if len(acts) > 0 {
 		for _, act := range acts {
 			if strings.Contains(url, "v1") {
-				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+				urls := make([]string, 0)
+				if act.ImageUrl != "" {
+					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+					}
+					act.ImageUrls = urls
 				}
-				act.ImageUrls = urls
+				if strings.Contains(act.Content, "fsdj/dj_image") {
+					if strings.Contains(act.Content, "api/fsdj/dj_image") {
+						act.Content = strings.ReplaceAll(
+							act.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+					}
+				}
 			} else {
-				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+				urls := make([]string, 0)
+				if act.ImageUrl != "" {
+					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+					}
+					act.ImageUrls = urls
 				}
-				act.ImageUrls = urls
+				if strings.Contains(act.Content, "fsdj/dj_image") {
+					if !strings.Contains(act.Content, "api/fsdj/dj_image") {
+						act.Content = strings.ReplaceAll(
+							act.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+					}
+				}
 			}
 			act.JoinNum = len(act.StudyActdetails)
+			joined := false //参与标志
+			if len(userid) > 0 {
+				if models.IsJoinStrudyAct(act.ID, userid) == "Y" {
+					joined = true
+				}
+			}
+			act.Joined = joined
+
+			hltResps := make([]*HltResp, 0)
+			hlts := act.StudyHlts
+			if len(hlts) > 0 {
+				for _, hlt := range hlts {
+					if strings.Contains(url, "v1") {
+						urls := make([]string, 0)
+						if hlt.HltUrl != "" {
+							for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+								urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+							}
+							hlt.HltUrls = urls
+						}
+						if strings.Contains(hlt.Content, "fsdj/dj_image") {
+							if strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+								hlt.Content = strings.ReplaceAll(
+									hlt.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+							}
+						}
+					} else {
+						urls := make([]string, 0)
+						if hlt.HltUrl != "" {
+							for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+								urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+							}
+							hlt.HltUrls = urls
+						}
+						if strings.Contains(hlt.Content, "fsdj/dj_image") {
+							if !strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+								hlt.Content = strings.ReplaceAll(
+									hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+							}
+						}
+					}
+
+					hlt.StarNum = len(hlt.StudyHltStars)
+					user, err := models.GetUserByUserid(hlt.UserID)
+					if err != nil {
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						return
+					}
+					hltResps = append(hltResps, &HltResp{
+						StudyHlt: &hlt,
+						Name:     user.Name,
+						Mobile:   user.Mobile,
+					})
+				}
+			}
+
+			data = append(data, &ActResp{
+				StudyAct:  act,
+				StudyHlts: hltResps,
+			})
 		}
 		appG.Response(http.StatusOK, e.SUCCESS,
 			map[string]interface{}{
-				"list": acts,
+				"list": data,
 				"cnt":  models.GetStudyActsCnt(share, status, deadline),
 			})
 		return
@@ -202,7 +383,6 @@ func GetStudyActsMine(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		joinFlag = c.Query("joins")    //Y&N
 		dFlag    = c.Query("deadline") //Y:到期
-		urls     = make([]string, 0)
 		url      = c.Request.URL.Path
 		userid   string
 	)
@@ -238,25 +418,95 @@ func GetStudyActsMine(c *gin.Context) {
 		return
 	}
 	if len(acts) > 0 {
-		data := make([]*models.StudyAct, 0)
+		data := make([]*ActResp, 0)
+		studyActs := make([]*models.StudyAct, 0)
 		for _, act := range acts {
 			if strings.Contains(url, "v1") {
-				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+				urls := make([]string, 0)
+				if act.ImageUrl != "" {
+					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+					}
+					act.ImageUrls = urls
 				}
-				act.ImageUrls = urls
+				if strings.Contains(act.Content, "fsdj/dj_image") {
+					if strings.Contains(act.Content, "api/fsdj/dj_image") {
+						act.Content = strings.ReplaceAll(
+							act.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+					}
+				}
 			} else {
-				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+				urls := make([]string, 0)
+				if act.ImageUrl != "" {
+					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+					}
+					act.ImageUrls = urls
 				}
-				act.ImageUrls = urls
+				if strings.Contains(act.Content, "fsdj/dj_image") {
+					if !strings.Contains(act.Content, "api/fsdj/dj_image") {
+						act.Content = strings.ReplaceAll(
+							act.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+					}
+				}
 			}
 			act.JoinNum = len(act.StudyActdetails)
 			if joinFlag == models.IsJoinStrudyAct(act.ID, userid) {
-				data = append(data, act)
+				studyActs = append(studyActs, act)
 			} else {
 				continue
 			}
+
+			hltResps := make([]*HltResp, 0)
+			hlts := act.StudyHlts
+			if len(hlts) > 0 {
+				for _, hlt := range hlts {
+					if strings.Contains(url, "v1") {
+						urls := make([]string, 0)
+						if hlt.HltUrl != "" {
+							for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+								urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+							}
+							hlt.HltUrls = urls
+						}
+						if strings.Contains(hlt.Content, "fsdj/dj_image") {
+							if strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+								hlt.Content = strings.ReplaceAll(
+									hlt.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+							}
+						}
+					} else {
+						urls := make([]string, 0)
+						if hlt.HltUrl != "" {
+							for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+								urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+							}
+							hlt.HltUrls = urls
+						}
+						if strings.Contains(hlt.Content, "fsdj/dj_image") {
+							if !strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+								hlt.Content = strings.ReplaceAll(
+									hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+							}
+						}
+					}
+					hlt.StarNum = len(hlt.StudyHltStars)
+					user, err := models.GetUserByUserid(hlt.UserID)
+					if err != nil {
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						return
+					}
+					hltResps = append(hltResps, &HltResp{
+						StudyHlt: &hlt,
+						Name:     user.Name,
+						Mobile:   user.Mobile,
+					})
+				}
+			}
+			data = append(data, &ActResp{
+				StudyAct:  act,
+				StudyHlts: hltResps,
+			})
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, data)
 		return

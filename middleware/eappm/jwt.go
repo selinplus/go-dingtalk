@@ -37,7 +37,7 @@ func JWT() gin.HandlerFunc {
 		if strings.Index(u, "login") != -1 ||
 			strings.Index(u, "js_api_config") != -1 ||
 			strings.Index(u, "upload/images") != -1 ||
-			strings.Index(u, "/dj_image") == -1 {
+			strings.Index(u, "dj_image") != -1 {
 			code = e.SUCCESS
 		} else {
 			if userID == "" || token == "" {

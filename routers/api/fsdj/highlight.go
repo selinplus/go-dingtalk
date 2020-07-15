@@ -1,6 +1,7 @@
 package fsdj
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -62,14 +63,14 @@ func PostStudyHlt(c *gin.Context) {
 		hltUrl = strings.TrimRight(hltUrl, ";")
 	}
 	topic := &models.StudyHlt{
-		ActID:   form.ActID,
-		UserID:  userid,
-		Title:   form.Title,
-		Content: form.Content,
-		HltUrl:  hltUrl,
-		Flag:    form.Flag,
-		Status:  "0",
-		Fbrq:    time.Now().Format("2006-01-02 15:04:05"),
+		StudyActID: form.ActID,
+		UserID:     userid,
+		Title:      form.Title,
+		Content:    form.Content,
+		HltUrl:     hltUrl,
+		Flag:       form.Flag,
+		Status:     "0",
+		Fbrq:       time.Now().Format("2006-01-02 15:04:05"),
 	}
 	if err := models.AddStudyHlt(topic); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
@@ -137,7 +138,6 @@ func GetStudyHlt(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
 		id   = c.Param("id")
-		urls = make([]string, 0)
 		url  = c.Request.URL.Path
 	)
 	hlt, err := models.GetStudyHlt(id)
@@ -147,15 +147,41 @@ func GetStudyHlt(c *gin.Context) {
 	}
 	if hlt.ID > 0 {
 		if strings.Contains(url, "v1") {
-			for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
-				urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+			urls := make([]string, 0)
+			if hlt.HltUrl != "" {
+				for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+				}
+				hlt.HltUrls = urls
 			}
-			hlt.HltUrls = urls
+			if strings.Contains(hlt.Content, "fsdj/dj_image") {
+				if strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+					hlt.Content = strings.ReplaceAll(
+						hlt.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+				}
+			}
 		} else {
-			for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
-				urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+			urls := make([]string, 0)
+			if hlt.HltUrl != "" {
+				for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+				}
+				hlt.HltUrls = urls
 			}
-			hlt.HltUrls = urls
+			if strings.Contains(hlt.Content, "fsdj/dj_image") {
+				if !strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+					hlt.Content = strings.ReplaceAll(
+						hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+				}
+			}
+
+			token := c.GetHeader("Authorization")
+			auth := c.Query("token")
+			if len(auth) > 0 {
+				token = auth
+			}
+			ts := strings.Split(token, ".")
+			hlt.Star = models.IsStudyHltStar(hlt.ID, ts[3])
 		}
 		hlt.StarNum = len(hlt.StudyHltStars)
 		stars := make([]*HltStarResp, 0)
@@ -197,7 +223,6 @@ func GetStudyHlts(c *gin.Context) {
 		actId    = c.Query("actId")
 		flag     = c.Query("flag")
 		status   = c.Query("status") //0:未审核 1:审核通过(发布) 2:审核驳回 3:撤销发布
-		urls     = make([]string, 0)
 		url      = c.Request.URL.Path
 		pageSize int
 		pageNo   int
@@ -212,7 +237,13 @@ func GetStudyHlts(c *gin.Context) {
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
-	hlts, err := models.GetStudyHlts(actId, status, flag, pageNo, pageSize)
+
+	cond := fmt.Sprintf(
+		"status like '%s' and flag like '%s'", status+"%", flag+"%")
+	if actId != "" {
+		cond += fmt.Sprintf(" and act_id='%s'", actId)
+	}
+	hlts, err := models.GetStudyHlts(cond, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
@@ -221,18 +252,42 @@ func GetStudyHlts(c *gin.Context) {
 	if len(hlts) > 0 {
 		for _, hlt := range hlts {
 			if strings.Contains(url, "v1") {
-				for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+				urls := make([]string, 0)
+				if hlt.HltUrl != "" {
+					for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+					}
+					hlt.HltUrls = urls
 				}
-				hlt.HltUrls = urls
+				if strings.Contains(hlt.Content, "fsdj/dj_image") {
+					if strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+						hlt.Content = strings.ReplaceAll(
+							hlt.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+					}
+				}
 			} else {
-				for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+				urls := make([]string, 0)
+				if hlt.HltUrl != "" {
+					for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+					}
+					hlt.HltUrls = urls
 				}
-				hlt.HltUrls = urls
+				if strings.Contains(hlt.Content, "fsdj/dj_image") {
+					if !strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+						hlt.Content = strings.ReplaceAll(
+							hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+					}
+				}
+				token := c.GetHeader("Authorization")
+				auth := c.Query("token")
+				if len(auth) > 0 {
+					token = auth
+				}
+				ts := strings.Split(token, ".")
+				hlt.Star = models.IsStudyHltStar(hlt.ID, ts[3])
 			}
 			hlt.StarNum = len(hlt.StudyHltStars)
-			hlt.Star = models.IsStudyHltStar(hlt.ID, hlt.UserID)
 			stars := make([]*HltStarResp, 0)
 			if len(hlt.StudyHltStars) > 0 {
 				for _, star := range hlt.StudyHltStars {
@@ -264,7 +319,7 @@ func GetStudyHlts(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS,
 			map[string]interface{}{
 				"list": data,
-				"cnt":  models.GetStudyHltsCnt(actId, status, flag),
+				"cnt":  models.GetStudyHltsCnt(cond),
 			})
 		return
 	}
@@ -277,7 +332,6 @@ func GetStudyHltsByUserid(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		status   = c.Query("status") //0:未审核 1:审核通过(发布) 2:撤销发布 3:审核驳回
 		flag     = c.Query("flag")   //0:图文 1:视频
-		urls     = make([]string, 0)
 		url      = c.Request.URL.Path
 		pageSize int
 		pageNo   int
@@ -320,18 +374,36 @@ func GetStudyHltsByUserid(c *gin.Context) {
 	if len(hlts) > 0 {
 		for _, hlt := range hlts {
 			if strings.Contains(url, "v1") {
-				for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+				urls := make([]string, 0)
+				if hlt.HltUrl != "" {
+					for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(hltUrl))
+					}
+					hlt.HltUrls = urls
 				}
-				hlt.HltUrls = urls
+				if strings.Contains(hlt.Content, "fsdj/dj_image") {
+					if strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+						hlt.Content = strings.ReplaceAll(
+							hlt.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+					}
+				}
 			} else {
-				for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+				urls := make([]string, 0)
+				if hlt.HltUrl != "" {
+					for _, hltUrl := range strings.Split(hlt.HltUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(hltUrl))
+					}
+					hlt.HltUrls = urls
 				}
-				hlt.HltUrls = urls
+				if strings.Contains(hlt.Content, "fsdj/dj_image") {
+					if !strings.Contains(hlt.Content, "api/fsdj/dj_image") {
+						hlt.Content = strings.ReplaceAll(
+							hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+					}
+				}
 			}
 			hlt.StarNum = len(hlt.StudyHltStars)
-			hlt.Star = models.IsStudyHltStar(hlt.ID, hlt.UserID)
+			hlt.Star = models.IsStudyHltStar(hlt.ID, userid)
 			stars := make([]*HltStarResp, 0)
 			if len(hlt.StudyHltStars) > 0 {
 				for _, star := range hlt.StudyHltStars {

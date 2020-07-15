@@ -52,7 +52,6 @@ func JsApiConfig(c *gin.Context) {
 	sign := dingtalk.GetJsApiConfig(url)
 	if sign != "" {
 		appG.Response(http.StatusOK, e.SUCCESS, sign)
-
 		return
 	}
 	log.Println("url is empty:in JsApiConfig")

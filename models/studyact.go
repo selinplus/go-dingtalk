@@ -17,7 +17,9 @@ type StudyAct struct {
 	Share           string   `json:"share" gorm:"COMMENT:'分享标志,0:否 1:分享';default:'0'"`
 	Status          string   `json:"status" gorm:"COMMENT:'状态,0:未审核 1:审核通过(发布) 2:撤销发布';default:'0'"`
 	JoinNum         int      `json:"join_num" gorm:"-"` //参加人数
+	Joined          bool     `json:"joined" gorm:"-"`   //参与标志
 	StudyActdetails []StudyActdetail
+	StudyHlts       []StudyHlt
 }
 
 func AddStudyAct(data interface{}) error {
@@ -49,6 +51,10 @@ func GetStudyAct(id string) (*StudyAct, error) {
 			return db.Where("study_actdetail.status='1'").
 				Order("study_actdetail.bmrq")
 		}).
+		Preload("StudyHlts", func(db *gorm.DB) *gorm.DB {
+			return db.Where("study_hlt.status='1'").
+				Order("study_hlt.fbrq")
+		}).
 		Where("id=?", id).First(&activity).Error; err != nil {
 		return nil, err
 	}
@@ -61,6 +67,10 @@ func GetStudyActs(share, status, deadline string, pageNo, pageSize int) ([]*Stud
 		Preload("StudyActdetails", func(db *gorm.DB) *gorm.DB {
 			return db.Where("study_actdetail.status='1'").
 				Order("study_actdetail.bmrq")
+		}).
+		Preload("StudyHlts", func(db *gorm.DB) *gorm.DB {
+			return db.Where("study_hlt.status='1'").
+				Order("study_hlt.fbrq")
 		}).
 		Where("share like ? and status like ?", share+"%", status+"%").Where(deadline).
 		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&acts).Error

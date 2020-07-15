@@ -5,7 +5,7 @@ import "github.com/jinzhu/gorm"
 //党员风采
 type StudyHlt struct {
 	ID            uint     `gorm:"primary_key;size:11;AUTO_INCREMENT"`
-	ActID         uint     `json:"act_id" gorm:"COMMENT:'活动id'"`
+	StudyActID    uint     `json:"act_id" gorm:"column:act_id;COMMENT:'活动id'"`
 	UserID        string   `json:"userid" gorm:"column:userid;COMMENT:'用户标识'"`
 	Title         string   `json:"title" gorm:"COMMENT:'风采主题'"`
 	Content       string   `json:"content" gorm:"COMMENT:'风采内容';size:65535"`
@@ -54,23 +54,21 @@ func GetStudyHlt(id string) (*StudyHlt, error) {
 	return &hlt, nil
 }
 
-func GetStudyHlts(actId, status, flag string, pageNo, pageSize int) ([]*StudyHlt, error) {
+func GetStudyHlts(cond string, pageNo, pageSize int) ([]*StudyHlt, error) {
 	var hlts []*StudyHlt
 	if err := db.
 		Preload("StudyHltStars", func(db *gorm.DB) *gorm.DB {
 			return db.Order("study_hlt_star.stime")
 		}).
-		Where("act_id=? and status like ? and flag like ?", actId, status+"%", flag+"%").
-		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&hlts).Error; err != nil {
+		Where(cond).Order("fbrq desc").Limit(pageSize).Offset(pageSize * (pageNo - 1)).
+		Find(&hlts).Error; err != nil {
 		return nil, err
 	}
 	return hlts, nil
 }
 
-func GetStudyHltsCnt(actId, status, flag string) (cnt int) {
-	err := db.Table("study_hlt").
-		Where("act_id=? and status like ? and flag like ?",
-			actId, status+"%", flag+"%").Count(&cnt).Error
+func GetStudyHltsCnt(cond string) (cnt int) {
+	err := db.Table("study_hlt").Where(cond).Count(&cnt).Error
 	if err != nil {
 		cnt = 0
 	}
@@ -84,7 +82,8 @@ func GetStudyHltsByUserid(userid, status, flag string, pageNo, pageSize int) ([]
 			return db.Order("study_hlt_star.stime")
 		}).
 		Where("userid=? and status like ? and flag like ?", userid, status+"%", flag+"%").
-		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&hlts).Error; err != nil {
+		Order("fbrq desc").Limit(pageSize).Offset(pageSize * (pageNo - 1)).
+		Find(&hlts).Error; err != nil {
 		return nil, err
 	}
 	return hlts, nil

@@ -43,6 +43,15 @@ func InitRouter() *gin.Engine {
 
 	//调用智税平台登陆
 	r.POST("/login", api.Login)
+	//代理转发智税平台登陆/获取路由表
+	r.POST("/r_login", api.Rlogin)
+	r.GET("/r_route", api.GetRoutes)
+	//福山品牌党建
+	r.GET("/fsdj", fsdj.Home)
+	r.Static("/css", "runtime/static/css")
+	r.Static("/js", "runtime/static/js")
+	r.Static("/img", "runtime/static/img")
+
 	//上传文件
 	r.POST("/file/upload", api.UploadFile)
 	//清理文件

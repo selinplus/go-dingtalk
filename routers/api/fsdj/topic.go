@@ -119,7 +119,6 @@ func UpdStudyTopic(c *gin.Context) {
 func GetStudyTopic(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		urls = make([]string, 0)
 		url  = c.Request.URL.Path
 		id   = c.Param("id")
 	)
@@ -131,17 +130,39 @@ func GetStudyTopic(c *gin.Context) {
 	}
 	if topic.ID > 0 {
 		if strings.Contains(url, "v1") {
-			topic.TopicImage = fsdjsrv.GetFsdjImageFullUrl(topic.TopicImage)
-			for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
-				urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+			if topic.TopicImage != "" {
+				topic.TopicImage = fsdjsrv.GetFsdjImageFullUrl(topic.TopicImage)
 			}
-			topic.ImageUrls = urls
+			urls := make([]string, 0)
+			if topic.ImageUrl != "" {
+				for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
+					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+				}
+				topic.ImageUrls = urls
+			}
+			if strings.Contains(topic.Content, "fsdj/dj_image") {
+				if strings.Contains(topic.Content, "api/fsdj/dj_image") {
+					topic.Content = strings.ReplaceAll(
+						topic.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+				}
+			}
 		} else {
-			topic.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(topic.TopicImage)
-			for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
-				urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+			if topic.TopicImage != "" {
+				topic.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(topic.TopicImage)
 			}
-			topic.ImageUrls = urls
+			urls := make([]string, 0)
+			if topic.ImageUrl != "" {
+				for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
+					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+				}
+				topic.ImageUrls = urls
+			}
+			if strings.Contains(topic.Content, "fsdj/dj_image") {
+				if !strings.Contains(topic.Content, "api/fsdj/dj_image") {
+					topic.Content = strings.ReplaceAll(
+						topic.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+				}
+			}
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, topic)
 		return
@@ -157,7 +178,6 @@ func GetStudyTopics(c *gin.Context) {
 		rflag    = c.Query("rflag")
 		share    = c.Query("share")
 		status   = c.Query("status") //0:未审核 1:审核通过(发布) 2:撤销发布
-		urls     = make([]string, 0)
 		url      = c.Request.URL.Path
 		pageSize int
 		pageNo   int
@@ -180,17 +200,39 @@ func GetStudyTopics(c *gin.Context) {
 	if len(topics) > 0 {
 		for _, topic := range topics {
 			if strings.Contains(url, "v1") {
-				topic.TopicImage = fsdjsrv.GetFsdjImageFullUrl(topic.TopicImage)
-				for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+				if topic.TopicImage != "" {
+					topic.TopicImage = fsdjsrv.GetFsdjImageFullUrl(topic.TopicImage)
 				}
-				topic.ImageUrls = urls
+				urls := make([]string, 0)
+				if topic.ImageUrl != "" {
+					for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjImageFullUrl(imageUrl))
+					}
+					topic.ImageUrls = urls
+				}
+				if strings.Contains(topic.Content, "fsdj/dj_image") {
+					if strings.Contains(topic.Content, "api/fsdj/dj_image") {
+						topic.Content = strings.ReplaceAll(
+							topic.Content, "api/fsdj/dj_image", "fsdj/dj_image")
+					}
+				}
 			} else {
-				topic.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(topic.TopicImage)
-				for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
-					urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+				if topic.TopicImage != "" {
+					topic.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(topic.TopicImage)
 				}
-				topic.ImageUrls = urls
+				urls := make([]string, 0)
+				if topic.ImageUrl != "" {
+					for _, imageUrl := range strings.Split(topic.ImageUrl, ";") {
+						urls = append(urls, fsdjsrv.GetFsdjEappImageFullUrl(imageUrl))
+					}
+					topic.ImageUrls = urls
+				}
+				if strings.Contains(topic.Content, "fsdj/dj_image") {
+					if !strings.Contains(topic.Content, "api/fsdj/dj_image") {
+						topic.Content = strings.ReplaceAll(
+							topic.Content, "fsdj/dj_image", "api/fsdj/dj_image")
+					}
+				}
 			}
 		}
 		appG.Response(http.StatusOK, e.SUCCESS,

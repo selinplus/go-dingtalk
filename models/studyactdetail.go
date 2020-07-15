@@ -60,7 +60,7 @@ func IsJoinStrudyAct(actId uint, userid string) string {
 type CountActResp struct {
 	ActID  uint   `json:"act_id"`
 	Title  string `json:"title"`
-	UserID string `json:"userid"`
+	Userid string `json:"userid"`
 	Name   string `json:"name"`
 	Mobile string `json:"mobile"`
 	Dm     string `json:"dm"`
@@ -70,7 +70,7 @@ type CountActResp struct {
 func CountStudyAct(actId, dm string) ([]*CountActResp, error) {
 	var car []*CountActResp
 	sql := fmt.Sprintf(`
-select study_act.id, study_act.title, study_actdetail.userid, user.name,user.mobile, study_member.dm, study_group.mc
+select study_act.id act_id, study_act.title, user.userid, user.name,user.mobile, study_member.dm, study_group.mc
 from study_act, study_actdetail
          left join study_member on study_member.userid = study_actdetail.userid
          left join study_group on study_group.dm = study_member.dm
