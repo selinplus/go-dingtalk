@@ -4,7 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
+	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,6 +22,56 @@ type StudyMemberResp struct {
 	*models.StudyMember
 	Name   string `json:"name"`
 	Mobile string `json:"mobile"`
+}
+
+type LoginForm struct {
+	AuthCode string `json:"auth_code"`
+}
+
+type UserInfoResp struct {
+	*dingtalk.UserInfo
+	GroupDm   string `json:"group_dm"`
+	GroupName string `json:"group_name"`
+}
+
+func Login(c *gin.Context) {
+	appG := app.Gin{C: c}
+	var form LoginForm
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	if form.AuthCode == "" {
+		log.Println("no auth code")
+		appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
+		return
+	}
+	id := dingtalk.GetUserId(form.AuthCode)
+	if id != "" {
+		user, err := models.GetStudyMember(id)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
+			return
+		}
+		if user != nil {
+			group, err := models.GetStudyGroup(user.Dm)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR, err)
+				return
+			}
+			appG.Response(http.StatusOK, e.SUCCESS, UserInfoResp{
+				UserInfo:  dingtalk.GetUserInfo(id),
+				GroupDm:   group.Dm,
+				GroupName: group.Mc,
+			})
+			return
+		}
+		appG.Response(http.StatusOK, e.ERROR, "用户不在党小组中，请联系管理员添加")
+		return
+	}
+	log.Println("userid is empty:in Login")
+	appG.Response(http.StatusBadRequest, e.SUCCESS, nil)
 }
 
 //增加学习小组成员

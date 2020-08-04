@@ -51,6 +51,8 @@ func InitRouter() *gin.Engine {
 	r.Static("/css", "runtime/static/css")
 	r.Static("/js", "runtime/static/js")
 	r.Static("/img", "runtime/static/img")
+	r.Static("/logo.png", "runtime/static/logo.png")
+	r.Static("/favicon.ico", "runtime/static/favicon.ico")
 
 	//上传文件
 	r.POST("/file/upload", api.UploadFile)
@@ -486,9 +488,7 @@ func InitRouter() *gin.Engine {
 		apifsdj.StaticFS("/dj_image", http.Dir(fsdjsrv.GetFsdjEappImageFullPath()))
 
 		//免登
-		apifsdj.POST("/login", dingtalk.Login)
-		//鉴权
-		apifsdj.GET("/js_api_config", dingtalk.JsApiConfig)
+		apifsdj.POST("/login", fsdj.Login)
 
 		//获取学习小组列表(树结构)
 		apifsdj.GET("/group/tree", fsdj.GetGroupTree)
@@ -505,7 +505,7 @@ func InitRouter() *gin.Engine {
 		//获取党建活动列表
 		apifsdj.GET("/acts/list", fsdj.GetStudyActs)
 		//参与党建活动
-		apifsdj.POST("/act/join", fsdj.JoinStudyAct)
+		apifsdj.GET("/act/join/:id", fsdj.JoinStudyAct)
 		//获取我的党建活动列表
 		apifsdj.GET("/acts/mylist", fsdj.GetStudyActsMine)
 

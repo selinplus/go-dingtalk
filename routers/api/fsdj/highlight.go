@@ -90,7 +90,7 @@ func UpdStudyHlt(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	topic := &models.StudyHlt{
+	hlt := &models.StudyHlt{
 		ID:   form.ID,
 		Xgrq: time.Now().Format("2006-01-02 15:04:05"),
 	}
@@ -103,17 +103,18 @@ func UpdStudyHlt(c *gin.Context) {
 			}
 			hltUrl = strings.TrimRight(hltUrl, ";")
 		}
-		topic.Title = form.Title
-		topic.Content = form.Content
-		topic.HltUrl = hltUrl
+		hlt.Title = form.Title
+		hlt.Content = form.Content
+		hlt.HltUrl = hltUrl
+		hlt.Status = "0"
 	}
 	if strings.Contains(url, "approve") { //审核发布&驳回
-		topic.Status = form.Status // 1:通过(发布)  3:驳回
+		hlt.Status = form.Status // 1:通过(发布)  3:驳回
 	}
 	if strings.Contains(url, "cancel") { //撤销
-		topic.Status = "2"
+		hlt.Status = "2"
 	}
-	if err := models.UpdStudyHlt(topic); err != nil {
+	if err := models.UpdStudyHlt(hlt); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
@@ -242,6 +243,8 @@ func GetStudyHlts(c *gin.Context) {
 		"status like '%s' and flag like '%s'", status+"%", flag+"%")
 	if actId != "" {
 		cond += fmt.Sprintf(" and act_id='%s'", actId)
+	} else {
+		cond += " and act_id != '0'"
 	}
 	hlts, err := models.GetStudyHlts(cond, pageNo, pageSize)
 	if err != nil {

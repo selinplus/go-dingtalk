@@ -14,26 +14,32 @@ import (
 )
 
 type StudyActForm struct {
-	ID        uint     `json:"id"`
-	Title     string   `json:"title"`
-	Content   string   `json:"content"`
-	ImageUrls []string `json:"image_urls"`
-	Share     string   `json:"share"`
-	Status    string   `json:"status"`
-	Deadline  string   `json:"deadline"`
+	ID         uint     `json:"id"`
+	TopicImage string   `json:"topic_image"`
+	Title      string   `json:"title"`
+	Content    string   `json:"content"`
+	ImageUrls  []string `json:"image_urls"`
+	Share      string   `json:"share"`
+	Status     string   `json:"status"`
+	Deadline   string   `json:"deadline"`
 }
 
 //党建活动发布
 func PostStudyAct(c *gin.Context) {
 	var (
-		appG     = app.Gin{C: c}
-		form     StudyActForm
-		imageUrl string
+		appG       = app.Gin{C: c}
+		form       StudyActForm
+		topicImage string
+		imageUrl   string
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
+	}
+	if len(form.TopicImage) > 0 {
+		i := strings.LastIndex(form.TopicImage, "/")
+		topicImage = form.TopicImage[i+1:]
 	}
 	if len(form.ImageUrls) > 0 {
 		for _, url := range form.ImageUrls {
@@ -43,13 +49,14 @@ func PostStudyAct(c *gin.Context) {
 		imageUrl = strings.TrimRight(imageUrl, ";")
 	}
 	act := &models.StudyAct{
-		Title:    form.Title,
-		Content:  form.Content,
-		ImageUrl: imageUrl,
-		Share:    form.Share,
-		Status:   "0",
-		Fbrq:     time.Now().Format("2006-01-02 15:04:05"),
-		Deadline: form.Deadline,
+		TopicImage: topicImage,
+		Title:      form.Title,
+		Content:    form.Content,
+		ImageUrl:   imageUrl,
+		Share:      form.Share,
+		Status:     "0",
+		Fbrq:       time.Now().Format("2006-01-02 15:04:05"),
+		Deadline:   form.Deadline,
 	}
 	if err := models.AddStudyAct(act); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
@@ -60,9 +67,10 @@ func PostStudyAct(c *gin.Context) {
 
 func UpdStudyAct(c *gin.Context) {
 	var (
-		appG     = app.Gin{C: c}
-		form     StudyActForm
-		imageUrl string
+		appG       = app.Gin{C: c}
+		form       StudyActForm
+		topicImage string
+		imageUrl   string
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
@@ -75,6 +83,10 @@ func UpdStudyAct(c *gin.Context) {
 	}
 	url := c.Request.URL.Path
 	if strings.Contains(url, "edit") { //编辑
+		if len(form.TopicImage) > 0 {
+			i := strings.LastIndex(form.TopicImage, "/")
+			topicImage = form.TopicImage[i+1:]
+		}
 		if len(form.ImageUrls) > 0 {
 			for _, url := range form.ImageUrls {
 				j := strings.LastIndex(url, "/")
@@ -82,6 +94,7 @@ func UpdStudyAct(c *gin.Context) {
 			}
 			imageUrl = strings.TrimRight(imageUrl, ";")
 		}
+		act.TopicImage = topicImage
 		act.Title = form.Title
 		act.Content = form.Content
 		act.ImageUrl = imageUrl
@@ -124,6 +137,9 @@ func GetStudyAct(c *gin.Context) {
 	}
 	if act.ID > 0 {
 		if strings.Contains(url, "v1") {
+			if act.TopicImage != "" {
+				act.TopicImage = fsdjsrv.GetFsdjImageFullUrl(act.TopicImage)
+			}
 			urls := make([]string, 0)
 			if act.ImageUrl != "" {
 				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
@@ -138,6 +154,9 @@ func GetStudyAct(c *gin.Context) {
 				}
 			}
 		} else {
+			if act.TopicImage != "" {
+				act.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(act.TopicImage)
+			}
 			urls := make([]string, 0)
 			if act.ImageUrl != "" {
 				for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
@@ -173,7 +192,8 @@ func GetStudyAct(c *gin.Context) {
 		hltResps := make([]*HltResp, 0)
 		hlts := act.StudyHlts
 		if len(hlts) > 0 {
-			for _, hlt := range hlts {
+			for _, hltp := range hlts {
+				hlt := hltp
 				if strings.Contains(url, "v1") {
 					urls := make([]string, 0)
 					if hlt.HltUrl != "" {
@@ -277,6 +297,9 @@ func GetStudyActs(c *gin.Context) {
 	if len(acts) > 0 {
 		for _, act := range acts {
 			if strings.Contains(url, "v1") {
+				if act.TopicImage != "" {
+					act.TopicImage = fsdjsrv.GetFsdjImageFullUrl(act.TopicImage)
+				}
 				urls := make([]string, 0)
 				if act.ImageUrl != "" {
 					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
@@ -291,6 +314,9 @@ func GetStudyActs(c *gin.Context) {
 					}
 				}
 			} else {
+				if act.TopicImage != "" {
+					act.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(act.TopicImage)
+				}
 				urls := make([]string, 0)
 				if act.ImageUrl != "" {
 					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
@@ -317,7 +343,8 @@ func GetStudyActs(c *gin.Context) {
 			hltResps := make([]*HltResp, 0)
 			hlts := act.StudyHlts
 			if len(hlts) > 0 {
-				for _, hlt := range hlts {
+				for _, hltp := range hlts {
+					hlt := hltp
 					if strings.Contains(url, "v1") {
 						urls := make([]string, 0)
 						if hlt.HltUrl != "" {
@@ -422,6 +449,9 @@ func GetStudyActsMine(c *gin.Context) {
 		studyActs := make([]*models.StudyAct, 0)
 		for _, act := range acts {
 			if strings.Contains(url, "v1") {
+				if act.TopicImage != "" {
+					act.TopicImage = fsdjsrv.GetFsdjImageFullUrl(act.TopicImage)
+				}
 				urls := make([]string, 0)
 				if act.ImageUrl != "" {
 					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
@@ -436,6 +466,9 @@ func GetStudyActsMine(c *gin.Context) {
 					}
 				}
 			} else {
+				if act.TopicImage != "" {
+					act.TopicImage = fsdjsrv.GetFsdjEappImageFullUrl(act.TopicImage)
+				}
 				urls := make([]string, 0)
 				if act.ImageUrl != "" {
 					for _, imageUrl := range strings.Split(act.ImageUrl, ";") {
@@ -460,7 +493,8 @@ func GetStudyActsMine(c *gin.Context) {
 			hltResps := make([]*HltResp, 0)
 			hlts := act.StudyHlts
 			if len(hlts) > 0 {
-				for _, hlt := range hlts {
+				for _, hltp := range hlts {
+					hlt := hltp
 					if strings.Contains(url, "v1") {
 						urls := make([]string, 0)
 						if hlt.HltUrl != "" {
@@ -540,14 +574,11 @@ type ActdetailForm struct {
 func JoinStudyAct(c *gin.Context) {
 	var (
 		appG   = app.Gin{C: c}
-		form   ActdetailForm
+		id     = c.Param("id")
+		status = "0"
 		userid string
+		sprq   string
 	)
-	httpCode, errCode := app.BindAndValid(c, &form)
-	if errCode != e.SUCCESS {
-		appG.Response(httpCode, errCode, nil)
-		return
-	}
 	if len(c.Query("mobile")) > 0 {
 		user, err := models.GetUserByMobile(c.Query("mobile"))
 		if err != nil {
@@ -564,12 +595,18 @@ func JoinStudyAct(c *gin.Context) {
 		ts := strings.Split(token, ".")
 		userid = ts[3]
 	}
-
+	actId, _ := strconv.Atoi(id)
+	t := time.Now().Format("2006-01-02 15:04:05")
+	if c.Query("status") != "" {
+		status = c.Query("status")
+		sprq = t
+	}
 	actdetail := &models.StudyActdetail{
-		StudyActID: form.ActID,
+		StudyActID: uint(actId),
 		UserID:     userid,
-		Status:     "0",
-		Bmrq:       time.Now().Format("2006-01-02 15:04:05"),
+		Status:     status,
+		Bmrq:       t,
+		Sprq:       sprq,
 	}
 	if err := models.AddStudyActdetail(actdetail); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)

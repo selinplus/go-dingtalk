@@ -27,9 +27,9 @@ func AddStudyHlt(data interface{}) error {
 	return nil
 }
 
-func UpdStudyHlt(activity *StudyHlt) error {
+func UpdStudyHlt(hlt *StudyHlt) error {
 	if err := db.Table("study_hlt").
-		Where("id=?", activity.ID).Updates(activity).Error; err != nil {
+		Where("id=?", hlt.ID).Updates(hlt).Error; err != nil {
 		return err
 	}
 	return nil

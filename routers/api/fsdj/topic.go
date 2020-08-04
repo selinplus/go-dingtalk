@@ -80,19 +80,19 @@ func UpdStudyTopic(c *gin.Context) {
 		ID:   form.ID,
 		Xgrq: time.Now().Format("2006-01-02 15:04:05"),
 	}
-	if len(form.TopicImage) > 0 {
-		i := strings.LastIndex(form.TopicImage, "/")
-		topicImage = form.TopicImage[i+1:]
-	}
-	if len(form.ImageUrls) > 0 {
-		for _, url := range form.ImageUrls {
-			j := strings.LastIndex(url, "/")
-			imageUrl += url[j+1:] + ";"
-		}
-		imageUrl = strings.TrimRight(imageUrl, ";")
-	}
 	url := c.Request.URL.Path
 	if strings.Contains(url, "edit") { //编辑
+		if len(form.TopicImage) > 0 {
+			i := strings.LastIndex(form.TopicImage, "/")
+			topicImage = form.TopicImage[i+1:]
+		}
+		if len(form.ImageUrls) > 0 {
+			for _, url := range form.ImageUrls {
+				j := strings.LastIndex(url, "/")
+				imageUrl += url[j+1:] + ";"
+			}
+			imageUrl = strings.TrimRight(imageUrl, ";")
+		}
 		topic.TopicImage = topicImage
 		topic.Title = form.Title
 		topic.Content = form.Content

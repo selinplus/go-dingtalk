@@ -7,6 +7,7 @@ import (
 //党建活动
 type StudyAct struct {
 	ID              uint     `gorm:"primary_key;size:11;AUTO_INCREMENT"`
+	TopicImage      string   `json:"topic_image" gorm:"COMMENT:'主题图片'"`
 	Title           string   `json:"title" gorm:"COMMENT:'活动主题'"`
 	Content         string   `json:"content" gorm:"COMMENT:'活动内容';size:65535"`
 	ImageUrl        string   `json:"image_url" gorm:"COMMENT:'活动图片真实路径';size:65535"`

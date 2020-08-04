@@ -1,5 +1,7 @@
 package models
 
+import "github.com/jinzhu/gorm"
+
 type StudyMember struct {
 	ID     uint   `gorm:"primary_key;size:11;AUTO_INCREMENT"`
 	Dm     string `json:"dm" gorm:"COMMENT:'学习小组代码'"`
@@ -30,10 +32,26 @@ func UpdStudyMember(u *StudyMember) error {
 	return nil
 }
 
+func GetStudyMember(userid string) (*StudyMember, error) {
+	var member StudyMember
+	err := db.Where("userid=?", userid).First(&member).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return &member, nil
+}
+
 func GetStudyMembers(dm string) ([]*StudyMember, error) {
 	var dus []*StudyMember
-	if err := db.Where("dm=?", dm).Find(&dus).Error; err != nil {
+	err := db.Where("dm=?", dm).Find(&dus).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
 	}
 	return dus, nil
 }
