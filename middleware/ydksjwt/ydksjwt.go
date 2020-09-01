@@ -25,7 +25,7 @@ func Check() gin.HandlerFunc {
 		ts := strings.Split(token, ".")
 
 		u := c.Request.URL.Path
-		if strings.Index(u, "inner/") != -1 { //skip inner url
+		if strings.Index(u, "inner/") != -1 || strings.Index(u, "/file") != -1 { //skip inner url
 			code = e.SUCCESS
 		} else {
 			if token == "" {

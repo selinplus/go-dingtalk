@@ -532,7 +532,7 @@ func InitRouter() *gin.Engine {
 		apifsdj.GET("/signins", fsdj.GetSigninsByUserid)
 	}
 
-	//======================== 外网H5——烟台税图_以地控税 ==========================//
+	//======================== 外网H5——烟台税图_以地控税&&风险直推 ==========================//
 	apiydks := r.Group("/api/ydks")
 	apiydks.Use(ydksjwt.Check())
 	{
@@ -546,6 +546,10 @@ func InitRouter() *gin.Engine {
 		apiydks.POST("/inner/updworkrecord", ydks.UpdWorkrecord)
 		//内网获取待办任务推送及更新情况
 		apiydks.GET("/inner/workrecords", ydks.GetWorkrecords)
+		//内网上传文件
+		apiydks.POST("/inner/upload", ydks.YdksUploadFile)
+		//内网获取外网业务数据
+		apiydks.GET("/inner/outer_data", ydks.GetOuterData)
 
 		//获取部门列表
 		apiydks.GET("/inner/depts", dingtalk.GetDepartmentByParentID)
@@ -554,10 +558,12 @@ func InitRouter() *gin.Engine {
 		//模糊查询用户
 		apiydks.GET("/inner/user/mc", dingtalk.GetUserByMc)
 
+		//外网文件下载路径
+		apiydks.StaticFS("/outer/file", http.Dir(ydksrv.GetYdksFullPath()))
 		//外网接收业务数据
 		apiydks.POST("/outer/recv", ydks.Recv)
 		//外网获取已推送待办任务
-		//apiydks.GET("/outer/workrecords", ydks.GetWorkrecords)
+		apiydks.GET("/outer/workrecords", ydks.GetWorkrecords)
 	}
 	return r
 }

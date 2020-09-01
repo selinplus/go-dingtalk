@@ -22,13 +22,15 @@ func AddWorkrecord(data interface{}) error {
 }
 func GetWorkrecordFlag() ([]*Ydksworkrecord, error) {
 	var ods []*Ydksworkrecord
-	if err := db.Table("ydksworkrecord").Where("flag_notice=1").Find(&ods).Error; err != nil {
+	if err := db.Table("ydksworkrecord").
+		Where("flag_notice=1").Find(&ods).Error; err != nil {
 		return nil, err
 	}
 	return ods, nil
 }
 func GetWorkrecordSendCnt() (cnt int) {
-	if err := db.Table("ydksworkrecord").Where("flag_notice=2").Count(&cnt).Error; err != nil {
+	if err := db.Table("ydksworkrecord").
+		Where("flag_notice=2 and lb!='fxzt'").Count(&cnt).Error; err != nil {
 		return 0
 	}
 	return cnt
@@ -43,8 +45,7 @@ func UpdateWorkrecordFlag(id uint, upd map[string]interface{}) error {
 func GetYtstworkrecords(flag, Cond, lbCond string) ([]*Ydksworkrecord, error) {
 	var records []*Ydksworkrecord
 	err := db.Table("ydksworkrecord").
-		Where("flag_notice like ?", flag+"%").
-		Where(Cond).Where(lbCond).
+		Where("flag_notice like ?", flag+"%").Where(Cond).Where(lbCond).
 		Order("tsrq desc").Find(&records).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err

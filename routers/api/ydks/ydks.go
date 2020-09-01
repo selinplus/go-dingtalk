@@ -5,6 +5,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/upload"
 	"github.com/selinplus/go-dingtalk/pkg/ydksrv"
 	"net/http"
 	"time"
@@ -92,6 +93,19 @@ func GetWorkrecords(c *gin.Context) {
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
+func GetOuterData(c *gin.Context) {
+	appG := app.Gin{C: c}
+	records, err := models.GetYdksdata(c.Query("rq"), c.Query("lb"))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	if len(records) > 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, records)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
 func Recv(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
@@ -117,4 +131,39 @@ func GenDataFile(c *gin.Context) {
 	appG := app.Gin{C: c}
 	ydksrv.WriteIntoFile(c.Query("date"))
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+func YdksUploadFile(c *gin.Context) {
+	appG := app.Gin{C: c}
+	file, image, err := c.Request.FormFile("file")
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	if image == nil {
+		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
+		return
+	}
+
+	imageName := upload.GetImageName(image.Filename)
+	fullPath := ydksrv.GetYdksFullPath()
+	src := fullPath + imageName
+
+	if !upload.CheckImageExt(imageName) || !upload.CheckImageSize(file) {
+		appG.Response(http.StatusBadRequest, e.ERROR_UPLOAD_CHECK_FILE_FORMAT, nil)
+		return
+	}
+
+	err = upload.CheckImage(fullPath)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_CHECK_FILE_FAIL, nil)
+		return
+	}
+
+	if err := c.SaveUploadedFile(image, src); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPLOAD_SAVE_FILE_FAIL, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, image.Filename)
 }

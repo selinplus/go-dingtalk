@@ -10,6 +10,7 @@ import (
 	"github.com/selinplus/go-gin-web/pkg/logging"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -133,6 +134,9 @@ func CleanUpYdksFiles() {
 		return
 	}
 	for _, fileInfo := range files {
+		if !strings.Contains(fileInfo.Name(), "ydks") {
+			continue
+		}
 		err = os.Remove(dirpath + fileInfo.Name())
 		if err != nil {
 			log.Println("CleanUp Ydks Files err:", err)
