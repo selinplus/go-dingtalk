@@ -73,6 +73,9 @@ func GetStudyActs(share, status, deadline string, pageNo, pageSize int) ([]*Stud
 			return db.Where("study_hlt.status='1'").
 				Order("study_hlt.fbrq")
 		}).
+		Preload("StudyHlts.StudyHltStars", func(db *gorm.DB) *gorm.DB {
+			return db.Order("study_hlt_star.stime")
+		}).
 		Where("share like ? and status like ?", share+"%", status+"%").Where(deadline).
 		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&acts).Error
 	if err != nil {

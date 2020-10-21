@@ -1,6 +1,8 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 //党员风采
 type StudyHlt struct {
@@ -60,8 +62,16 @@ func GetStudyHlts(cond string, pageNo, pageSize int) ([]*StudyHlt, error) {
 		Preload("StudyHltStars", func(db *gorm.DB) *gorm.DB {
 			return db.Order("study_hlt_star.stime")
 		}).
-		Where(cond).Order("fbrq desc").Limit(pageSize).Offset(pageSize * (pageNo - 1)).
-		Find(&hlts).Error; err != nil {
+		Joins(`left join (
+    SELECT
+        study_hlt.id, star_num
+    FROM
+        study_hlt,
+        ( SELECT study_hlt_id, count( study_hlt_id ) star_num FROM study_hlt_star GROUP BY study_hlt_id) a
+    WHERE
+            study_hlt.id = a.study_hlt_id ) b on b.id=study_hlt.id`).
+		Where(cond).Order("b.star_num desc").Order("fbrq desc").
+		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&hlts).Error; err != nil {
 		return nil, err
 	}
 	return hlts, nil

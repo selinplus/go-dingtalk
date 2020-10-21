@@ -185,6 +185,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/del", dev.DelDevinfo)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dev.GetDevinfoByID)
+		//设备盘点
+		apiv1.GET("/dev/check", dev.GetDevCheck)
 		//获取设备列表(inner多条件查询设备)
 		apiv1.GET("/dev/list", dev.GetDevinfos)
 		//获取设备列表(管理员端,多条件查询设备)
@@ -521,9 +523,9 @@ func InitRouter() *gin.Engine {
 		apifsdj.GET("/hlt/star_cancel/:id", fsdj.CancelStudyHltStar)
 		//党员风采查看
 		apifsdj.GET("/hlt/detail/:id", fsdj.GetStudyHlt)
-		//获取userid获取党员风采列表
+		//根据userid获取党员风采列表
 		apifsdj.GET("/hlts/mylist", fsdj.GetStudyHltsByUserid)
-		//获取活动id获取党员风采列表
+		//根据活动id获取党员风采列表
 		apifsdj.GET("/hlts/list", fsdj.GetStudyHlts)
 
 		//签到
