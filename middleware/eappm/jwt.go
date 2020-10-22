@@ -70,6 +70,10 @@ func JWT() gin.HandlerFunc {
 			}
 		}
 
+		if userID == "undefined" {
+			code = e.ERROR_AUTH_LOGIN
+		}
+
 		if code != e.SUCCESS {
 			c.JSON(http.StatusOK, gin.H{
 				"code": code,

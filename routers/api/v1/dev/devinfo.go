@@ -400,12 +400,6 @@ func GetDevinfoByID(c *gin.Context) {
 	}
 }
 
-//设备盘点
-func GetDevCheck(c *gin.Context) {
-	appG := app.Gin{C: c}
-	appG.Response(http.StatusOK, e.SUCCESS, nil)
-}
-
 //获取交回设备待入库列表
 func GetDevinfosToBeStored(c *gin.Context) {
 	appG := app.Gin{C: c}

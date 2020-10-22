@@ -223,6 +223,7 @@ func GetStudyHlts(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		actId    = c.Query("actId")
 		flag     = c.Query("flag")
+		dm       = c.Query("dm")
 		status   = c.Query("status") //0:未审核 1:审核通过(发布) 2:审核驳回 3:撤销发布
 		url      = c.Request.URL.Path
 		pageSize int
@@ -245,6 +246,9 @@ func GetStudyHlts(c *gin.Context) {
 		cond += fmt.Sprintf(" and act_id='%s'", actId)
 	} else {
 		cond += " and act_id != '0'"
+	}
+	if dm != "" {
+		cond += fmt.Sprintf(" and study_member.dm='%s'", dm)
 	}
 	hlts, err := models.GetStudyHlts(cond, pageNo, pageSize)
 	if err != nil {

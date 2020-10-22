@@ -185,8 +185,6 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/del", dev.DelDevinfo)
 		//查询设备详情
 		apiv1.GET("/dev/detail", dev.GetDevinfoByID)
-		//设备盘点
-		apiv1.GET("/dev/check", dev.GetDevCheck)
 		//获取设备列表(inner多条件查询设备)
 		apiv1.GET("/dev/list", dev.GetDevinfos)
 		//获取设备列表(管理员端,多条件查询设备)
@@ -203,6 +201,17 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/listbybz", dev.GetDevinfosByUser)
 		//设备流水记录查询
 		apiv1.GET("/devmod/list", dev.GetDevModList)
+
+		//新增盘点任务
+		apiv1.POST("/dev/cktask", dev.GetDevCkTask)
+		//获取盘点任务列表
+		apiv1.GET("/dev/cktasks", dev.GetDevCkTasks)
+		//获取盘点任务清册明细
+		apiv1.GET("/dev/ckdetail", dev.GetDevCkDetail)
+		//显示其自我盘点过的历史记录
+		apiv1.GET("/dev/ckhistory", dev.GetDevCkHistory)
+		//设备盘点
+		apiv1.POST("/dev/check", dev.GetDevCheck)
 
 		//获取待办列表(交回设备)
 		apiv1.GET("/dev/todolist", dev.GetDevTodosOrDones)

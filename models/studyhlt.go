@@ -19,6 +19,7 @@ type StudyHlt struct {
 	Status        string   `json:"status" gorm:"COMMENT:'状态,0:未审核 1:审核通过(发布) 2:撤销发布 3:审核驳回';default:'0'"`
 	StarNum       int      `json:"star_num" gorm:"-"` //点赞数
 	Star          bool     `json:"star" gorm:"-"`     //点赞标志，仅前台展示，不做数据库存储
+	Dm            string   `json:"star" gorm:"-"`     //发布人所在学习小组
 	StudyHltStars []StudyHltStar
 }
 
@@ -70,6 +71,7 @@ func GetStudyHlts(cond string, pageNo, pageSize int) ([]*StudyHlt, error) {
         ( SELECT study_hlt_id, count( study_hlt_id ) star_num FROM study_hlt_star GROUP BY study_hlt_id) a
     WHERE
             study_hlt.id = a.study_hlt_id ) b on b.id=study_hlt.id`).
+		Joins(`left join study_member on study_hlt.userid = study_member.userid `).
 		Where(cond).Order("b.star_num desc").Order("fbrq desc").
 		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&hlts).Error; err != nil {
 		return nil, err
