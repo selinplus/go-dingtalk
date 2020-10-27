@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -19,7 +20,7 @@ type StudyHlt struct {
 	Status        string   `json:"status" gorm:"COMMENT:'状态,0:未审核 1:审核通过(发布) 2:撤销发布 3:审核驳回';default:'0'"`
 	StarNum       int      `json:"star_num" gorm:"-"` //点赞数
 	Star          bool     `json:"star" gorm:"-"`     //点赞标志，仅前台展示，不做数据库存储
-	Dm            string   `json:"star" gorm:"-"`     //发布人所在学习小组
+	Dm            string   `json:"dm" gorm:"-"`       //发布人所在学习小组
 	StudyHltStars []StudyHltStar
 }
 
@@ -109,4 +110,49 @@ func GetStudyHltsCntByUserid(userid, status, flag string) (cnt int) {
 		cnt = 0
 	}
 	return cnt
+}
+
+//根据活动id和小组代码获取发布风采的人员名单
+func GetStudyActHltUsersByStudyDm(actId, dm string) []string {
+	type Userid struct {
+		Userid string
+	}
+	var userids []*Userid
+	sql := fmt.Sprintf(`
+SELECT DISTINCT study_hlt.userid FROM study_hlt
+left join study_member on study_member.userid = study_hlt.userid
+WHERE study_hlt.status =1 and study_hlt.act_id = %s and study_member.dm = '%s'`, actId, dm)
+	if err := db.Raw(sql).Scan(&userids).Error; err != nil {
+		return nil
+	}
+	if len(userids) > 0 {
+		var ids []string
+		for _, u := range userids {
+			ids = append(ids, u.Userid)
+		}
+		return ids
+	}
+	return nil
+}
+
+//根据活动id和小组代码获取点赞风采的总数
+func CountStudyActHltStarsByStudyDm(actId, dm string) int {
+	type Cnt struct {
+		Cnt int
+	}
+	var cnt Cnt
+	sql := fmt.Sprintf(`
+SELECT sum(star_num) cnt FROM study_hlt
+left join (
+    SELECT study_hlt.id,  star_num
+    FROM study_hlt,
+        ( SELECT study_hlt_id, count( study_hlt_id ) star_num FROM study_hlt_star GROUP BY study_hlt_id) a
+    WHERE
+            study_hlt.id = a.study_hlt_id ) b on b.id=study_hlt.id
+left join study_member on study_member.userid = study_hlt.userid
+WHERE study_hlt.status =1 and study_hlt.act_id = %s and study_member.dm = '%s'`, actId, dm)
+	if err := db.Raw(sql).Scan(&cnt).Error; err != nil {
+		return 0
+	}
+	return cnt.Cnt
 }

@@ -247,6 +247,7 @@ func GetStudyHlts(c *gin.Context) {
 	} else {
 		cond += " and act_id != '0'"
 	}
+	cnt := models.GetStudyHltsCnt(cond)
 	if dm != "" {
 		cond += fmt.Sprintf(" and study_member.dm='%s'", dm)
 	}
@@ -326,7 +327,7 @@ func GetStudyHlts(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS,
 			map[string]interface{}{
 				"list": data,
-				"cnt":  models.GetStudyHltsCnt(cond),
+				"cnt":  cnt,
 			})
 		return
 	}

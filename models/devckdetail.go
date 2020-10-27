@@ -58,3 +58,20 @@ func CheckSyrSelf(CheckID uint, DevinfoID, syr string) bool {
 	}
 	return true
 }
+
+func GetDevckdetails(cond string, pageNo, pageSize int) ([]*Devckdetail, error) {
+	var devckdetails []*Devckdetail
+	if err := db.Table("devckdetail").Where(cond).
+		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&devckdetails).Error; err != nil {
+		return nil, err
+	}
+	return devckdetails, nil
+}
+
+func GetDevckdetailsCnt(cond string) (cnt int) {
+	err := db.Table("devckdetail").Where(cond).Count(&cnt).Error
+	if err != nil {
+		cnt = 0
+	}
+	return cnt
+}

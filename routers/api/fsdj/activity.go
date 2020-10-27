@@ -724,11 +724,24 @@ func CountStudyAct(c *gin.Context) {
 				return
 			}
 			if len(resp) > 0 {
+				var fbr []*models.User
+				userids := models.GetStudyActHltUsersByStudyDm(actId, group.Dm)
+				for _, userid := range userids {
+					u, err := models.GetUserByUserid(userid)
+					if err != nil {
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						return
+					}
+					fbr = append(fbr, u)
+				}
 				data = append(data, map[string]interface{}{
-					"act_title": resp[0].Title,
-					"group_mc":  resp[0].Mc,
-					"list":      resp,
-					"join_num":  len(resp),
+					"act_title":     resp[0].Title,
+					"group_mc":      resp[0].Mc,
+					"list":          resp,
+					"join_num":      len(resp),
+					"hlt_user_list": fbr,
+					"hlt_user_num":  len(userids),
+					"star_total":    models.CountStudyActHltStarsByStudyDm(actId, group.Dm),
 				})
 			}
 		}

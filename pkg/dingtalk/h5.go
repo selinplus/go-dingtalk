@@ -452,6 +452,7 @@ func UserDetail(userid string, wt int) *models.User {
 		log.Printf("convert struct error:%v", errs)
 		return nil
 	}
+	user.UserID = userid
 	user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 	err = json.Unmarshal([]byte(body), &userlist)
 	if err != nil {

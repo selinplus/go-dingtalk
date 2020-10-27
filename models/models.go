@@ -122,6 +122,16 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Devtodo{})
 	}
+	if !db.HasTable("devcheck") {
+		db.CreateTable(Devcheck{})
+	} else {
+		db.AutoMigrate(Devcheck{})
+	}
+	if !db.HasTable("devckdetail") {
+		db.CreateTable(Devckdetail{})
+	} else {
+		db.AutoMigrate(Devckdetail{})
+	}
 	if !db.HasTable("devoperation") {
 		db.CreateTable(Devoperation{})
 	} else {

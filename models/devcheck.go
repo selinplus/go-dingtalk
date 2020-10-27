@@ -66,5 +66,22 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 			return err
 		}
 	}
-	return tx.Error
+	return tx.Commit().Error
+}
+
+func GetDevCheckTask(cond string, pageNo, pageSize int) ([]*Devcheck, error) {
+	var devchecks []*Devcheck
+	if err := db.Table("devcheck").Where(cond).
+		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&devchecks).Error; err != nil {
+		return nil, err
+	}
+	return devchecks, nil
+}
+
+func GetDevCheckTasksCnt(cond string) (cnt int) {
+	err := db.Table("devcheck").Where(cond).Count(&cnt).Error
+	if err != nil {
+		cnt = 0
+	}
+	return cnt
 }

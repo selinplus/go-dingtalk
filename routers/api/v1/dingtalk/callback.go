@@ -160,7 +160,6 @@ func GetCallbacks(c *gin.Context) {
 	case "user_add_org", "user_modify_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
 			if user := dingtalk.UserDetail(userid.(string), 10); user != nil {
-				user.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				if err := models.UserSync(user); err != nil {
 					logging.Info(fmt.Sprintf("sync userid:%v err:%v", userid, err))
 				}
