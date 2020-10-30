@@ -718,12 +718,12 @@ func CountStudyAct(c *gin.Context) {
 	if len(groups) > 0 {
 		data := make([]map[string]interface{}, 0)
 		for _, group := range groups {
-			resp, err := models.CountStudyAct(actId, group.Dm)
+			countActResps, err := models.CountStudyAct(actId, group.Dm)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR, err)
 				return
 			}
-			if len(resp) > 0 {
+			if len(countActResps) > 0 {
 				var fbr []*models.User
 				userids := models.GetStudyActHltUsersByStudyDm(actId, group.Dm)
 				for _, userid := range userids {
@@ -734,11 +734,17 @@ func CountStudyAct(c *gin.Context) {
 					}
 					fbr = append(fbr, u)
 				}
+				members, err := models.GetStudyMembers(group.Dm)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVUSER_FAIL, err)
+					return
+				}
 				data = append(data, map[string]interface{}{
-					"act_title":     resp[0].Title,
-					"group_mc":      resp[0].Mc,
-					"list":          resp,
-					"join_num":      len(resp),
+					"act_title":     countActResps[0].Title,
+					"group_mc":      countActResps[0].Mc,
+					"list":          countActResps,
+					"join_num":      len(countActResps),
+					"unjoin_num":    len(members) - len(countActResps),
 					"hlt_user_list": fbr,
 					"hlt_user_num":  len(userids),
 					"star_total":    models.CountStudyActHltStarsByStudyDm(actId, group.Dm),

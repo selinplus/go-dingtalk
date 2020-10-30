@@ -31,8 +31,7 @@ func UpdStudyActdetail(activity *StudyActdetail) error {
 func GetApproveStudyActs(cond string) ([]*StudyActdetail, error) {
 	var actdetails []*StudyActdetail
 	if err := db.Preload("StudyAct").
-		Where("status='0'").Where(cond).
-		Find(&actdetails).Error; err != nil {
+		Where("status='0'").Where(cond).Find(&actdetails).Error; err != nil {
 		return nil, err
 	}
 	return actdetails, nil

@@ -26,7 +26,7 @@ type Devckdetail struct {
 	Zt        string `json:"zt" gorm:"COMMENT:'设备状态'"`
 	Jgdm      string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
 	Syr       string `json:"syr" gorm:"COMMENT:'设备使用人代码'"`
-	SyrJgdm   string `json:"syr_jgdm" gorm:"COMMENT:'使用人员所在机构'"`
+	SyrJgdm   string `json:"syr_jgdm" gorm:"COMMENT:'使用人员所在设备管理机构代码'"`
 	Cfwz      string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
 	Sx        string `json:"sx" gorm:"COMMENT:'设备属性'"`
 }

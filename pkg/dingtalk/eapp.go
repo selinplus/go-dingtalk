@@ -151,6 +151,32 @@ func UpDeviceDingding(num int, jgmc, gly string) string {
 	return tcmprJson
 }
 
+//生成设备自我盘点任务信息通知消息体
+func DevCkTaskDingding(devcktodd *models.Devcktodd) string {
+	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
+	t := time.Now().Format("2006-01-02 15:04:05")
+	text := map[string]interface{}{
+		"content": fmt.Sprintf(
+			"%s:系统管理员发起了设备盘点任务[任务编码:%d,起止时间:%s|%s]。"+
+				"请在钉钉小程序\"设备管理-盘点\"中进行盘点！",
+			t, devcktodd.Devcheck.ID, devcktodd.Devcheck.Beg, devcktodd.Devcheck.End),
+	}
+	msgcontent := map[string]interface{}{
+		"msgtype": "text",
+		"text":    text,
+	}
+	tcmpr := map[string]interface{}{
+		"agent_id":    agentID,
+		"userid_list": devcktodd.Jsr,
+		"to_all_user": false,
+		"msg":         msgcontent,
+	}
+	tcmprBytes, _ := json.Marshal(&tcmpr)
+	tcmprJson := string(tcmprBytes)
+	//log.Println("tcmprJson is", tcmprJson)
+	return tcmprJson
+}
+
 // 企业会话消息异步发送
 func EappMessageCorpconversationAsyncsend(mpar string) *AsyncsendResponse {
 	var asyncsendResponse AsyncsendResponse

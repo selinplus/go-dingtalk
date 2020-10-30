@@ -32,6 +32,10 @@ func DmzSetup() {
 		if err := c.AddFunc("*/30 * * * * *", DeviceDingding); err != nil {
 			log.Printf("Send DeviceDingding failed：%v", err)
 		}
+		// 遍历一遍发送标志为0的设备自我盘点任务信息，通知钉钉发送工作通知管理员及使用人
+		if err := c.AddFunc("*/30 * * * * *", DeviceCheckDingding); err != nil {
+			log.Printf("Send DeviceCheckDingding failed：%v", err)
+		}
 		// 每30秒遍历一遍发送标志为0的信息，通知钉钉发送记事本消息
 		if err := c.AddFunc("*/30 * * * * *", NoteMessageDingding); err != nil {
 			log.Printf("Send Process NoteMessageDingding failed：%v", err)
@@ -188,6 +192,26 @@ func DeviceDingding() {
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateDevtodoFlag(todo.ID); err != nil {
 				logging.Error(fmt.Sprintf("%v update dev_flag err:%v", todo.ID, err))
+			}
+		}
+	}
+}
+
+//遍历一遍发送标志为0的设备自我盘点任务信息，通知钉钉发送工作通知管理员及使用人
+func DeviceCheckDingding() {
+	devcktodds, err := models.GetDevCkTaskFlag()
+	if err != nil {
+		logging.Error(fmt.Sprintf("get dev_check_flag err:%v", err))
+		return
+	}
+	for _, devcktodd := range devcktodds {
+		var tcmprJson string
+		tcmprJson = dingtalk.DevCkTaskDingding(devcktodd)
+		asyncsendResponse := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
+		//log.Printf("asyncsendResponse is :%v", asyncsendResponse)
+		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
+			if err := models.UpdateDevCkTaskFlag(devcktodd.ID); err != nil {
+				logging.Error(fmt.Sprintf("%v update dev_check_flag err:%v", devcktodd.ID, err))
 			}
 		}
 	}

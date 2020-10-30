@@ -208,6 +208,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/cktasks", dev.GetDevCkTasks)
 		//获取盘点任务清册明细
 		apiv1.GET("/dev/ckdetail", dev.GetDevCkDetail)
+		//导出盘点任务清册明细
+		apiv1.GET("/dev/ckdetail_export", dev.ExportDevCkDetail)
 
 		//获取待办列表(交回设备)
 		apiv1.GET("/dev/todolist", dev.GetDevTodosOrDones)
@@ -521,8 +523,8 @@ func InitRouter() *gin.Engine {
 		apifsdj.GET("/act/join/:id", fsdj.JoinStudyAct)
 		//获取我的党建活动列表
 		apifsdj.GET("/acts/mylist", fsdj.GetStudyActsMine)
-		//根据活动id获取各党小组活动参与及风采点赞情况
-		//apifsdj.GET("/act/hltcount", fsdj.GetStudyActHltCount)
+		//党建活动参与人员统计
+		apifsdj.GET("/acts/count/:id", fsdj.CountStudyAct)
 
 		//党员风采发布
 		apifsdj.POST("/hlt/post", fsdj.PostStudyHlt)

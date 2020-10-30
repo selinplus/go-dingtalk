@@ -50,3 +50,11 @@ func IsDevdeptUserExist(jgdm string) bool {
 	}
 	return true
 }
+
+func GetJgdmtBySyrUserid(userid string) string {
+	var du Devuser
+	if err := db.Where("syr=?", userid).First(&du).Error; err != nil {
+		return ""
+	}
+	return du.Jgdm
+}

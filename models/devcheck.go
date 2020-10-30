@@ -28,13 +28,6 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 		return err
 	}
 	for _, dev := range devs {
-		var syrJgdm string
-		u, err := GetUserByUserid(dev.Syr)
-		if err != nil {
-			syrJgdm = ""
-		} else {
-			syrJgdm = u.Department
-		}
 		var ck = &Devckdetail{
 			CheckID:   ckTask.ID,
 			DevinfoID: dev.ID,
@@ -56,12 +49,11 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 			Zt:        dev.Zt,
 			Jgdm:      dev.Jgdm,
 			Syr:       dev.Syr,
-			SyrJgdm:   syrJgdm,
+			SyrJgdm:   GetJgdmtBySyrUserid(dev.Syr),
 			Cfwz:      dev.Cfwz,
 			Sx:        dev.Sx,
 		}
-		err = tx.Table("devckdetail").Create(ck).Error
-		if err != nil {
+		if err := tx.Table("devckdetail").Create(ck).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
