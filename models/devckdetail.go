@@ -31,9 +31,10 @@ type Devckdetail struct {
 	Sx        string `json:"sx" gorm:"COMMENT:'设备属性'"`
 }
 
-func DevCheck(id uint, ck interface{}) error {
+func DevCheck(checkId uint, devinfoId string, ck interface{}) error {
 	if err := db.Table("devckdetail").
-		Where("id=?", id).Updates(ck).Error; err != nil {
+		Where("check_id=? and devinfo_id=?", checkId, devinfoId).
+		Updates(ck).Error; err != nil {
 		return err
 	}
 	return nil
@@ -42,7 +43,7 @@ func DevCheck(id uint, ck interface{}) error {
 func IsChecked(CheckID uint, DevinfoID string) bool {
 	var ck Devckdetail
 	if err := db.Table("devckdetail").
-		Where("check_id=? and devinfo_id=?", CheckID, DevinfoID).
+		Where("check_id=? and devinfo_id=? and ck_bz=1", CheckID, DevinfoID).
 		First(&ck).Error; err != nil {
 		return false
 	}

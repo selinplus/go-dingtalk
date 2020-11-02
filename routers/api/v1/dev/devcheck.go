@@ -34,8 +34,10 @@ func GetDevCkTask(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-	//todo:通知所有人员进行盘点任务
-	go models.AddSendDevCkTasks(form.ID, form.Ckself)
+	// 通知所有人员进行盘点任务
+	go func(id uint, ckself string) {
+		models.AddSendDevCkTasks(id, ckself)
+	}(form.ID, form.Ckself)
 
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
@@ -316,14 +318,14 @@ func GetDevCheck(c *gin.Context) {
 		}
 		ts := strings.Split(token, ".")
 		userid = ts[3]
-		if models.CheckSyrSelf(uint(CheckID), DevinfoID, userid) {
+		if !models.CheckSyrSelf(uint(CheckID), DevinfoID, userid) {
 			appG.Response(http.StatusOK, e.ERROR, "当前盘点人和设备使用人不一致！")
 			return
 		}
-		err := models.DevCheck(uint(CheckID), map[string]interface{}{
+		err := models.DevCheck(uint(CheckID), DevinfoID, map[string]interface{}{
 			"pdr": userid, "ck_bz": 1, "cktime": time.Now().Format("2006-01-02 15:04:05")})
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 			return
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, nil)
