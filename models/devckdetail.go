@@ -7,6 +7,7 @@ type Devckdetail struct {
 	Pdr     string `json:"pdr" gorm:"COMMENT:'盘点人代码'"`
 	CkBz    int    `json:"ck_bz" gorm:"COMMENT:'0: 未盘点 1: 已盘点';size:1;default:'0'"`
 
+	Sbbh      string `json:"sbbh" gorm:"COMMENT:'6位设备编号'"`
 	DevinfoID string `json:"devinfo_id" gorm:"COMMENT:'设备编号'"`
 	Zcbh      string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 	Lx        string `json:"lx" gorm:"COMMENT:'设备类型'"`

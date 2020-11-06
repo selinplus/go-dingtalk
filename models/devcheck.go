@@ -30,6 +30,7 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 	for _, dev := range devs {
 		var ck = &Devckdetail{
 			CheckID:   ckTask.ID,
+			Sbbh:      ConvSbbhToIdstr(dev.Sbbh),
 			DevinfoID: dev.ID,
 			Zcbh:      dev.Zcbh,
 			Lx:        dev.Lx,

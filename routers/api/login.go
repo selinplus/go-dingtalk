@@ -10,7 +10,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
-	"github.com/selinplus/go-dingtalk/pkg/util"
 	"net/http"
 	"strings"
 )
@@ -44,36 +43,36 @@ func Login(c *gin.Context) {
 	}
 
 	//todo
-	/*	// 引入"crypto/tls":解决golang https请求提示x509: certificate signed by unknown authority
-		ts := &tls.Config{InsecureSkipVerify: true}
-		pMap := map[string]string{
-			"username": form.Username,
-			"password": form.Password,
-		}
-		_, body, errs := gorequest.New().TLSClientConfig(ts).
-			Post(setting.AppSetting.LoginUrl + "/jeecg-boot/sys/login").
-			Type(gorequest.TypeJSON).SendMap(pMap).End()
-		if len(errs) > 0 {
-			data := fmt.Sprintf("login err:%v", errs[0])
+	// 引入"crypto/tls":解决golang https请求提示x509: certificate signed by unknown authority
+	ts := &tls.Config{InsecureSkipVerify: true}
+	pMap := map[string]string{
+		"username": form.Username,
+		"password": form.Password,
+	}
+	_, body, errs := gorequest.New().TLSClientConfig(ts).
+		Post(setting.AppSetting.LoginUrl + "/jeecg-boot/sys/login").
+		Type(gorequest.TypeJSON).SendMap(pMap).End()
+	if len(errs) > 0 {
+		data := fmt.Sprintf("login err:%v", errs[0])
+		appG.Response(http.StatusOK, e.ERROR, data)
+		return
+	} else {
+		err := json.Unmarshal([]byte(body), &resp)
+		if err != nil {
+			data := fmt.Sprintf("unmarshall body error:%v", err)
 			appG.Response(http.StatusOK, e.ERROR, data)
 			return
-		} else {
-			err := json.Unmarshal([]byte(body), &resp)
-			if err != nil {
-				data := fmt.Sprintf("unmarshall body error:%v", err)
-				appG.Response(http.StatusOK, e.ERROR, data)
-				return
-			}
-			if resp["result"] != nil {
-				result = resp["result"].(map[string]interface{})
-				userInfo = result["userInfo"].(map[string]interface{})
-				departs := result["departs"].([]interface{})
-				depart = departs[0].(map[string]interface{})
-			}
-		}*/
+		}
+		if resp["result"] != nil {
+			result = resp["result"].(map[string]interface{})
+			userInfo = result["userInfo"].(map[string]interface{})
+			departs := result["departs"].([]interface{})
+			depart = departs[0].(map[string]interface{})
+		}
+	}
 
 	//internet test
-	token, _ := util.GenerateToken(form.Username, form.Password)
+	/*token, _ := util.GenerateToken(form.Username, form.Password)
 	if form.Username == "test" {
 		resp["success"] = "True"
 		resp["message"] = "登录成功"
@@ -106,7 +105,7 @@ func Login(c *gin.Context) {
 		depart["id"] = "13706001800"
 		depart["departName"] = "福山品牌党建"
 		depart["parentId"] = "13706000000"
-	}
+	}*/
 
 	data := map[string]interface{}{
 		"success":     resp["success"],
