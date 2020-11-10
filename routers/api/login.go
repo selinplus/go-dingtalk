@@ -42,7 +42,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	//todo
+	//todo: inner deployment
 	// 引入"crypto/tls":解决golang https请求提示x509: certificate signed by unknown authority
 	ts := &tls.Config{InsecureSkipVerify: true}
 	pMap := map[string]string{
@@ -71,7 +71,7 @@ func Login(c *gin.Context) {
 		}
 	}
 
-	//internet test
+	//todo: internet test
 	/*token, _ := util.GenerateToken(form.Username, form.Password)
 	if form.Username == "test" {
 		resp["success"] = "True"

@@ -440,6 +440,7 @@ type DevinfoErr struct {
 func ImpDevinfos(fileName io.Reader, czr string) ([]*DevinfoErr, int, int, error) {
 	devs, err := ReadDevinfoXmlToStructs(fileName, czr)
 	if err != nil {
+		log.Println(err)
 		return nil, 0, 0, err
 	}
 	errDev, success, failed := InsertDevinfoXml(devs, czr)
@@ -453,8 +454,8 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error)
 		logging.Info(err.Error())
 		return nil, err
 	}
-	sheetName := xlsx.GetSheetName(1)
-	rows, err := xlsx.GetRows(sheetName)
+	//sheetName := xlsx.GetSheetName(0)
+	rows, err := xlsx.GetRows("设备基本信息表")
 	if err != nil {
 		logging.Info(err.Error())
 		return nil, err

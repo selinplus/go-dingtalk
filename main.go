@@ -25,7 +25,7 @@ func init() {
 	//todo: Dmz
 	cron.DmzSetup()
 	//todo: App
-	//cron.AppSetup()
+	cron.AppSetup()
 }
 
 func main() {
