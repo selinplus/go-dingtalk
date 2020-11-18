@@ -10,6 +10,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
+	"github.com/selinplus/go-dingtalk/pkg/util"
 	"net/http"
 	"strings"
 )
@@ -44,7 +45,7 @@ func Login(c *gin.Context) {
 
 	//todo: inner deployment
 	// 引入"crypto/tls":解决golang https请求提示x509: certificate signed by unknown authority
-	ts := &tls.Config{InsecureSkipVerify: true}
+	/*ts := &tls.Config{InsecureSkipVerify: true}
 	pMap := map[string]string{
 		"username": form.Username,
 		"password": form.Password,
@@ -69,10 +70,10 @@ func Login(c *gin.Context) {
 			departs := result["departs"].([]interface{})
 			depart = departs[0].(map[string]interface{})
 		}
-	}
+	}*/
 
 	//todo: internet test
-	/*token, _ := util.GenerateToken(form.Username, form.Password)
+	token, _ := util.GenerateToken(form.Username, form.Password)
 	if form.Username == "test" {
 		resp["success"] = "True"
 		resp["message"] = "登录成功"
@@ -105,7 +106,7 @@ func Login(c *gin.Context) {
 		depart["id"] = "13706001800"
 		depart["departName"] = "福山品牌党建"
 		depart["parentId"] = "13706000000"
-	}*/
+	}
 
 	data := map[string]interface{}{
 		"success":     resp["success"],
