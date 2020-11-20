@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -131,7 +132,8 @@ func DevLoginInfo(c *gin.Context) {
 	if c.Query("mobile") != "" {
 		user, err := models.GetUserByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("人员获取失败：%s", c.Query("mobile")))
 			return
 		}
 		userid = user.UserID

@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -25,7 +26,8 @@ func GetDevMods(c *gin.Context) {
 	appG := app.Gin{C: c}
 	czr, err := models.GetUserByMobile(c.Query("czr"))
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("人员获取失败：%s", c.Query("czr")))
 		return
 	}
 	devs, err := models.GetDevMods(czr.UserID)

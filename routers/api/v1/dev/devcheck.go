@@ -26,7 +26,8 @@ func GetDevCkTask(c *gin.Context) {
 	}
 	u, err := models.GetUserByMobile(form.Fqr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("新增盘点任务发起人获取失败：%s", form.Fqr))
 		return
 	}
 	form.Fqr = u.UserID
@@ -76,7 +77,8 @@ func GetDevCkTasks(c *gin.Context) {
 		for _, ck := range ckTask {
 			u, err := models.GetUserByUserid(ck.Fqr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("盘点任务id[%d],发起人获取失败：%s", ck.ID, ck.Fqr))
 				return
 			}
 			ck.Fqr = u.Name
@@ -145,7 +147,8 @@ func GetDevCkDetail(c *gin.Context) {
 			if detail.Pdr != "" {
 				u, err := models.GetUserByUserid(detail.Pdr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
 					return
 				}
 				detail.Pdr = u.Name
@@ -153,7 +156,8 @@ func GetDevCkDetail(c *gin.Context) {
 			if detail.Czr != "" {
 				u, err := models.GetUserByUserid(detail.Czr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("清册id[%d]操作人获取失败：%s", detail.ID, detail.Czr))
 					return
 				}
 				detail.Czr = u.Name
@@ -161,7 +165,8 @@ func GetDevCkDetail(c *gin.Context) {
 			if detail.Syr != "" {
 				u, err := models.GetUserByUserid(detail.Syr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
 					return
 				}
 				detail.Syr = u.Name
@@ -169,7 +174,8 @@ func GetDevCkDetail(c *gin.Context) {
 			if detail.SyrJgdm != "" {
 				devdept, err := models.GetDevdept(detail.SyrJgdm)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL,
+						fmt.Sprintf("清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
 					return
 				}
 				detail.SyrJgdm = devdept.Jgmc
@@ -226,7 +232,8 @@ func ExportDevCkDetail(c *gin.Context) {
 		if detail.Pdr != "" {
 			u, err := models.GetUserByUserid(detail.Pdr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
 				return
 			}
 			detail.Pdr = u.Name
@@ -234,7 +241,8 @@ func ExportDevCkDetail(c *gin.Context) {
 		if detail.Syr != "" {
 			u, err := models.GetUserByUserid(detail.Syr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
 				return
 			}
 			detail.Syr = u.Name
@@ -242,7 +250,8 @@ func ExportDevCkDetail(c *gin.Context) {
 		if detail.SyrJgdm != "" {
 			devdept, err := models.GetDevdept(detail.SyrJgdm)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, nil)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL,
+					fmt.Sprintf("清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
 				return
 			}
 			detail.SyrJgdm = devdept.Jgmc
