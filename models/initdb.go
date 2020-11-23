@@ -59,6 +59,11 @@ func CheckTable() {
 	} else {
 		db.AutoMigrate(Department{})
 	}
+	if !db.HasTable("userdemo") {
+		db.CreateTable(Userdemo{})
+	} else {
+		db.AutoMigrate(Userdemo{})
+	}
 	if !db.HasTable("user") {
 		db.CreateTable(User{})
 	} else {

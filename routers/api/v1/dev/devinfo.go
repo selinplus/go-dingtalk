@@ -36,7 +36,7 @@ type DevinfoForm struct {
 	Sx   string `json:"sx"`
 }
 
-type DevOpForm struct {
+type OpForm struct {
 	Ids     []string `json:"ids"`
 	Dms     []string `json:"dms"` //交回&批量收回
 	SrcJgdm string   `json:"src_jgdm"`
@@ -61,9 +61,10 @@ func AddDevinfo(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	czr, err := models.GetUserByMobile(form.Czr)
+	czr, err := models.GetUserdemoByMobile(form.Czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", form.Czr, err))
 		return
 	}
 	sbbh := models.GenerateSbbh(form.Lx, form.Xlh)
@@ -112,9 +113,10 @@ func AddDevinfo(c *gin.Context) {
 func ImpDevinfos(c *gin.Context) {
 	appG := app.Gin{C: c}
 	czr := c.Query("czr")
-	user, err := models.GetUserByMobile(czr)
+	user, err := models.GetUserdemoByMobile(czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", czr, err))
 		return
 	}
 	file, _, err := c.Request.FormFile("file")
@@ -152,15 +154,17 @@ func UpdateDevinfo(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	czr, err := models.GetUserByMobile(form.Czr)
+	czr, err := models.GetUserdemoByMobile(form.Czr)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", form.Czr, err))
 		return
 	}
 	if form.Syr != "" {
-		suser, err := models.GetUserByMobile(form.Syr)
+		suser, err := models.GetUserdemoByMobile(form.Syr)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号[%s]获取使用人信息失败：%v", form.Syr, err))
 			return
 		}
 		syr = suser.UserID
@@ -240,10 +244,10 @@ func GetDevinfos(c *gin.Context) {
 		rkrqz = "2099-01-01 00:00:00"
 	}
 	if syr != "" {
-		user, err := models.GetUserByMobile(syr)
+		user, err := models.GetUserdemoByMobile(syr)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-				fmt.Sprintf("人员获取失败：%s", syr))
+				fmt.Sprintf("根据手机号[%s]获取使用人信息失败：%v", syr, err))
 			return
 		}
 		syr = user.UserID
@@ -272,19 +276,19 @@ func GetDevinfos(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	resps := make([]*DevResp, 0)
+	resps := make([]*Resp, 0)
 	for _, dev := range devs {
 		var syrName, syrMobile string
 		if dev.Syr != "" {
-			suser, err := models.GetUserByUserid(dev.Syr)
+			suser, err := models.GetUserdemoByUserid(dev.Syr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("设备使用人获取失败：%s", dev.Syr))
-				return
+				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
+				syrName, syrMobile = dev.Syr, dev.Syr
+			} else {
+				syrName, syrMobile = suser.Name, suser.Mobile
 			}
-			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
+		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		resps = append(resps, d)
 	}
 	data := make(map[string]interface{})
@@ -310,9 +314,10 @@ func GetDevinfosGly(c *gin.Context) {
 	glydm := make([]string, 0)
 	if jgdm == "" {
 		if len(mobile) > 0 {
-			gly, err := models.GetUserByMobile(mobile)
+			gly, err := models.GetUserdemoByMobile(mobile)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+					fmt.Sprintf("根据手机号[%s]获取管理员信息失败：%v", mobile, err))
 				return
 			}
 			depts, err = models.GetDevdeptsHasGlyByUserid(gly.UserID)
@@ -350,19 +355,19 @@ func GetDevinfosGly(c *gin.Context) {
 		}
 		devs = append(devs, ds...)
 	}
-	resps := make([]*DevResp, 0)
+	resps := make([]*Resp, 0)
 	for _, dev := range devs {
 		var syrName, syrMobile string
 		if dev.Syr != "" {
-			suser, err := models.GetUserByUserid(dev.Syr)
+			suser, err := models.GetUserdemoByUserid(dev.Syr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("设备使用人获取失败：%s", dev.Syr))
-				return
+				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
+				syrName, syrMobile = dev.Syr, dev.Syr
+			} else {
+				syrName, syrMobile = suser.Name, suser.Mobile
 			}
-			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
+		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		resps = append(resps, d)
 	}
 	data := make(map[string]interface{})
@@ -371,7 +376,7 @@ func GetDevinfosGly(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
-type DevResp struct {
+type Resp struct {
 	*models.DevinfoResp
 	Idstr     string `json:"idstr"`
 	SyrName   string `json:"syr_name"`
@@ -390,15 +395,15 @@ func GetDevinfoByID(c *gin.Context) {
 	if len(dev.ID) > 0 {
 		var syrName, syrMobile string
 		if dev.Syr != "" {
-			suser, err := models.GetUserByUserid(dev.Syr)
+			suser, err := models.GetUserdemoByUserid(dev.Syr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("设备使用人获取失败：%s", dev.Syr))
-				return
+				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
+				syrName, syrMobile = dev.Syr, dev.Syr
+			} else {
+				syrName, syrMobile = suser.Name, suser.Mobile
 			}
-			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
+		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		appG.Response(http.StatusOK, e.SUCCESS, d)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
@@ -411,10 +416,10 @@ func GetDevinfosToBeStored(c *gin.Context) {
 	var userid string
 	mobile := c.Query("mobile")
 	if len(mobile) > 0 {
-		user, err := models.GetUserByMobile(mobile)
+		user, err := models.GetUserdemoByMobile(mobile)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-				fmt.Sprintf("人员获取失败：%s", mobile))
+				fmt.Sprintf("根据手机号[%s],获取人员失败：%v", mobile, err))
 			return
 		}
 		userid = user.UserID
@@ -445,13 +450,13 @@ func GetDevinfosToBeStored(c *gin.Context) {
 				continue
 			}
 			if ddept.Gly == userid {
-				user, err := models.GetUserByUserid(dev.Czr)
+				user, err := models.GetUserdemoByUserid(dev.Czr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-						fmt.Sprintf("人员获取失败：%s", dev.Czr))
-					return
+					log.Println(fmt.Sprintf(
+						"根据userid[%s],操作人失败：%v", dev.Czr, err))
+				} else {
+					dev.Czr = user.Name
 				}
-				dev.Czr = user.Name
 				data = append(data, dev)
 			}
 		}
@@ -512,20 +517,19 @@ func GetDevinfosByUser(c *gin.Context) {
 		}
 		resps = append(resps, devs...)
 	}
-	devResps := make([]*DevResp, 0)
+	devResps := make([]*Resp, 0)
 	data := make(map[string]interface{})
 	for _, dev := range resps {
 		var syrName, syrMobile string
 		if dev.Syr != "" {
-			suser, err := models.GetUserByUserid(dev.Syr)
+			suser, err := models.GetUserdemoByUserid(dev.Syr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("设备使用人获取失败：%s", dev.Syr))
-				return
+				log.Println(fmt.Sprintf("根据userid[%s]设备使用人失败：%v", dev.Syr, err))
+				syrName, syrMobile = dev.Syr, dev.Syr
 			}
 			syrName, syrMobile = suser.Name, suser.Mobile
 		}
-		d := &DevResp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
+		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
 		devResps = append(devResps, d)
 	}
 	data["lists"] = devResps
@@ -534,20 +538,20 @@ func GetDevinfosByUser(c *gin.Context) {
 }
 
 //设备下发
-func DevIssued(c *gin.Context) {
+func Issued(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form DevOpForm
+		form OpForm
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	czr, err := models.GetUserByMobile(form.Czr)
+	czr, err := models.GetUserdemoByMobile(form.Czr)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-			fmt.Sprintf("操作人获取失败：%s", form.Czr))
+			fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", form.Czr, err))
 		return
 	}
 	if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr.UserID, "2"); err != nil {
@@ -558,10 +562,10 @@ func DevIssued(c *gin.Context) {
 }
 
 //设备分配(管理员入库)&借出&收回&交回&上交
-func DevAllocate(c *gin.Context) {
+func Allocate(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form DevOpForm
+		form OpForm
 		czr  string
 		syr  string
 	)
@@ -571,10 +575,10 @@ func DevAllocate(c *gin.Context) {
 		return
 	}
 	if form.Czr != "" {
-		cuser, err := models.GetUserByMobile(form.Czr)
+		cuser, err := models.GetUserdemoByMobile(form.Czr)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-				fmt.Sprintf("操作人获取失败：%s", form.Czr))
+				fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", form.Czr, err))
 			return
 		}
 		czr = cuser.UserID
@@ -584,10 +588,10 @@ func DevAllocate(c *gin.Context) {
 	}
 	if form.Syr != "" {
 		if form.Syr != " " {
-			suser, err := models.GetUserByMobile(form.Syr)
+			suser, err := models.GetUserdemoByMobile(form.Syr)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-					fmt.Sprintf("使用人获取失败：%s", form.Syr))
+					fmt.Sprintf("根据手机号[%s]获取使用人信息失败：%v", form.Syr, err))
 				return
 			}
 			syr = suser.UserID
@@ -622,10 +626,10 @@ func GetDevTodosOrDones(c *gin.Context) {
 		done   int
 	)
 	if len(mobile) > 0 {
-		user, err := models.GetUserByMobile(mobile)
+		user, err := models.GetUserdemoByMobile(mobile)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-				fmt.Sprintf("人员获取失败：%s", mobile))
+				fmt.Sprintf("根据手机号[%s]获取人员信息失败：%v", mobile, err))
 			return
 		}
 		userid = user.UserID
@@ -673,10 +677,10 @@ func GetUpDevTodosOrDones(c *gin.Context) {
 		mobile = c.Query("mobile")
 		done   int
 	)
-	user, err := models.GetUserByMobile(mobile)
+	user, err := models.GetUserdemoByMobile(mobile)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-			fmt.Sprintf("人员获取失败：%s", mobile))
+			fmt.Sprintf("根据手机号[%s]获取人员信息失败：%v", mobile, err))
 		return
 	}
 	if strings.Contains(url, "dev/uptodolist") {

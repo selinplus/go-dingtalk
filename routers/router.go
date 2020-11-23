@@ -173,7 +173,7 @@ func InitRouter() *gin.Engine {
 		//删除设备使用人员
 		apiv1.GET("/dev/deluser", dev.DeleteDevuser)
 		//登录后获取人员身份信息
-		apiv1.GET("/dev/login", dev.DevLoginInfo)
+		apiv1.GET("/dev/login", dev.LoginInfo)
 
 		//单项录入
 		apiv1.POST("/dev/add", dev.AddDevinfo)
@@ -194,9 +194,9 @@ func InitRouter() *gin.Engine {
 		//根据流水号查询记录
 		apiv1.GET("/devmod/lsdetail", dev.GetDevModetails)
 		//设备下发
-		apiv1.POST("/dev/issued", dev.DevIssued)
+		apiv1.POST("/dev/issued", dev.Issued)
 		//设备分配(管理员入库)&借出&收回&交回&上交
-		apiv1.POST("/dev/allocate", dev.DevAllocate)
+		apiv1.POST("/dev/allocate", dev.Allocate)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv1.GET("/dev/listbybz", dev.GetDevinfosByUser)
 		//设备流水记录查询
@@ -436,7 +436,7 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/user/list", dingtalk.GetUserByDepartmentID)
 
 		//登录后获取人员身份信息
-		apiv3.GET("/dev/login", dev.DevLoginInfo)
+		apiv3.GET("/dev/login", dev.LoginInfo)
 		//获取设备管理机构及人员列表(循环遍历)
 		apiv3.GET("/dev/epptree", dev.GetDevdeptEppTree)
 		//查询设备详情
@@ -446,7 +446,7 @@ func InitRouter() *gin.Engine {
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dev.GetDevModList)
 		//设备分配(管理员入库)&借出&收回&交回
-		apiv3.POST("/dev/allocate", dev.DevAllocate)
+		apiv3.POST("/dev/allocate", dev.Allocate)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dev.GetDevinfosByUser)
 		//获取待办列表(交回设备)

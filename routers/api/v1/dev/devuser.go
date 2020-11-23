@@ -42,8 +42,21 @@ func AddDevuser(c *gin.Context) {
 				Syr:  syr,
 			}
 			if err := models.AddDevuser(&devuser); err != nil {
-				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
+				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL,
+					fmt.Sprintf("增加设备使用人员错误：%v", err))
 				return
+			} else {
+				user, err := models.GetUserByUserid(syr)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL,
+						fmt.Sprintf("增加设备使用人员错误,[%s]获取user失败：%v", syr, err))
+					return
+				}
+				if err := models.SaveUserdemo(&user); err != nil {
+					appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL,
+						fmt.Sprintf("增加设备使用人员userdemo错误：%v", err))
+					return
+				}
 			}
 		}
 	}
@@ -84,14 +97,18 @@ func GetDevuserList(c *gin.Context) {
 	if len(dus) > 0 {
 		resp := make([]*DevuserResp, 0)
 		for _, du := range dus {
-			user, err := models.GetUserByUserid(du.Syr)
+			var name, mobile string
+			user, err := models.GetUserdemoByUserid(du.Syr)
 			if err != nil {
 				log.Println(err)
+				name = du.Syr
+			} else {
+				name, mobile = user.Name, user.Mobile
 			}
 			u := &DevuserResp{
 				Devuser: du,
-				Name:    user.Name,
-				Mobile:  user.Mobile,
+				Name:    name,
+				Mobile:  mobile,
 			}
 			resp = append(resp, u)
 		}
@@ -121,7 +138,7 @@ func DeleteDevuser(c *gin.Context) {
 }
 
 //登录后获取人员身份信息
-func DevLoginInfo(c *gin.Context) {
+func LoginInfo(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
 		syrDepts = make([]map[string]string, 0)

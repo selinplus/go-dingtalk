@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -38,9 +39,10 @@ func AddDevdept(c *gin.Context) {
 		return
 	}
 	if len(form.Mobile) > 0 {
-		u, err := models.GetUserByMobile(form.Mobile)
+		u, err := models.GetUserdemoByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号[%s]获取登陆人员信息失败：%v", form.Mobile, err))
 			return
 		}
 		userid = u.UserID
@@ -89,9 +91,10 @@ func UpdateDevdept(c *gin.Context) {
 		return
 	}
 	if len(form.Mobile) > 0 {
-		u, err := models.GetUserByMobile(form.Mobile)
+		u, err := models.GetUserdemoByMobile(form.Mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号[%s]获取登陆人员信息失败：%v", form.Mobile, err))
 			return
 		}
 		userid = u.UserID
@@ -203,9 +206,10 @@ func GetDevdeptGlyList(c *gin.Context) {
 	}
 	var dts []interface{}
 	if parentDt.Gly != "" {
-		gly, err := models.GetUserByUserid(parentDt.Gly)
+		gly, err := models.GetUserdemoByUserid(parentDt.Gly)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("根据userid[%s]获取管理员信息失败：%v", parentDt.Gly, err))
 			return
 		}
 		glyName = gly.Name
@@ -258,12 +262,14 @@ func GetDevdeptGlyList(c *gin.Context) {
 							}
 						}
 						if depart.Gly != "" {
-							gly, err := models.GetUserByUserid(depart.Gly)
+							gly, err := models.GetUserdemoByUserid(depart.Gly)
 							if err != nil {
-								appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
-								return
+								log.Println(fmt.Sprintf(
+									"根据userid[%s]获取管理员信息失败：%v", depart.Gly, err))
+								glyName = depart.Gly
+							} else {
+								glyName = gly.Name
 							}
-							glyName = gly.Name
 						} else {
 							glyName = ""
 						}
@@ -295,12 +301,14 @@ func GetDevdeptGlyList(c *gin.Context) {
 				}
 			}
 			if department.Gly != "" {
-				gly, err := models.GetUserByUserid(department.Gly)
+				gly, err := models.GetUserdemoByUserid(department.Gly)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
-					return
+					log.Println(fmt.Sprintf(
+						"根据userid[%s]获取管理员信息失败：%v", department.Gly, err))
+					glyName = department.Gly
+				} else {
+					glyName = gly.Name
 				}
-				glyName = gly.Name
 			} else {
 				glyName = ""
 			}
@@ -390,14 +398,17 @@ func GetDevdeptEppTree(c *gin.Context) {
 	}
 	if len(dus) > 0 {
 		for _, du := range dus {
-			user, err := models.GetUserByUserid(du.Syr)
+			var name string
+			user, err := models.GetUserdemoByUserid(du.Syr)
 			if err != nil {
 				log.Println(err)
-				continue
+				name = du.Syr
+			} else {
+				name = user.Name
 			}
 			u := map[string]interface{}{
-				"dm":     user.UserID,
-				"mc":     user.Name,
+				"dm":     du.Syr,
+				"mc":     name,
 				"isDept": false,
 			}
 			data = append(data, u)
@@ -477,9 +488,10 @@ func GetDevdeptGly(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS, resps)
 		return
 	}
-	user, err := models.GetUserByUserid(ddept.Gly)
+	user, err := models.GetUserdemoByUserid(ddept.Gly)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
 		return
 	}
 	resp := &GlyResp{
@@ -494,9 +506,10 @@ func GetDevdeptGly(c *gin.Context) {
 //获取当前用户为机构管理员的所有机构列表
 func GetDevGly(c *gin.Context) {
 	appG := app.Gin{C: c}
-	gly, err := models.GetUserByMobile(c.Query("gly"))
+	gly, err := models.GetUserdemoByMobile(c.Query("gly"))
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("根据手机号[%s]获取管理员失败：%v", c.Query("gly"), err))
 		return
 	}
 	depts, err := models.GetDevdeptsHasGlyByUserid(gly.UserID)

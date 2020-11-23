@@ -24,10 +24,10 @@ type DevmodForm struct {
 //获取当前操作人所有流水记录
 func GetDevMods(c *gin.Context) {
 	appG := app.Gin{C: c}
-	czr, err := models.GetUserByMobile(c.Query("czr"))
+	czr, err := models.GetUserdemoByMobile(c.Query("czr"))
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-			fmt.Sprintf("人员获取失败：%s", c.Query("czr")))
+			fmt.Sprintf("根据手机号[%s]获取人员信息失败：%v", c.Query("czr"), err))
 		return
 	}
 	devs, err := models.GetDevMods(czr.UserID)
