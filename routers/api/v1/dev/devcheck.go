@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/export"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,7 +25,7 @@ func GetDevCkTask(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	u, err := models.GetUserByMobile(form.Fqr)
+	u, err := models.GetUserdemoByMobile(form.Fqr)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
 			fmt.Sprintf("新增盘点任务发起人获取失败：%s", form.Fqr))
@@ -75,7 +76,7 @@ func GetDevCkTasks(c *gin.Context) {
 	}
 	if len(ckTask) > 0 {
 		for _, ck := range ckTask {
-			u, err := models.GetUserByUserid(ck.Fqr)
+			u, err := models.GetUserdemoByUserid(ck.Fqr)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
 					fmt.Sprintf("盘点任务id[%d],发起人获取失败：%s", ck.ID, ck.Fqr))
@@ -145,40 +146,40 @@ func GetDevCkDetail(c *gin.Context) {
 	if len(devckdetails) > 0 {
 		for _, detail := range devckdetails {
 			if detail.Pdr != "" {
-				u, err := models.GetUserByUserid(detail.Pdr)
+				u, err := models.GetUserdemoByUserid(detail.Pdr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-						fmt.Sprintf("清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
-					return
+					log.Println(fmt.Sprintf(
+						"清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
+				} else {
+					detail.Pdr = u.Name
 				}
-				detail.Pdr = u.Name
 			}
 			if detail.Czr != "" {
-				u, err := models.GetUserByUserid(detail.Czr)
+				u, err := models.GetUserdemoByUserid(detail.Czr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-						fmt.Sprintf("清册id[%d]操作人获取失败：%s", detail.ID, detail.Czr))
-					return
+					log.Println(fmt.Sprintf(
+						"清册id[%d]操作人获取失败：%s", detail.ID, detail.Czr))
+				} else {
+					detail.Czr = u.Name
 				}
-				detail.Czr = u.Name
 			}
 			if detail.Syr != "" {
-				u, err := models.GetUserByUserid(detail.Syr)
+				u, err := models.GetUserdemoByUserid(detail.Syr)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-						fmt.Sprintf("清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
-					return
+					log.Println(fmt.Sprintf(
+						"清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
+				} else {
+					detail.Syr = u.Name
 				}
-				detail.Syr = u.Name
 			}
 			if detail.SyrJgdm != "" {
 				devdept, err := models.GetDevdept(detail.SyrJgdm)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL,
-						fmt.Sprintf("清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
-					return
+					log.Println(fmt.Sprintf(
+						"清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
+				} else {
+					detail.SyrJgdm = devdept.Jgmc
 				}
-				detail.SyrJgdm = devdept.Jgmc
 			}
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, map[string]interface{}{
@@ -230,31 +231,40 @@ func ExportDevCkDetail(c *gin.Context) {
 	records := make([]map[string]string, 0)
 	for _, detail := range devckdetails {
 		if detail.Pdr != "" {
-			u, err := models.GetUserByUserid(detail.Pdr)
+			u, err := models.GetUserdemoByUserid(detail.Pdr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
-				return
+				log.Println(fmt.Sprintf(
+					"清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
+			} else {
+				detail.Pdr = u.Name
 			}
-			detail.Pdr = u.Name
+		}
+		if detail.Czr != "" {
+			u, err := models.GetUserdemoByUserid(detail.Czr)
+			if err != nil {
+				log.Println(fmt.Sprintf(
+					"清册id[%d]操作人获取失败：%s", detail.ID, detail.Czr))
+			} else {
+				detail.Czr = u.Name
+			}
 		}
 		if detail.Syr != "" {
-			u, err := models.GetUserByUserid(detail.Syr)
+			u, err := models.GetUserdemoByUserid(detail.Syr)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
-				return
+				log.Println(fmt.Sprintf(
+					"清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
+			} else {
+				detail.Syr = u.Name
 			}
-			detail.Syr = u.Name
 		}
 		if detail.SyrJgdm != "" {
 			devdept, err := models.GetDevdept(detail.SyrJgdm)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL,
-					fmt.Sprintf("清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
-				return
+				log.Println(fmt.Sprintf(
+					"清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
+			} else {
+				detail.SyrJgdm = devdept.Jgmc
 			}
-			detail.SyrJgdm = devdept.Jgmc
 		}
 		records = append(records, map[string]string{
 			"设备编号": detail.DevinfoID,

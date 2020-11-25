@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/export"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/qrcode"
 	"log"
@@ -262,12 +263,12 @@ func GetDevinfos(c *gin.Context) {
 		"jgdm":  jgdm,
 	}
 	if c.Query("pageNo") == "" {
-		pageNo = 1
+		pageNo = 0
 	} else {
 		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
 	}
 	if c.Query("pageSize") == "" {
-		pageSize = 10000
+		pageSize = 0
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
@@ -295,6 +296,163 @@ func GetDevinfos(c *gin.Context) {
 	data["lists"] = resps
 	data["total"] = len(resps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
+}
+
+//导出设备清册
+func ExportDevInfos(c *gin.Context) {
+	var (
+		appG     = app.Gin{C: c}
+		rkrqq    = c.Query("rkrqq")
+		rkrqz    = c.Query("rkrqz")
+		sbbh     = c.Query("sbbh")
+		xlh      = c.Query("xlh")
+		syr      = c.Query("syr")
+		mc       = c.Query("mc")
+		jgdm     = c.Query("jgdm")
+		bz       = c.Query("bz")
+		pageNo   int
+		pageSize int
+	)
+	if rkrqq == "" {
+		rkrqq = "2000-01-01 00:00:00"
+	}
+	if rkrqz == "" {
+		rkrqz = "2099-01-01 00:00:00"
+	}
+	if syr != "" {
+		user, err := models.GetUserdemoByMobile(syr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号[%s]获取使用人信息失败：%v", syr, err))
+			return
+		}
+		syr = user.UserID
+	}
+	con := map[string]string{
+		"rkrqq": rkrqq,
+		"rkrqz": rkrqz,
+		"sbbh":  sbbh,
+		"xlh":   xlh,
+		"syr":   syr,
+		"mc":    mc,
+		"jgdm":  jgdm,
+	}
+	if c.Query("pageNo") == "" {
+		pageNo = 0
+	} else {
+		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
+	}
+	if c.Query("pageSize") == "" {
+		pageSize = 0
+	} else {
+		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
+	}
+	devs, err := models.GetDevinfos(con, pageNo, pageSize, bz)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	if len(devs) == 0 {
+		appG.Response(http.StatusOK, e.SUCCESS, nil)
+		return
+	}
+	resps := make([]*Resp, 0)
+	for _, dev := range devs {
+		var syrName, syrMobile string
+		if dev.Syr != "" {
+			suser, err := models.GetUserdemoByUserid(dev.Syr)
+			if err != nil {
+				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
+				syrName, syrMobile = dev.Syr, dev.Syr
+			} else {
+				syrName, syrMobile = suser.Name, suser.Mobile
+			}
+		}
+		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
+		resps = append(resps, d)
+	}
+	records := make([]map[string]string, 0)
+	for _, resp := range resps {
+		records = append(records, map[string]string{
+			"设备编号":   resp.Idstr,
+			"资产编号":   resp.Zcbh,
+			"设备类型":   resp.Lx,
+			"设备型号":   resp.Xh,
+			"序列号":    resp.Xlh,
+			"设备来源":   resp.Ly,
+			"供应商":    resp.Gys,
+			"价格":     resp.Jg,
+			"生产商":    resp.Scs,
+			"生产日期":   resp.Scrq,
+			"购入日期":   resp.Grrq,
+			"设备报废年限": resp.Bfnx,
+			"入库日期":   resp.Rkrq,
+			"操作人":    resp.Czr,
+			"操作日期":   resp.Czrq,
+			"设备状态":   resp.Zt,
+			"设备属性":   resp.Sx,
+			"使用人":    resp.SyrName,
+			"使用人手机号": resp.SyrMobile,
+			"设备管理机构": resp.Jgmc,
+			"存放位置":   resp.Cfwz,
+		})
+	}
+	// sort map key
+	sortedKeys := make([]string, 21)
+	for field := range records[0] {
+		switch field {
+		case "设备编号":
+			sortedKeys[0] = field
+		case "资产编号":
+			sortedKeys[1] = field
+		case "设备类型":
+			sortedKeys[2] = field
+		case "设备型号":
+			sortedKeys[3] = field
+		case "序列号":
+			sortedKeys[4] = field
+		case "设备来源":
+			sortedKeys[5] = field
+		case "供应商":
+			sortedKeys[6] = field
+		case "价格":
+			sortedKeys[7] = field
+		case "生产商":
+			sortedKeys[8] = field
+		case "生产日期":
+			sortedKeys[9] = field
+		case "购入日期":
+			sortedKeys[10] = field
+		case "设备报废年限":
+			sortedKeys[11] = field
+		case "入库日期":
+			sortedKeys[12] = field
+		case "操作人":
+			sortedKeys[13] = field
+		case "操作日期":
+			sortedKeys[14] = field
+		case "设备状态":
+			sortedKeys[15] = field
+		case "设备属性":
+			sortedKeys[16] = field
+		case "使用人":
+			sortedKeys[17] = field
+		case "使用人手机号":
+			sortedKeys[18] = field
+		case "设备管理机构":
+			sortedKeys[19] = field
+		case "存放位置":
+			sortedKeys[20] = field
+		}
+		//sorted_keys = append(sorted_keys, field)
+	}
+	fileName := "设备清册" + time.Now().Format("150405")
+	url, err := export.WriteIntoExecel(fileName, sortedKeys, records)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, url)
 }
 
 //获取设备列表(管理员端,多条件查询设备)
@@ -501,7 +659,7 @@ func GetDevinfosByUser(c *gin.Context) {
 	if jgdm != "" {
 		for _, dm := range strings.Split(jgdm, ",") {
 			con["jgdm"] = dm
-			devs, err := models.GetDevinfos(con, 1, 10000, bz)
+			devs, err := models.GetDevinfos(con, 0, 0, bz)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 				return
@@ -510,7 +668,7 @@ func GetDevinfosByUser(c *gin.Context) {
 		}
 	} else {
 		con["syr"] = userid
-		devs, err := models.GetDevinfos(con, 1, 10000, bz)
+		devs, err := models.GetDevinfos(con, 0, 0, bz)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 			return

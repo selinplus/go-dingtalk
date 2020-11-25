@@ -674,7 +674,6 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 		ztCon   string
 		sbbhCon string
 	)
-	offset := (pageNo - 1) * pageSize
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,
@@ -688,7 +687,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
 			and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
 			and devinfo.jgdm %s %s %s
-			order by devinfo.sbbh LIMIT %d,%d`
+			order by devinfo.sbbh`
 	if con["jgdm"] == "" {
 		jgdmCon = "like '00%'"
 	} else {
@@ -713,7 +712,11 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 		sbbhCon = "and devinfo.sbbh = '" + con["sbbh"] + "'"
 	}
 	squery := fmt.Sprintf(query,
-		con["mc"], con["rkrqq"], con["rkrqz"], con["xlh"], con["syr"], jgdmCon, ztCon, sbbhCon, offset, pageSize)
+		con["mc"], con["rkrqq"], con["rkrqz"], con["xlh"], con["syr"], jgdmCon, ztCon, sbbhCon)
+	if pageNo > 0 && pageSize > 0 {
+		offset := (pageNo - 1) * pageSize
+		squery += fmt.Sprintf(" LIMIT %d,%d", offset, pageSize)
+	}
 	if err := db.Raw(squery).Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}

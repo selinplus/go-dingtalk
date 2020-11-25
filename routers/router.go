@@ -187,6 +187,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/detail", dev.GetDevinfoByID)
 		//获取设备列表(inner多条件查询设备)
 		apiv1.GET("/dev/list", dev.GetDevinfos)
+		//获取设备列表(inner多条件查询设备)
+		apiv1.GET("/dev/list_export", dev.ExportDevInfos)
 		//获取设备列表(管理员端,多条件查询设备)
 		apiv1.GET("/dev/listgly", dev.GetDevinfosGly)
 		//获取当前操作人所有流水记录
