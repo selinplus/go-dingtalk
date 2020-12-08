@@ -1,6 +1,7 @@
 package h5
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -191,7 +192,8 @@ func GetProcModList(c *gin.Context) {
 	for _, procMod := range procMods {
 		u, err := models.GetUserByMobile(procMod.Czr)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", procMod.Czr, err))
 			return
 		}
 		procMod.Czr = u.Name

@@ -42,7 +42,8 @@ func AddAddressbook(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		userID = user.UserID
@@ -75,7 +76,8 @@ func DeleteAddressbook(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		userID = user.UserID
@@ -112,7 +114,8 @@ func UpdateAddressbook(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		userID = user.UserID
@@ -143,7 +146,8 @@ func GetAddressbooks(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		userID = user.UserID
@@ -230,7 +234,8 @@ func GetRecentContacter(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		userID = user.UserID

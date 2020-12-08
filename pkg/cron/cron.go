@@ -299,7 +299,7 @@ func ProcessBcmsMessageDingding() {
 
 //同步信息
 func Sync() {
-	logging.Error(fmt.Sprintf("DepartmentUserSync start..."))
+	logging.Info(fmt.Sprintf("DepartmentUserSync start..."))
 	var (
 		t  = time.Now().Format("2006-01-02") + " 00:00:00"
 		sn = 30 //goroutine数量
@@ -316,7 +316,7 @@ func Sync() {
 			break
 		}
 	}
-	logging.Error(fmt.Sprintf("DepartmentUserSync success"))
+	logging.Info(fmt.Sprintf("DepartmentUserSync success"))
 }
 
 //同步一次部门和人员信息

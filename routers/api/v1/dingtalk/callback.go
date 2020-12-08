@@ -147,7 +147,7 @@ func GetCallbacks(c *gin.Context) {
 	)
 	replyMsg, err := dc.GetDecryptMsg(signature, timestamp, nonce, secretMsg)
 	if err != nil {
-		logging.Info(fmt.Sprintf("GetDecryptMsg failed:%v", err))
+		logging.Error(fmt.Sprintf("GetDecryptMsg failed:%v", err))
 		return
 	}
 	errJson := json.Unmarshal([]byte(replyMsg), &reply)
@@ -161,16 +161,20 @@ func GetCallbacks(c *gin.Context) {
 		for _, userid := range reply["UserId"].([]interface{}) {
 			if user := dingtalk.UserDetail(userid.(string), 10); user != nil {
 				if err := models.UserSync(user); err != nil {
-					logging.Info(fmt.Sprintf("sync userid:%v err:%v", userid, err))
+					logging.Error(fmt.Sprintf("sync userid:%v err:%v", userid, err))
+				} else {
+					if err := models.SaveUserdemo(user); err != nil {
+						logging.Error(fmt.Sprintf("sync userdemo userid:%v err:%v", userid, err))
+					}
 				}
 			} else {
-				logging.Info(fmt.Sprintf("%v：get user detail failed!", userid))
+				logging.Error(fmt.Sprintf("%v：get user detail failed!", userid))
 			}
 		}
 	case "user_leave_org":
 		for _, userid := range reply["UserId"].([]interface{}) {
 			if err := models.DeleteUser(userid.(string)); err != nil {
-				logging.Info(fmt.Sprintf("delete userid:%v err:%v", userid, err))
+				logging.Error(fmt.Sprintf("delete userid:%v err:%v", userid, err))
 			}
 		}
 	case "org_dept_create", "org_dept_modify":
@@ -179,17 +183,17 @@ func GetCallbacks(c *gin.Context) {
 			if dt := dingtalk.DepartmentDetail(deptid, 10); dt != nil {
 				dt.SyncTime = time.Now().Format("2006-01-02 15:04:05")
 				if err := models.DepartmentSync(dt); err != nil {
-					logging.Info(fmt.Sprintf("sync deptid:%v err:%v", deptid, err))
+					logging.Error(fmt.Sprintf("sync deptid:%v err:%v", deptid, err))
 				}
 			} else {
-				logging.Info(fmt.Sprintf("%v：get department detail failed!", deptId))
+				logging.Error(fmt.Sprintf("%v：get department detail failed!", deptId))
 			}
 		}
 	case "org_dept_remove":
 		for _, deptId := range reply["DeptId"].([]interface{}) {
 			deptid := int(deptId.(float64))
 			if err := models.DeleteDepartment(deptid); err != nil {
-				logging.Info(fmt.Sprintf("delete deptid:%v err:%v", deptid, err))
+				logging.Error(fmt.Sprintf("delete deptid:%v err:%v", deptid, err))
 			}
 		}
 	case "check_url":

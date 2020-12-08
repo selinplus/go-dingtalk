@@ -39,9 +39,10 @@ func PostStudyHlt(c *gin.Context) {
 	}
 
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -188,9 +189,10 @@ func GetStudyHlt(c *gin.Context) {
 		stars := make([]*HltStarResp, 0)
 		if len(hlt.StudyHltStars) > 0 {
 			for _, star := range hlt.StudyHltStars {
-				user, err := models.GetUserByUserid(star.UserID)
+				user, err := models.GetUserdemoByUserid(star.UserID)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", star.UserID, err))
 					return
 				}
 				stars = append(stars, &HltStarResp{
@@ -201,9 +203,10 @@ func GetStudyHlt(c *gin.Context) {
 				})
 			}
 		}
-		user, err := models.GetUserByUserid(hlt.UserID)
+		user, err := models.GetUserdemoByUserid(hlt.UserID)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
 			return
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, HltResp{
@@ -299,9 +302,10 @@ func GetStudyHlts(c *gin.Context) {
 			stars := make([]*HltStarResp, 0)
 			if len(hlt.StudyHltStars) > 0 {
 				for _, star := range hlt.StudyHltStars {
-					user, err := models.GetUserByUserid(star.UserID)
+					user, err := models.GetUserdemoByUserid(star.UserID)
 					if err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+							fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", star.UserID, err))
 						return
 					}
 					stars = append(stars, &HltStarResp{
@@ -312,9 +316,10 @@ func GetStudyHlts(c *gin.Context) {
 					})
 				}
 			}
-			user, err := models.GetUserByUserid(hlt.UserID)
+			user, err := models.GetUserdemoByUserid(hlt.UserID)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
 				return
 			}
 			data = append(data, &HltResp{
@@ -357,9 +362,10 @@ func GetStudyHltsByUserid(c *gin.Context) {
 	}
 
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -415,9 +421,10 @@ func GetStudyHltsByUserid(c *gin.Context) {
 			stars := make([]*HltStarResp, 0)
 			if len(hlt.StudyHltStars) > 0 {
 				for _, star := range hlt.StudyHltStars {
-					user, err := models.GetUserByUserid(star.UserID)
+					user, err := models.GetUserdemoByUserid(star.UserID)
 					if err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+							fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", star.UserID, err))
 						return
 					}
 					stars = append(stars, &HltStarResp{
@@ -428,9 +435,10 @@ func GetStudyHltsByUserid(c *gin.Context) {
 					})
 				}
 			}
-			user, err := models.GetUserByUserid(hlt.UserID)
+			user, err := models.GetUserdemoByUserid(hlt.UserID)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
 				return
 			}
 			data = append(data, &HltResp{
@@ -472,9 +480,10 @@ func AddStudyHltStar(c *gin.Context) {
 	)
 	hltId, _ := strconv.Atoi(id)
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -513,9 +522,10 @@ func CancelStudyHltStar(c *gin.Context) {
 	)
 	hltId, _ := strconv.Atoi(id)
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID

@@ -79,7 +79,7 @@ func SendMsg(c *gin.Context) {
 	if msg.ID > 0 {
 		err := models.AddMsgTag(msg.ID, msg.ToID, msg.FromID)
 		if err != nil {
-			logging.Info(fmt.Sprintf("%v", err))
+			logging.Error(fmt.Sprintf("%v", err))
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
 	} else {
@@ -112,10 +112,12 @@ func SendMsgMobile(c *gin.Context) {
 		}
 		ats = append(ats, a)
 	}
-	Mobile := form.FromID
-	user, errm := models.GetUserByMobile(Mobile)
-	if errm != nil {
-		logging.Info(fmt.Sprintf("%v", errm))
+	mobile := form.FromID
+	user, err := models.GetUserByMobile(mobile)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
+		return
 	}
 	msg := models.Msg{
 		ToID:        form.ToID,
@@ -127,7 +129,7 @@ func SendMsgMobile(c *gin.Context) {
 		Time:        t,
 		Attachments: ats,
 	}
-	err := models.AddSendMsg(&msg)
+	err = models.AddSendMsg(&msg)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_ADD_MSG_FAIL, nil)
 		return
@@ -139,7 +141,7 @@ func SendMsgMobile(c *gin.Context) {
 	if msg.ID > 0 {
 		err := models.AddMsgTag(msg.ID, msg.ToID, msg.FromID)
 		if err != nil {
-			logging.Info(fmt.Sprintf("%v", err))
+			logging.Error(fmt.Sprintf("%v", err))
 		}
 		appG.Response(http.StatusOK, e.SUCCESS, msg.ID)
 	} else {
@@ -169,7 +171,8 @@ func GetMsgs(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		msgs, err = models.GetMsgs(user.UserID, uint(tag), pageNum, pageSize)
@@ -229,7 +232,8 @@ func GetMsgs(c *gin.Context) {
 				}
 				usr, err := models.GetUserByUserid(userid)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 					return
 				}
 				deptids := strings.Split(usr.Department, ",")
@@ -267,7 +271,8 @@ func GetMsgByID(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		msg, err = models.GetMsgByID(uint(id), uint(tag), user.UserID)
@@ -327,7 +332,8 @@ func GetMsgByID(c *gin.Context) {
 			}
 			usr, err := models.GetUserByUserid(userid)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 				return
 			}
 			deptids := strings.Split(usr.Department, ",")
@@ -362,7 +368,8 @@ func DeleteMsg(c *gin.Context) {
 	if len(mobile) > 0 {
 		user, err := models.GetUserByMobile(mobile)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", mobile, err))
 			return
 		}
 		userID = user.UserID

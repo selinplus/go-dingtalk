@@ -312,7 +312,7 @@ func readXmlToMapType() []map[string]string {
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
 	xlFile, err := xlsx.OpenFile(inFile)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil
 	}
 	for k, sheet := range xlFile.Sheets {
@@ -346,7 +346,7 @@ func readXmlToMapState() []map[string]string {
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
 	xlFile, err := xlsx.OpenFile(inFile)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil
 	}
 	for k, sheet := range xlFile.Sheets {
@@ -379,7 +379,7 @@ func readXmlToMapOpera() []map[string]string {
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
 	xlFile, err := xlsx.OpenFile(inFile)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil
 	}
 	for k, sheet := range xlFile.Sheets {
@@ -412,7 +412,7 @@ func readXmlToMapProperty() []map[string]string {
 	inFile := setting.AppSetting.RuntimeRootPath + setting.AppSetting.ExportSavePath + "device.xlsx"
 	xlFile, err := xlsx.OpenFile(inFile)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil
 	}
 	for k, sheet := range xlFile.Sheets {
@@ -445,7 +445,7 @@ func readXmlToStructProcNode() []*Procnode {
 	inFile := setting.AppSetting.RuntimeRootPath + "submit.xlsx"
 	xlFile, err := xlsx.OpenFile(inFile)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil
 	}
 	for k, sheet := range xlFile.Sheets {
@@ -488,7 +488,7 @@ func readXmlToMapProcType() []map[string]string {
 	inFile := setting.AppSetting.RuntimeRootPath + "submit.xlsx"
 	xlFile, err := xlsx.OpenFile(inFile)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil
 	}
 	for k, sheet := range xlFile.Sheets {
@@ -533,7 +533,7 @@ func InsertType(devType []map[string]string) {
 	}
 	if len(er) > 0 {
 		for _, e := range er {
-			logging.Info(fmt.Sprintf("%+v", e))
+			logging.Error(fmt.Sprintf("%+v", e))
 		}
 	}
 }
@@ -555,7 +555,7 @@ func InsertState(devState []map[string]string) {
 	}
 	if len(er) > 0 {
 		for _, e := range er {
-			logging.Info(fmt.Sprintf("%+v", e))
+			logging.Error(fmt.Sprintf("%+v", e))
 		}
 	}
 }
@@ -577,7 +577,7 @@ func InsertOpera(devOpera []map[string]string) {
 	}
 	if len(er) > 0 {
 		for _, e := range er {
-			logging.Info(fmt.Sprintf("%+v", e))
+			logging.Error(fmt.Sprintf("%+v", e))
 		}
 	}
 }
@@ -599,7 +599,7 @@ func InsertProperty(devProperty []map[string]string) {
 	}
 	if len(er) > 0 {
 		for _, e := range er {
-			logging.Info(fmt.Sprintf("%+v", e))
+			logging.Error(fmt.Sprintf("%+v", e))
 		}
 	}
 }
@@ -626,7 +626,7 @@ func InsertNode(pns []*Procnode) {
 	}
 	if len(er) > 0 {
 		for _, e := range er {
-			logging.Info(fmt.Sprintf("%+v", e))
+			logging.Error(fmt.Sprintf("%+v", e))
 		}
 	}
 }
@@ -648,7 +648,7 @@ func InsertProcType(procType []map[string]string) {
 	}
 	if len(er) > 0 {
 		for _, e := range er {
-			logging.Info(fmt.Sprintf("%+v", e))
+			logging.Error(fmt.Sprintf("%+v", e))
 		}
 	}
 }

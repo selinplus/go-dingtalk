@@ -1,6 +1,7 @@
 package fsdj
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -98,6 +99,18 @@ func AddGroupMember(c *gin.Context) {
 			if err := models.AddStudyMember(&user); err != nil {
 				appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL, err)
 				return
+			} else {
+				user, err := models.GetUserByUserid(userid)
+				if err != nil {
+					appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL,
+						fmt.Sprintf("增加学习小组成员错误,[%s]获取user失败：%v", userid, err))
+					return
+				}
+				if err := models.SaveUserdemo(&user); err != nil {
+					appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL,
+						fmt.Sprintf("增加学习小组成员userdemo错误：%v", err))
+					return
+				}
 			}
 		}
 	}
@@ -132,7 +145,7 @@ func GetGroupMembers(c *gin.Context) {
 	appG := app.Gin{C: c}
 	members, err := models.GetStudyMembers(c.Query("dm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPT_USER_FAIL, err)
 		return
 	}
 	if len(members) > 0 {
@@ -147,7 +160,8 @@ func GetGroupMembers(c *gin.Context) {
 			} else {
 				user, err := models.GetUserByUserid(member.UserID)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", member.UserID, err))
 					return
 				}
 				resp = append(resp, &StudyMemberResp{
@@ -193,7 +207,8 @@ func GetFsdjUserByMc(c *gin.Context) {
 	}
 	users, err := models.GetFsdjUserByMc(mc)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("模糊查询福山区用户错误：%v", err))
 		return
 	}
 	if len(users) == 0 {

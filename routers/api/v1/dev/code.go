@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -130,7 +131,8 @@ func GetProcCzr(c *gin.Context) {
 		czrmp := map[string]string{}
 		czr, uerr := models.GetUserByMobile(mobile)
 		if uerr != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息失败！", mobile))
 			return
 		}
 		czrmp["name"] = czr.Name
@@ -148,7 +150,8 @@ func GetProcCustomizeList(c *gin.Context) {
 	)
 	xxzxUsers, err := models.GetUserByDepartmentID("70280083")
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("获取部门id 70280083 的人员信息错误:%v", err))
 		return
 	}
 	for _, user := range xxzxUsers {
@@ -159,7 +162,8 @@ func GetProcCustomizeList(c *gin.Context) {
 	}
 	users, err := models.GetUserByDepartmentID("29464263")
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("获取部门id 70280083 的人员信息错误:%v", err))
 		return
 	}
 	for _, user := range users {
@@ -187,7 +191,8 @@ func GetProcType(c *gin.Context) {
 	userid := ts[3]
 	user, err := models.GetUserByUserid(userid)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 		return
 	}
 	if strings.Contains(user.Department, "70280083") {

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -25,7 +26,8 @@ func OnDuty(c *gin.Context) {
 	}
 	user, err := models.GetUserByMobile(form.Mobile)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", form.Mobile, err))
 		return
 	}
 	d := models.Onduty{

@@ -451,13 +451,13 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error)
 	devs := make([]*Devinfo, 0)
 	xlsx, err := excelize.OpenReader(fileName)
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil, err
 	}
 	//sheetName := xlsx.GetSheetName(0)
 	rows, err := xlsx.GetRows("设备基本信息表")
 	if err != nil {
-		logging.Info(err.Error())
+		logging.Error(err.Error())
 		return nil, err
 	}
 	//logging.Info(fmt.Sprintf("sheet name: %s", sheetName))

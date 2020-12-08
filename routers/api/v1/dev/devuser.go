@@ -91,7 +91,7 @@ func GetDevuserList(c *gin.Context) {
 	appG := app.Gin{C: c}
 	dus, err := models.GetDevuser(c.Query("jgdm"))
 	if err != nil {
-		appG.Response(http.StatusOK, e.ERROR_GET_DEVUSER_FAIL, err)
+		appG.Response(http.StatusOK, e.ERROR_GET_DEPT_USER_FAIL, err)
 		return
 	}
 	if len(dus) > 0 {

@@ -1,6 +1,7 @@
 package fsdj
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -21,9 +22,10 @@ func StudySignin(c *gin.Context) {
 	appG := app.Gin{C: c}
 	var userid string
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -56,14 +58,15 @@ func StudySignin(c *gin.Context) {
 func GetSigninsByUserid(c *gin.Context) {
 	var (
 		appG   = app.Gin{C: c}
-		user   *models.User
+		user   *models.Userdemo
 		err    error
 		userid string
 	)
 	if len(c.Query("mobile")) > 0 {
-		user, err = models.GetUserByMobile(c.Query("mobile"))
+		user, err = models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -85,9 +88,10 @@ func GetSigninsByUserid(c *gin.Context) {
 	if len(signins) > 0 {
 		data := make([]*SigninResp, 0)
 		if user == nil {
-			user, err = models.GetUserByUserid(userid)
+			user, err = models.GetUserdemoByUserid(userid)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 				return
 			}
 		}
@@ -116,9 +120,10 @@ func GetSigninsByQdrq(c *gin.Context) {
 	if len(signins) > 0 {
 		data := make([]*SigninResp, 0)
 		for _, signin := range signins {
-			user, err := models.GetUserByUserid(signin.UserID)
+			user, err := models.GetUserdemoByUserid(signin.UserID)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", signin.UserID, err))
 				return
 			}
 			data = append(data, &SigninResp{

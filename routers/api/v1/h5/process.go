@@ -1,6 +1,7 @@
 package h5
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -484,9 +485,10 @@ func GetProcTodoList(c *gin.Context) {
 	}
 	ts := strings.Split(token, ".")
 	userid := ts[3]
-	czr, uerr := models.GetUserByUserid(userid)
-	if uerr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+	czr, err := models.GetUserByUserid(userid)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 		return
 	}
 	procList, err := models.GetProcTodoList(czr.Mobile)
@@ -544,9 +546,10 @@ func GetProcDoneList(c *gin.Context) {
 	}
 	ts := strings.Split(token, ".")
 	userid := ts[3]
-	czr, uerr := models.GetUserByUserid(userid)
-	if uerr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+	czr, err := models.GetUserByUserid(userid)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 		return
 	}
 	procList, err := models.GetProcDoneList(czr.Mobile)
@@ -598,9 +601,10 @@ func GetProcDoneListEnd(c *gin.Context) {
 	}
 	ts := strings.Split(token, ".")
 	userid := ts[3]
-	czr, uerr := models.GetUserByUserid(userid)
-	if uerr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+	czr, err := models.GetUserByUserid(userid)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 		return
 	}
 	procList, err := models.GetProcDoneList(czr.Mobile)
@@ -652,9 +656,10 @@ func GetProcDoneListDoing(c *gin.Context) {
 	}
 	ts := strings.Split(token, ".")
 	userid := ts[3]
-	czr, uerr := models.GetUserByUserid(userid)
-	if uerr != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, nil)
+	czr, err := models.GetUserByUserid(userid)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 		return
 	}
 	procList, err := models.GetProcDoneList(czr.Mobile)

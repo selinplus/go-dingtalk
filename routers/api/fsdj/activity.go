@@ -224,9 +224,10 @@ func GetStudyAct(c *gin.Context) {
 					}
 				}
 				hlt.StarNum = len(hlt.StudyHltStars)
-				user, err := models.GetUserByUserid(hlt.UserID)
+				user, err := models.GetUserdemoByUserid(hlt.UserID)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+						fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 					return
 				}
 				hltResps = append(hltResps, &HltResp{
@@ -376,9 +377,10 @@ func GetStudyActs(c *gin.Context) {
 					}
 
 					hlt.StarNum = len(hlt.StudyHltStars)
-					user, err := models.GetUserByUserid(hlt.UserID)
+					user, err := models.GetUserdemoByUserid(hlt.UserID)
 					if err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+							fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
 						return
 					}
 					hltResps = append(hltResps, &HltResp{
@@ -414,9 +416,10 @@ func GetStudyActsMine(c *gin.Context) {
 		userid   string
 	)
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -525,9 +528,10 @@ func GetStudyActsMine(c *gin.Context) {
 						}
 					}
 					hlt.StarNum = len(hlt.StudyHltStars)
-					user, err := models.GetUserByUserid(hlt.UserID)
+					user, err := models.GetUserdemoByUserid(hlt.UserID)
 					if err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+							fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 						return
 					}
 					hltResps = append(hltResps, &HltResp{
@@ -580,9 +584,10 @@ func JoinStudyAct(c *gin.Context) {
 		sprq   string
 	)
 	if len(c.Query("mobile")) > 0 {
-		user, err := models.GetUserByMobile(c.Query("mobile"))
+		user, err := models.GetUserdemoByMobile(c.Query("mobile"))
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", c.Query("mobile"), err))
 			return
 		}
 		userid = user.UserID
@@ -639,9 +644,10 @@ func GetApproveStudyActs(c *gin.Context) {
 	if len(acts) > 0 {
 		var data = make([]*ActDetailResp, 0)
 		for _, act := range acts {
-			user, err := models.GetUserByUserid(act.UserID)
+			user, err := models.GetUserdemoByUserid(act.UserID)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 				return
 			}
 			data = append(data, &ActDetailResp{
@@ -687,9 +693,10 @@ func GetStudyActUsers(c *gin.Context) {
 	if len(ads) > 0 {
 		var data = make([]*ActDetailResp, 0)
 		for _, ad := range ads {
-			user, err := models.GetUserByUserid(ad.UserID)
+			user, err := models.GetUserdemoByUserid(ad.UserID)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", ad.UserID, err))
 				return
 			}
 			data = append(data, &ActDetailResp{
@@ -724,19 +731,20 @@ func CountStudyAct(c *gin.Context) {
 				return
 			}
 			if len(countActResps) > 0 {
-				var fbr []*models.User
+				var fbr []*models.Userdemo
 				userids := models.GetStudyActHltUsersByStudyDm(actId, group.Dm)
 				for _, userid := range userids {
-					u, err := models.GetUserByUserid(userid)
+					u, err := models.GetUserdemoByUserid(userid)
 					if err != nil {
-						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+						appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+							fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 						return
 					}
 					fbr = append(fbr, u)
 				}
 				members, err := models.GetStudyMembers(group.Dm)
 				if err != nil {
-					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVUSER_FAIL, err)
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPT_USER_FAIL, err)
 					return
 				}
 				data = append(data, map[string]interface{}{

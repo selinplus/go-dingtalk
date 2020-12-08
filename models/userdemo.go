@@ -1,6 +1,6 @@
 package models
 
-// 设备管理用户信息参照表
+// 用户信息参照表
 type Userdemo struct {
 	UserID     string `json:"userid" gorm:"primary_key;column:userid;COMMENT:'用户标识'"`
 	Name       string `json:"name" gorm:"COMMENT:'名称'"`

@@ -393,7 +393,7 @@ func GetDevdeptEppTree(c *gin.Context) {
 	}
 	dus, err := models.GetDevuser(jgdm)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVUSER_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPT_USER_FAIL, err)
 		return
 	}
 	if len(dus) > 0 {
@@ -480,7 +480,8 @@ func GetDevdeptGly(c *gin.Context) {
 	jgdm := c.Query("jgdm")
 	ddept, err := models.GetDevdept(jgdm)
 	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("获取当前机构管理员信息错误：%v", err))
 		return
 	}
 	resps := make([]*GlyResp, 0)

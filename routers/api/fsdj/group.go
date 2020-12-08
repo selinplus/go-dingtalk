@@ -1,6 +1,7 @@
 package fsdj
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
@@ -40,9 +41,10 @@ func AddGroup(c *gin.Context) {
 		if form.Mobile == "0000" {
 			userid = "fsdj_admin"
 		} else {
-			user, err := models.GetUserByMobile(form.Mobile)
+			user, err := models.GetUserdemoByMobile(form.Mobile)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+					fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", form.Mobile, err))
 				return
 			}
 			userid = user.UserID
@@ -95,9 +97,10 @@ func UpdGroup(c *gin.Context) {
 		if form.Mobile == "0000" {
 			userid = "fsdj_admin"
 		} else {
-			user, err := models.GetUserByMobile(form.Mobile)
+			user, err := models.GetUserdemoByMobile(form.Mobile)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+					fmt.Sprintf("根据手机号：%s 获取人员信息错误：%v", form.Mobile, err))
 				return
 			}
 			userid = user.UserID
@@ -143,14 +146,14 @@ func GetGroup(c *gin.Context) {
 	}
 	if d != nil {
 		if d.Gly != "" {
-			u, _ := models.GetUserByUserid(d.Gly)
+			u, _ := models.GetUserdemoByUserid(d.Gly)
 			d.Gly = u.Name
 		}
 		if d.Lrr != "" {
 			if d.Lrr == "fsdj_admin" {
 				d.Lrr = "超级管理员"
 			} else {
-				u, _ := models.GetUserByUserid(d.Lrr)
+				u, _ := models.GetUserdemoByUserid(d.Lrr)
 				d.Lrr = u.Name
 			}
 		}
@@ -158,7 +161,7 @@ func GetGroup(c *gin.Context) {
 			if d.Xgr == "fsdj_admin" {
 				d.Xgr = "超级管理员"
 			} else {
-				u, _ := models.GetUserByUserid(d.Xgr)
+				u, _ := models.GetUserdemoByUserid(d.Xgr)
 				d.Xgr = u.Name
 			}
 		}
@@ -245,7 +248,8 @@ func GetGroupGly(c *gin.Context) {
 	for _, dm := range strings.Split(dms, ",") {
 		ddept, err := models.GetStudyGroup(dm)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("获取当前学习小组管理员信息错误：%v", err))
 			return
 		}
 		if ddept.Gly == "" {
@@ -257,9 +261,10 @@ func GetGroupGly(c *gin.Context) {
 				Mobile: "0000",
 			})
 		} else {
-			user, err := models.GetUserByUserid(ddept.Gly)
+			user, err := models.GetUserdemoByUserid(ddept.Gly)
 			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL, err)
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", ddept.Gly, err))
 				return
 			}
 			resps = append(resps, &GlyResp{
