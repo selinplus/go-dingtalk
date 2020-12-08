@@ -647,7 +647,7 @@ func GetApproveStudyActs(c *gin.Context) {
 			user, err := models.GetUserdemoByUserid(act.UserID)
 			if err != nil {
 				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", act.UserID, err))
 				return
 			}
 			data = append(data, &ActDetailResp{
