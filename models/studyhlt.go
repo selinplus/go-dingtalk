@@ -18,6 +18,7 @@ type StudyHlt struct {
 	Xgrq          string   `json:"xgrq" gorm:"COMMENT:'修改日期'"`
 	Flag          string   `json:"flag" gorm:"COMMENT:'0:图文 1:视频';default:'0'"`
 	Status        string   `json:"status" gorm:"COMMENT:'状态,0:未审核 1:审核通过(发布) 2:撤销发布 3:审核驳回';default:'0'"`
+	TypeStatus    string   `json:"type_status" gorm:"COMMENT:'自我推荐精选,0:未推选 1:自我推选 2:审核通过';default:'0'"`
 	StarNum       int      `json:"star_num" gorm:"-"` //点赞数
 	Star          bool     `json:"star" gorm:"-"`     //点赞标志，仅前台展示，不做数据库存储
 	Dm            string   `json:"dm" gorm:"-"`       //发布人所在学习小组

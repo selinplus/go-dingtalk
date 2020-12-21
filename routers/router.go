@@ -532,6 +532,8 @@ func InitRouter() *gin.Engine {
 		apifsdj.POST("/hlt/post", fsdj.PostStudyHlt)
 		//党员风采修改
 		apifsdj.POST("/hlt/edit", fsdj.UpdStudyHlt)
+		//党员学习笔记类风采自我推选
+		apifsdj.POST("/hlt/star_note", fsdj.UpdStudyHlt)
 		//党员风采删除
 		apifsdj.GET("/hlt/del/:id", fsdj.DelStudyHlt)
 		//点赞党员风采

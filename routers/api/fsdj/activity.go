@@ -21,6 +21,7 @@ type StudyActForm struct {
 	ImageUrls  []string `json:"image_urls"`
 	Share      string   `json:"share"`
 	Status     string   `json:"status"`
+	Type       string   `json:"type"`
 	Deadline   string   `json:"deadline"`
 }
 
@@ -54,7 +55,8 @@ func PostStudyAct(c *gin.Context) {
 		Content:    form.Content,
 		ImageUrl:   imageUrl,
 		Share:      form.Share,
-		Status:     "0",
+		Status:     form.Status,
+		Type:       form.Type,
 		Fbrq:       time.Now().Format("2006-01-02 15:04:05"),
 		Deadline:   form.Deadline,
 	}
@@ -252,6 +254,7 @@ func GetStudyActs(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		share    = c.Query("share")
 		status   = c.Query("status")   //0:未审核 1:审核通过(发布) 2:撤销发布
+		tp       = c.Query("type")     //1:普通活动 2:学习笔记
 		dFlag    = c.Query("deadline") //Y:到期
 		url      = c.Request.URL.Path
 		pageSize int
@@ -276,7 +279,7 @@ func GetStudyActs(c *gin.Context) {
 		deadline = fmt.Sprintf(
 			"deadline>'%s'", time.Now().Format("2006-01-02"))
 	}
-	acts, err := models.GetStudyActs(share, status, deadline, pageNo, pageSize)
+	acts, err := models.GetStudyActs(share, status, tp, deadline, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
@@ -441,8 +444,7 @@ func GetStudyActsMine(c *gin.Context) {
 		deadline = fmt.Sprintf(
 			"deadline>'%s'", time.Now().Format("2006-01-02"))
 	}
-	acts, err := models.GetStudyActs(
-		"", "1", deadline, 1, 10000)
+	acts, err := models.GetStudyActs("", "1", "", deadline, 1, 10000)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return

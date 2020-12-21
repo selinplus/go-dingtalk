@@ -70,7 +70,7 @@ func PostStudyHlt(c *gin.Context) {
 		Content:    form.Content,
 		HltUrl:     hltUrl,
 		Flag:       form.Flag,
-		Status:     "0",
+		Status:     form.Status,
 		Fbrq:       time.Now().Format("2006-01-02 15:04:05"),
 	}
 	if err := models.AddStudyHlt(topic); err != nil {
@@ -109,8 +109,19 @@ func UpdStudyHlt(c *gin.Context) {
 		hlt.HltUrl = hltUrl
 		hlt.Status = "0"
 	}
-	if strings.Contains(url, "approve") { //审核发布&驳回
-		hlt.Status = form.Status // 1:通过(发布)  3:驳回
+	if strings.Contains(url, "approve") { //审核发布&驳回==>status 1:通过(发布)  3:驳回
+		if c.Query("type") == "note" { //审核精选学习笔记
+			if form.Status == "1" { //TypeStatus ==> 2:设为精选  0:驳回
+				hlt.TypeStatus = "2"
+			} else if form.Status == "3" {
+				hlt.TypeStatus = "0"
+			}
+		} else { //普通活动风采审核
+			hlt.Status = form.Status
+		}
+	}
+	if strings.Contains(url, "star_note") { //自我设置精选学习笔记
+		hlt.TypeStatus = form.Status
 	}
 	if strings.Contains(url, "cancel") { //撤销
 		hlt.Status = "2"
@@ -229,6 +240,7 @@ func GetStudyHlts(c *gin.Context) {
 		dm       = c.Query("dm")
 		status   = c.Query("status") //0:未审核 1:审核通过(发布) 2:审核驳回 3:撤销发布
 		url      = c.Request.URL.Path
+		tpStatus = c.Query("type_status") //自我推荐精选,0:未推选 1:自我推选 2:审核通过
 		pageSize int
 		pageNo   int
 	)
@@ -244,7 +256,8 @@ func GetStudyHlts(c *gin.Context) {
 	}
 
 	cond := fmt.Sprintf(
-		"status like '%s' and flag like '%s'", status+"%", flag+"%")
+		"status like '%s' and flag like '%s' and type_status like '%s'",
+		status+"%", flag+"%", tpStatus+"%")
 	if actId != "" {
 		cond += fmt.Sprintf(" and act_id='%s'", actId)
 	} else {
