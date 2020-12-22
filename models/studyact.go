@@ -86,9 +86,10 @@ func GetStudyActs(share, status, tp, deadline string, pageNo, pageSize int) ([]*
 	return acts, nil
 }
 
-func GetStudyActsCnt(share, status, deadline string) (cnt int) {
+func GetStudyActsCnt(share, status, tp, deadline string) (cnt int) {
 	err := db.Model(&StudyAct{}).
-		Where("share like ? and status like ?", share+"%", status+"%").
+		Where("share like ? and status like ? and type like ?",
+			share+"%", status+"%", tp+"%").
 		Where(deadline).Count(&cnt).Error
 	if err != nil {
 		cnt = 0

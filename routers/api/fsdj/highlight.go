@@ -137,6 +137,8 @@ type HltResp struct {
 	*models.StudyHlt
 	Name          string `json:"name"`
 	Mobile        string `json:"mobile"`
+	GroupDm       string `json:"group_dm"`
+	GroupName     string `json:"group_name"`
 	StudyHltStars []*HltStarResp
 }
 type HltStarResp struct {
@@ -335,10 +337,26 @@ func GetStudyHlts(c *gin.Context) {
 					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
 				return
 			}
+			member, err := models.GetStudyMember(user.UserID)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR, err)
+				return
+			}
+			if member == nil {
+				appG.Response(http.StatusOK, e.ERROR, "用户不在党小组中，请联系管理员添加")
+				return
+			}
+			group, err := models.GetStudyGroup(member.Dm)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR, err)
+				return
+			}
 			data = append(data, &HltResp{
 				StudyHlt:      hlt,
 				Name:          user.Name,
 				Mobile:        user.Mobile,
+				GroupDm:       group.Dm,
+				GroupName:     group.Mc,
 				StudyHltStars: stars,
 			})
 		}

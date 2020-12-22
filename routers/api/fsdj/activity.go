@@ -402,7 +402,7 @@ func GetStudyActs(c *gin.Context) {
 		appG.Response(http.StatusOK, e.SUCCESS,
 			map[string]interface{}{
 				"list": data,
-				"cnt":  models.GetStudyActsCnt(share, status, deadline),
+				"cnt":  models.GetStudyActsCnt(share, status, tp, deadline),
 			})
 		return
 	}
