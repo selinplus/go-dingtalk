@@ -16,7 +16,7 @@ import (
 
 //new devinfo info
 type Devinfo struct {
-	Sbbh  uint   `json:"sbbh" gorm:"primary_key;AUTO_INCREMENT"`
+	Sbbh  uint   `json:"sbbh" gorm:"primary_key;AUTO_INCREMENT;COMMENT:'根据主键id生成6位设备编号'"`
 	ID    string `json:"ID" gorm:"COMMENT:'设备编号'"`
 	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
 	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`

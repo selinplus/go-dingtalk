@@ -126,7 +126,7 @@ func DeleteDevuser(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
-	if models.IsUserDevExist(c.Query("id")) {
+	if models.IsUserDevExist(c.Query("userid")) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
 		return
 	}

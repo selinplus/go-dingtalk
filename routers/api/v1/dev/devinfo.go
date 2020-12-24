@@ -536,7 +536,7 @@ func GetDevinfosGly(c *gin.Context) {
 
 type Resp struct {
 	*models.DevinfoResp
-	Idstr     string `json:"idstr"`
+	Idstr     string `json:"idstr"` //6位短编号
 	SyrName   string `json:"syr_name"`
 	SyrMobile string `json:"syr_mobile"`
 }
