@@ -449,6 +449,10 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/devmod/list", dev.GetDevModList)
 		//设备分配(管理员入库)&借出&收回&交回
 		apiv3.POST("/dev/allocate", dev.Allocate)
+		//获取设备列表(inner多条件查询设备)
+		apiv3.GET("/dev/list", dev.GetDevinfos)
+		//设备下发
+		apiv3.POST("/dev/issued", dev.Issued)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dev.GetDevinfosByUser)
 		//获取待办列表(交回设备)
