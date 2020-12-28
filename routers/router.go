@@ -451,6 +451,8 @@ func InitRouter() *gin.Engine {
 		apiv3.POST("/dev/allocate", dev.Allocate)
 		//获取设备列表(inner多条件查询设备)
 		apiv3.GET("/dev/list", dev.GetDevinfos)
+		//获取当前用户为机构管理员的所有机构列表
+		apiv3.GET("/dev/gly", dev.GetDevGly)
 		//设备下发
 		apiv3.POST("/dev/issued", dev.Issued)
 		//获取设备列表(管理员查询||eapp使用人查询)
