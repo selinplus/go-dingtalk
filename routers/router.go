@@ -453,6 +453,8 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/dev/list", dev.GetDevinfos)
 		//获取当前用户为机构管理员的所有机构列表
 		apiv3.GET("/dev/gly", dev.GetDevGly)
+		//获取设备管理机构列表(bz:0-管理员不可选;1-管理员可选)
+		apiv3.GET("/dev/deptglylist", dev.GetDevdeptGlyList)
 		//设备下发
 		apiv3.POST("/dev/issued", dev.Issued)
 		//获取设备列表(管理员查询||eapp使用人查询)
