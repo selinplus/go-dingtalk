@@ -326,7 +326,6 @@ func GetDevCheck(c *gin.Context) {
 		appG.Response(http.StatusOK, e.ERROR, "设备已盘点,无需盘点！")
 		return
 	}
-	//使用人查看名下设备
 	var userid string
 	u := c.Request.URL.Path
 	if strings.Index(u, "api/v3") != -1 {
@@ -337,9 +336,11 @@ func GetDevCheck(c *gin.Context) {
 		}
 		ts := strings.Split(token, ".")
 		userid = ts[3]
-		if !models.CheckSyrSelf(uint(CheckID), DevinfoID, userid) {
-			appG.Response(http.StatusOK, e.ERROR, "当前盘点人和设备使用人不一致！")
-			return
+		if c.Query("ckself") == "Y" {
+			if !models.CheckSyrSelf(uint(CheckID), DevinfoID, userid) {
+				appG.Response(http.StatusOK, e.ERROR, "当前盘点人和设备使用人不一致！")
+				return
+			}
 		}
 		err := models.DevCheck(uint(CheckID), DevinfoID, map[string]interface{}{
 			"pdr": userid, "ck_bz": 1, "cktime": time.Now().Format("2006-01-02 15:04:05")})

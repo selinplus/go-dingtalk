@@ -55,7 +55,7 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 		"msgtype": "text",
 		"text":    text,
 	}
-	user, _ := models.GetUserByMobile(czr)
+	user, _ := models.GetUserdemoByMobile(czr)
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
 		"userid_list": user.UserID,
@@ -88,7 +88,7 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 		"msgtype": "link",
 		"link":    link,
 	}
-	user, _ := models.GetUserByMobile(p.Mobile)
+	user, _ := models.GetUserdemoByMobile(p.Mobile)
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
 		"userid_list": user.UserID,
