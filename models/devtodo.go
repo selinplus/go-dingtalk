@@ -11,6 +11,12 @@ type Devtodo struct {
 	Czr        string `json:"czr" gorm:"COMMENT:'操作人'"`
 	Czrq       string `json:"czrq" gorm:"COMMENT:'操作日期'"`
 	Jgdm       string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
+	DstJgdm    string `json:"dst_jgdm" gorm:"COMMENT:'更改后设备管理机构代码'"`
+	SrcJgksdm  string `json:"src_jgksdm" gorm:"COMMENT:'更改后设备所属机构代码'"`
+	DstJgksdm  string `json:"dst_jgksdm" gorm:"COMMENT:'更改后设备所属机构代码'"`
+	SrcCfwz    string `json:"src_cfwz" gorm:"COMMENT:'更改后存放位置'"`
+	DstCfwz    string `json:"dst_cfwz" gorm:"COMMENT:'更改后存放位置'"`
+	Bz         string `json:"bz" gorm:"COMMENT:'待办备注'"`
 	DevID      string `json:"devid" gorm:"COMMENT:'设备编号';column:devid"` //devinfo ID
 	Done       int    `json:"done" gorm:"COMMENT:'0: 待办 1: 已办';size:1;default:'0'"`
 	FlagNotice int    `json:"flag_notice" gorm:"COMMENT:'0: 未推送 1: 已推送';size:1;default:'0'"`
@@ -25,16 +31,24 @@ type DevtodoResp struct {
 	Czlx    string `json:"czlx"`
 	Num     int    `json:"num"`
 	SrcJgdm string `json:"src_jgdm"`
-	Jgmc    string `json:"jgmc"`
+	Jgmc    string `json:"jgmc"`     //调整前管理机构名称
+	DstJgmc string `json:"dst_jgmc"` //调整后管理机构名称
+	SrcKsmc string `json:"src_ksmc"` //调整前所属科室名称
+	DstKsmc string `json:"dst_ksmc"` //调整后所属科室名称
 }
 
 func GetDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
-	err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done").
-		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
+	filed := `devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,a.gly,devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,
+			devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
+			devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz`
+	err := db.Table("devtodo").Select(filed).
+		Joins("left join devdept a on a.jgdm=devtodo.jgdm").
+		Joins("left join devdept b on b.jgdm=devtodo.dst_jgdm").
+		Joins("left join devdept c on c.jgdm=devtodo.src_jgksdm").
+		Joins("left join devdept d on d.jgdm=devtodo.dst_jgksdm").
 		Joins("left join devinfo on devinfo.id=devtodo.devid").
-		Joins("left join user on user.userid=devtodo.czr").
+		Joins("left join userdemo on userdemo.userid=devtodo.czr").
 		Where("devtodo.done=?", done).Order("devtodo.czrq desc").Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -45,8 +59,8 @@ func GetDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 func GetUpDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.lsh,user.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").
-		Joins("left join user on user.userid=devtodo.czr").
+		Select("devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").
+		Joins("left join userdemo on userdemo.userid=devtodo.czr").
 		Joins("left join devmod on devmod.lsh=devtodo.lsh").
 		Joins("left join devdept on devdept.jgdm=devmod.jgdm").
 		Where("devtodo.done=?", done).Order("devtodo.czrq desc").Scan(&dtos).Error

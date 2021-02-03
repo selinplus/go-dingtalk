@@ -2,7 +2,7 @@ package models
 
 type ProcessTag struct {
 	ID         uint `gorm:"primary_key;AUTO_INCREMENT"`
-	ProcID     uint `json:"proc_id"gorm:"COMMENT:'流程实例ID'"`
+	ProcID     uint `json:"proc_id" gorm:"COMMENT:'流程实例ID'"`
 	FlagNotice int  `json:"flag_notice" gorm:"COMMENT:'0: 未推送 1: 已推送';size:1;default:'0'"`
 }
 

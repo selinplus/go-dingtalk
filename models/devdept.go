@@ -18,6 +18,42 @@ type Devdept struct {
 	Xgrq   string `json:"xgrq" gorm:"COMMENT:'修改日期'"`
 }
 
+//获取共同上级gly
+func GetCommonGly(srcJgdm, dstJgdm string) (gly string) {
+	srcLen := len(srcJgdm)
+	dstLen := len(dstJgdm)
+	if srcLen == dstLen {
+		return getCommonGly(srcJgdm, dstJgdm)
+	}
+	if srcLen > dstLen {
+		return getCommonGly(srcJgdm[:dstLen], dstJgdm)
+	}
+	if srcLen < dstLen {
+		return getCommonGly(srcJgdm, dstJgdm[:srcLen])
+	}
+	return
+}
+
+func getCommonGly(srcJgdm, dstJgdm string) (gly string) {
+	if len(srcJgdm) > 2 {
+		if srcJgdm[:len(srcJgdm)-2] == dstJgdm[:len(srcJgdm)-2] {
+			dept, _ := GetDevdept(GetSjjgdm(srcJgdm[:len(srcJgdm)-2]))
+			return dept.Gly
+		}
+		return getCommonGly(srcJgdm[:len(srcJgdm)-2], dstJgdm[:len(srcJgdm)-2])
+	}
+	return
+}
+
+//获取上级管理机构代码(即有管理员的机构代码)
+func GetSjjgdm(jgdm string) (gljgdm string) {
+	dept, _ := GetDevdept(jgdm)
+	if dept.Gly != "" {
+		return jgdm
+	}
+	return GetSjjgdm(dept.Sjjgdm)
+}
+
 func GenDevdeptDmBySjjgdm(sjjgdm string) (string, error) {
 	var ddt Devdept
 	err := db.Table("devdept").

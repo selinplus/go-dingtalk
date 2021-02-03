@@ -187,17 +187,21 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/detail", dev.GetDevinfoByID)
 		//获取设备列表(inner多条件查询设备)
 		apiv1.GET("/dev/list", dev.GetDevinfos)
-		//获取设备列表(inner多条件查询设备)
-		apiv1.GET("/dev/list_export", dev.ExportDevInfos)
 		//获取设备列表(管理员端,多条件查询设备)
 		apiv1.GET("/dev/listgly", dev.GetDevinfosGly)
+		//导出设备清册
+		apiv1.GET("/dev/list_export", dev.ExportDevInfosGly)
 		//获取当前操作人所有流水记录
 		apiv1.GET("/devmod/lslist", dev.GetDevMods)
 		//根据流水号查询记录
 		apiv1.GET("/devmod/lsdetail", dev.GetDevModetails)
 		//设备下发
 		apiv1.POST("/dev/issued", dev.Issued)
-		//设备分配(管理员入库)&借出&收回&交回&上交
+		//设备机构变更申请
+		apiv1.POST("/dev/change_jgks", dev.ChangeJgks)
+		//管理员处理设备机构变更申请&交回申请
+		apiv1.POST("/dev/jgbg_jhrk", dev.GlyChangeJgks)
+		//设备分配(管理员入库)&借出&收回&上交&交回申请
 		apiv1.POST("/dev/allocate", dev.Allocate)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv1.GET("/dev/listbybz", dev.GetDevinfosByUser)
@@ -447,7 +451,11 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/dev/tobestored", dev.GetDevinfosToBeStored)
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dev.GetDevModList)
-		//设备分配(管理员入库)&借出&收回&交回
+		//设备机构变更申请
+		apiv3.POST("/dev/change_jgks", dev.ChangeJgks)
+		//管理员处理设备机构变更申请&交回申请
+		apiv3.POST("/dev/jgbg_jhrk", dev.GlyChangeJgks)
+		//设备分配(管理员入库)&借出&收回&交回申请
 		apiv3.POST("/dev/allocate", dev.Allocate)
 		//获取设备列表(inner多条件查询设备)
 		apiv3.GET("/dev/list", dev.GetDevinfos)

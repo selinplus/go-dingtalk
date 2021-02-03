@@ -16,29 +16,30 @@ import (
 
 //new devinfo info
 type Devinfo struct {
-	Sbbh  uint   `json:"sbbh" gorm:"primary_key;AUTO_INCREMENT;COMMENT:'根据主键id生成6位设备编号'"`
-	ID    string `json:"ID" gorm:"COMMENT:'设备编号'"`
-	Zcbh  string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
-	Lx    string `json:"lx" gorm:"COMMENT:'设备类型'"`
-	Mc    string `json:"mc" gorm:"COMMENT:'设备名称'"`
-	Xh    string `json:"xh" gorm:"COMMENT:'设备型号'"`
-	Xlh   string `json:"xlh" gorm:"COMMENT:'序列号'"`
-	Ly    string `json:"ly" gorm:"COMMENT:'设备来源'"`
-	Gys   string `json:"gys" gorm:"COMMENT:'供应商'"`
-	Jg    string `json:"jg" gorm:"COMMENT:'价格'"`
-	Scs   string `json:"scs" gorm:"COMMENT:'生产商'"`
-	Scrq  string `json:"scrq" gorm:"COMMENT:'生产日期'"`
-	Grrq  string `json:"grrq" gorm:"COMMENT:'购入日期'"`
-	Bfnx  string `json:"bfnx" gorm:"COMMENT:'设备报废年限'"`
-	QrUrl string `json:"qrurl" gorm:"COMMENT:'二维码URL';column:qrurl"`
-	Rkrq  string `json:"rkrq" gorm:"COMMENT:'入库日期'"`
-	Czr   string `json:"czr" gorm:"COMMENT:'操作人'"`
-	Czrq  string `json:"czrq" gorm:"COMMENT:'操作日期'"`
-	Zt    string `json:"zt" gorm:"COMMENT:'设备状态'"`
-	Jgdm  string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
-	Syr   string `json:"syr" gorm:"COMMENT:'设备使用人代码'"`
-	Cfwz  string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
-	Sx    string `json:"sx" gorm:"COMMENT:'设备属性'"`
+	Sbbh   uint   `json:"sbbh" gorm:"primary_key;AUTO_INCREMENT;COMMENT:'根据主键id生成6位设备编号'"`
+	ID     string `json:"ID" gorm:"COMMENT:'设备编号'"`
+	Zcbh   string `json:"zcbh" gorm:"COMMENT:'资产编号'"`
+	Lx     string `json:"lx" gorm:"COMMENT:'设备类型'"`
+	Mc     string `json:"mc" gorm:"COMMENT:'设备名称'"`
+	Xh     string `json:"xh" gorm:"COMMENT:'设备型号'"`
+	Xlh    string `json:"xlh" gorm:"COMMENT:'序列号'"`
+	Ly     string `json:"ly" gorm:"COMMENT:'设备来源'"`
+	Gys    string `json:"gys" gorm:"COMMENT:'供应商'"`
+	Jg     string `json:"jg" gorm:"COMMENT:'价格'"`
+	Scs    string `json:"scs" gorm:"COMMENT:'生产商'"`
+	Scrq   string `json:"scrq" gorm:"COMMENT:'生产日期'"`
+	Grrq   string `json:"grrq" gorm:"COMMENT:'购入日期'"`
+	Bfnx   string `json:"bfnx" gorm:"COMMENT:'设备报废年限'"`
+	QrUrl  string `json:"qrurl" gorm:"COMMENT:'二维码URL';column:qrurl"`
+	Rkrq   string `json:"rkrq" gorm:"COMMENT:'入库日期'"`
+	Czr    string `json:"czr" gorm:"COMMENT:'操作人'"`
+	Czrq   string `json:"czrq" gorm:"COMMENT:'操作日期'"`
+	Zt     string `json:"zt" gorm:"COMMENT:'设备状态'"`
+	Jgdm   string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
+	Jgksdm string `json:"jgksdm" gorm:"COMMENT:'设备所属机构代码'"`
+	Syr    string `json:"syr" gorm:"COMMENT:'设备使用人代码'"`
+	Cfwz   string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
+	Sx     string `json:"sx" gorm:"COMMENT:'设备属性'"`
 }
 
 //生成设备编号
@@ -69,7 +70,7 @@ func IsUserDevExist(userid string) bool {
 	return true
 }
 
-//设备入库
+//设备初始入库
 func AddDevinfo(dev *Devinfo) error {
 	tx := db.Begin()
 	defer func() {
@@ -113,8 +114,32 @@ func AddDevinfo(dev *Devinfo) error {
 	return tx.Commit().Error
 }
 
+type OpForm struct {
+	Ids       []string `json:"ids"`
+	Dms       []string `json:"dms"` //交回&批量收回
+	SrcJgdm   string   `json:"src_jgdm"`
+	DstJgdm   string   `json:"dst_jgdm"`   //分配,下发,上交
+	SrcJgksdm string   `json:"src_jgksdm"` //调整前所属科室代码
+	DstJgksdm string   `json:"dst_jgksdm"` //调整后所属科室代码
+	SrcCfwz   string   `json:"src_cfwz"`   //调整前存放位置
+	DstCfwz   string   `json:"dst_cfwz"`   //调整后存放位置
+	Lsh       string   `json:"lsh"`        //上交时,用于修改devtodo表done
+	Czr       string   `json:"czr"`        //inner传递操作人mobile
+	Syr       string   `json:"syr"`        //inner传递使用人mobile
+	CuserID   string   `json:"cuserid"`    //epp传递操作人userid
+	SuserID   string   `json:"suserid"`    //epp传递使用人userid
+	Cfwz      string   `json:"cfwz"`
+	Czlx      string   `json:"czlx"`
+	Agree     string   `json:"agree"` //Y:同意 N:不同意
+}
+
 //设备下发&上交
-func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
+func DevIssued(form OpForm, czr, czlx string) error {
+	var (
+		ids     = form.Ids
+		srcJgdm = form.SrcJgdm
+		dstJgdm = form.DstJgdm
+	)
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -176,6 +201,7 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
 			Czr:  czr,
 			Czrq: t,
 			Jgdm: dstJgdm,
+			Bz:   "等待管理员做上交入库操作",
 		}
 		if err := tx.Table("devtodo").Create(dto).Error; err != nil {
 			tx.Rollback()
@@ -184,12 +210,13 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
 	} else { //设备下发,同时创建入库
 		rkLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
 		dm2 := &Devmod{
-			Lsh:  rkLsh,
-			Czrq: t,
-			Czlx: "1",
-			Num:  len(ids),
-			Czr:  czr,
-			Jgdm: dstJgdm,
+			Lsh:    rkLsh,
+			PreLsh: ckLsh,
+			Czrq:   t,
+			Czlx:   "1",
+			Num:    len(ids),
+			Czr:    czr,
+			Jgdm:   dstJgdm,
 		}
 		if err := tx.Table("devmod").Create(dm2).Error; err != nil {
 			tx.Rollback()
@@ -231,8 +258,333 @@ func DevIssued(ids []string, srcJgdm, dstJgdm, czr, czlx string) error {
 	return tx.Commit().Error
 }
 
-//设备分配&借出&收回&交回
-func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) error {
+//设备机构变更申请,创建待办任务并发送消息给设备机构管理员
+func ChangeJgks(form OpForm, czr string) error {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	t := time.Now().Format("2006-01-02 15:04:05")
+	//创建待办任务并发送消息给设备机构管理员
+	for _, id := range form.Ids {
+		dto := &Devtodo{
+			Czlx:      form.Czlx,
+			Czr:       czr,
+			Czrq:      t,
+			Jgdm:      form.SrcJgdm,
+			DstJgdm:   form.DstJgdm,
+			SrcJgksdm: form.SrcJgksdm,
+			DstJgksdm: form.DstJgksdm,
+			SrcCfwz:   form.SrcCfwz,
+			DstCfwz:   form.DstCfwz,
+			DevID:     id,
+			Bz:        "等待管理员设备机构变更申请",
+		}
+		if err := tx.Table("devtodo").Create(dto).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
+}
+
+//同意设备机构变更申请
+func AgreeChangeJgks(form OpForm, czr string) error {
+	var (
+		id        = form.Ids[0]
+		dstJgdm   = form.DstJgdm
+		dstJgksdm = form.DstJgksdm
+		dstCfwz   = form.DstCfwz
+		czlx      = form.Czlx
+	)
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	var udpMap = map[string]interface{}{"done": 1}
+	if form.Agree == "N" { //不同意直接返回
+		udpMap["bz"] = "不同意"
+		//修改待办标志为已办
+		if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
+			Updates(udpMap).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		return tx.Commit().Error
+	}
+	udpMap["bz"] = "同意"
+	//修改待办标志为已办
+	if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
+		Updates(udpMap).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	//同意后，增加出库&入库流水
+	ckLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	t := time.Now().Format("2006-01-02 15:04:05")
+	d, err := GetDevinfoByID(id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	//增加使用人申请流水
+	dm := &Devmod{
+		Lsh:  ckLsh,
+		Czrq: t,
+		Czlx: czlx,
+		Num:  1,
+		Czr:  d.Syr,
+		Jgdm: dstJgdm,
+	}
+	if err := tx.Table("devmod").Create(dm).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	//变更管理机构代码，所属机构代码，存放位置
+	dev := map[string]string{
+		"id":   id,
+		"czrq": t,
+		"czr":  czr,
+	}
+	if dstJgdm != "" {
+		dev["jgdm"] = dstJgdm
+	}
+	if dstJgksdm != "" {
+		dev["jgksdm"] = dstJgksdm
+	}
+	if dstCfwz != "" {
+		dev["cfwz"] = dstCfwz
+	}
+	if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	dmd := &Devmodetail{
+		Lsh:   ckLsh,
+		Czlx:  czlx,
+		Czrq:  t,
+		Lx:    d.Lx,
+		DevID: d.ID,
+		Zcbh:  d.Zcbh,
+		Syr:   d.Syr,
+	}
+	if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	//增加操作人同意申请流水
+	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	//增加使用人申请流水
+	dmGly := &Devmod{
+		Lsh:    lsh,
+		PreLsh: ckLsh,
+		Czrq:   t,
+		Czlx:   czlx,
+		Num:    1,
+		Czr:    czr,
+		Jgdm:   dstJgdm,
+	}
+	if err := tx.Table("devmod").Create(dmGly).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	dmdGly := &Devmodetail{
+		Lsh:   lsh,
+		Czlx:  czlx,
+		Czrq:  t,
+		Lx:    d.Lx,
+		DevID: d.ID,
+		Zcbh:  d.Zcbh,
+		Syr:   d.Syr,
+	}
+	if err := tx.Table("devmodetail").Create(dmdGly).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
+}
+
+//设备交回申请,创建待办任务并发送消息给设备机构管理员
+func DevReback(form OpForm, syr, czr string) error {
+	var (
+		ids  = form.Ids
+		dms  = form.Dms
+		jgdm = form.DstJgdm
+		cfwz = form.Cfwz
+		czlx = form.Czlx
+	)
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	t := time.Now().Format("2006-01-02 15:04:05")
+	for i, id := range ids {
+		dev := map[string]string{
+			"id":   id,
+			"czrq": t,
+			"czr":  czr,
+			"syr":  syr,
+			"cfwz": cfwz,
+		}
+		if jgdm != "" {
+			dev["jgdm"] = jgdm
+		} else {
+			dev["jgdm"] = dms[i]
+		}
+		dto := &Devtodo{
+			Czlx:  czlx,
+			Czr:   czr,
+			Czrq:  t,
+			Lsh:   util.RandomString(4) + strconv.Itoa(int(time.Now().Unix())),
+			Jgdm:  dev["jgdm"],
+			DevID: id,
+			Bz:    "等待管理员审批交回申请",
+		}
+		if err := tx.Table("devtodo").Create(dto).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
+}
+
+//同意设备交回申请
+func AgreeDevReback(form OpForm, czr string) error {
+	var (
+		id   = form.Ids[0]
+		czlx = form.Czlx
+	)
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	var udpMap = map[string]interface{}{"done": 1}
+	if form.Agree == "N" { //不同意直接返回
+		udpMap["bz"] = "不同意"
+		//修改待办标志为已办
+		if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
+			Updates(udpMap).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+		return tx.Commit().Error
+	}
+	udpMap["bz"] = "同意"
+	//修改待办标志为已办
+	if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
+		Updates(udpMap).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	//同意后，增加出库&入库流水
+	ckLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	t := time.Now().Format("2006-01-02 15:04:05")
+	d, err := GetDevinfoByID(id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	//增加交回出库流水
+	dm := &Devmod{
+		Lsh:  ckLsh,
+		Czrq: t,
+		Czlx: czlx,
+		Num:  1,
+		Czr:  d.Syr,
+		Jgdm: d.Jgdm,
+	}
+	if err := tx.Table("devmod").Create(dm).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	//置空所属机构代码，存放位置，使用人
+	dev := map[string]string{
+		"id":     id,
+		"czrq":   t,
+		"czr":    czr,
+		"syr":    "",
+		"cfwz":   "",
+		"jgksdm": "",
+	}
+	if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	dmd := &Devmodetail{
+		Lsh:   ckLsh,
+		Czlx:  czlx,
+		Czrq:  t,
+		Lx:    d.Lx,
+		DevID: d.ID,
+		Zcbh:  d.Zcbh,
+	}
+	if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	//增加操作人同意申请流水
+	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	//增加使用人申请入库流水
+	dmGly := &Devmod{
+		Lsh:    lsh,
+		PreLsh: ckLsh,
+		Czrq:   t,
+		Czlx:   "1",
+		Num:    1,
+		Czr:    czr,
+		Jgdm:   d.Jgdm,
+	}
+	if err := tx.Table("devmod").Create(dmGly).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	dmdGly := &Devmodetail{
+		Lsh:   lsh,
+		Czlx:  "1",
+		Czrq:  t,
+		Lx:    d.Lx,
+		DevID: d.ID,
+		Zcbh:  d.Zcbh,
+		Syr:   d.Syr,
+	}
+	if err := tx.Table("devmodetail").Create(dmdGly).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
+}
+
+//设备分配&借出&收回&上交入库
+func DevAllocate(form OpForm, syr, czr string) error {
+	var (
+		ids     = form.Ids
+		dms     = form.Dms
+		jgdm    = form.DstJgdm
+		jgksdm  = form.DstJgksdm
+		cfwz    = form.Cfwz
+		czlx    = form.Czlx
+		todoLsh = form.Lsh
+	)
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -252,14 +604,10 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 		Czr:  czr,
 		Jgdm: jgdm,
 	}
-	if czlx == "8" { //设备交回
-		dm.Jgdm = dms[0]
-	}
 	if err := tx.Table("devmod").Create(dm).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-	zt, sx := getState(czlx)
 	if syr == " " {
 		syr = ""
 	}
@@ -268,11 +616,12 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 	}
 	if len(todoLsh) > 0 { // todoLsh:上交入库,根据todoLsh修改待办标志为已办
 		if err := tx.Table("devtodo").Where("done = 0 and lsh = ? ", todoLsh).
-			Update("done", 1).Error; err != nil {
+			Updates(map[string]interface{}{"done": 1, "bz": "已完成上交入库"}).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
 	}
+	zt, sx := getState(czlx)
 	for i, id := range ids {
 		dev := map[string]string{
 			"id":   id,
@@ -287,6 +636,9 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 			dev["jgdm"] = jgdm
 		} else {
 			dev["jgdm"] = dms[i]
+		}
+		if jgksdm != "" {
+			dev["jgksdm"] = jgksdm
 		}
 		if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 			tx.Rollback()
@@ -304,32 +656,19 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 			Lx:    d.Lx,
 			DevID: d.ID,
 			Zcbh:  d.Zcbh,
+			Syr:   syr,
 		}
 		if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
-		if czlx == "8" { //设备交回,创建待办任务并发送消息给设备机构管理员
-			dto := &Devtodo{
-				Czlx:  czlx,
-				Lsh:   lsh,
-				Czr:   czr,
-				Czrq:  t,
-				Jgdm:  dev["jgdm"],
-				DevID: id,
-			}
-			if err := tx.Table("devtodo").Create(dto).Error; err != nil {
-				tx.Rollback()
-				return err
-			}
-		}
-		if czlx == "1" && len(todoLsh) == 0 { //交回设备入库,修改待办标志为已办
+		/*if czlx == "1" && len(todoLsh) == 0 { //交回设备入库,修改待办标志为已办
 			if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
 				Update("done", 1).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
-		}
+		}*/
 	}
 	if czlx == "7" { //设备收回时,同步进行入库操作
 		czlx = "1"
@@ -369,6 +708,9 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 			} else {
 				dev["jgdm"] = dms[i]
 			}
+			if jgksdm != "" {
+				dev["jgksdm"] = jgksdm
+			}
 			if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 				tx.Rollback()
 				return err
@@ -385,6 +727,7 @@ func DevAllocate(ids, dms []string, jgdm, syr, cfwz, czr, czlx, todoLsh string) 
 				Lx:    d.Lx,
 				DevID: d.ID,
 				Zcbh:  d.Zcbh,
+				Syr:   syr,
 			}
 			if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
 				tx.Rollback()
@@ -409,8 +752,10 @@ func getState(czlx string) (zt, sx string) {
 		zt, sx = "3", "3"
 	case "6":
 		zt, sx = "3", "4"
-	case "7", "8":
+	case "7":
 		zt, sx = "4", "2"
+	case "8":
+		zt, sx = "2", "4"
 	case "9":
 		zt, sx = "5", "5"
 	}
@@ -665,6 +1010,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 type DevinfoResp struct {
 	*Devinfo
 	Jgmc string `json:"jgmc"`
+	Ksmc string `json:"ksmc"`
 }
 
 func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*DevinfoResp, error) {
@@ -676,16 +1022,17 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 	)
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,
-			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
+			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
+			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.syr,devinfo.cfwz,devproperty.mc as sx
 			from devinfo 
-			left join user on user.userid=devinfo.czr 
+			left join userdemo on userdemo.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
-			left join devdept on devdept.jgdm=devinfo.jgdm 
+			left join devdept a on a.jgdm=devinfo.jgdm 
+			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join devproperty on devproperty.dm=devinfo.sx 
-			where devinfo.mc like '%%%s%%' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
-			and devinfo.xlh like '%%%s%%' and devinfo.syr like '%%%s%%'
+			where devinfo.mc like '%s' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
+			and devinfo.xlh like '%s' and devinfo.syr like '%s' and devinfo.zcbh like '%s'
 			and devinfo.jgdm %s %s %s
 			order by devinfo.sbbh`
 	if con["jgdm"] == "" {
@@ -711,8 +1058,8 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 	} else {
 		sbbhCon = "and devinfo.sbbh = '" + con["sbbh"] + "'"
 	}
-	squery := fmt.Sprintf(query,
-		con["mc"], con["rkrqq"], con["rkrqz"], con["xlh"], con["syr"], jgdmCon, ztCon, sbbhCon)
+	squery := fmt.Sprintf(query, "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"],
+		"%"+con["xlh"]+"%", "%"+con["syr"]+"%", "%"+con["zcbh"]+"%", jgdmCon, ztCon, sbbhCon)
 	if pageNo > 0 && pageSize > 0 {
 		offset := (pageNo - 1) * pageSize
 		squery += fmt.Sprintf(" LIMIT %d,%d", offset, pageSize)
@@ -727,13 +1074,14 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	var devs []*DevinfoResp
 	squery := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,
-			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
+			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
+			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.syr,devinfo.cfwz,devproperty.mc as sx
 			from devinfo 
-			left join user on user.userid=devinfo.czr 
+			left join userdemo on userdemo.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
-			left join devdept on devdept.jgdm=devinfo.jgdm 
+			left join devdept a on a.jgdm=devinfo.jgdm 
+			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join devproperty on devproperty.dm=devinfo.sx 
 			where devinfo.jgdm = '` + con["jgdm"] + `' `
 	if con["sbbh"] != "" {
@@ -747,6 +1095,15 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	}
 	if con["type"] != "" {
 		squery += `and devinfo.lx like '` + con["type"] + `%' `
+	}
+	if con["zcbh"] != "" {
+		squery += `and devinfo.zcbh like '` + con["zcbh"] + `%' `
+	}
+	if con["scrq"] != "" {
+		squery += `and devinfo.scrq like '` + con["scrq"] + `%' `
+	}
+	if con["rkrq"] != "" {
+		squery += `and devinfo.rkrq like '` + con["rkrq"] + `%' `
 	}
 	if con["xlh"] != "" {
 		squery += `and devinfo.xlh = '` + con["xlh"] + `' `
@@ -763,11 +1120,12 @@ func GetDevinfoRespByID(id string) (*DevinfoResp, error) {
 	var dev DevinfoResp
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,user.name as czr,devinfo.qrurl,devstate.mc as zt,devinfo.jgdm,devdept.jgmc,
-			devinfo.syr,devinfo.cfwz,devproperty.mc as sx
+			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
+			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.syr,devinfo.cfwz,devproperty.mc as sx
 			from devinfo 
-			left join devdept on devdept.jgdm=devinfo.jgdm 
-			left join user on user.userid=devinfo.czr 
+			left join devdept a on a.jgdm=devinfo.jgdm 
+			left join devdept b on b.jgdm=devinfo.jgksdm 
+			left join userdemo on userdemo.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
 			left join devproperty on devproperty.dm=devinfo.sx 

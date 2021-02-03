@@ -37,20 +37,6 @@ type DevinfoForm struct {
 	Sx   string `json:"sx"`
 }
 
-type OpForm struct {
-	Ids     []string `json:"ids"`
-	Dms     []string `json:"dms"` //交回&批量收回
-	SrcJgdm string   `json:"src_jgdm"`
-	DstJgdm string   `json:"dst_jgdm"` //分配,下发,上交
-	Lsh     string   `json:"lsh"`      //上交时,用于修改devtodo表done
-	Czr     string   `json:"czr"`      //inner传递操作人mobile
-	Syr     string   `json:"syr"`      //inner传递使用人mobile
-	CuserID string   `json:"cuserid"`  //epp传递操作人userid
-	SuserID string   `json:"suserid"`  //epp传递使用人userid
-	Cfwz    string   `json:"cfwz"`
-	Czlx    string   `json:"czlx"`
-}
-
 //单项录入
 func AddDevinfo(c *gin.Context) {
 	var (
@@ -235,6 +221,7 @@ func GetDevinfos(c *gin.Context) {
 		mc       = c.Query("mc")
 		jgdm     = c.Query("jgdm")
 		bz       = c.Query("bz")
+		zcbh     = c.Query("zcbh")
 		pageNo   int
 		pageSize int
 	)
@@ -261,6 +248,7 @@ func GetDevinfos(c *gin.Context) {
 		"syr":   syr,
 		"mc":    mc,
 		"jgdm":  jgdm,
+		"zcbh":  zcbh,
 	}
 	if c.Query("pageNo") == "" {
 		pageNo = 0
@@ -299,62 +287,68 @@ func GetDevinfos(c *gin.Context) {
 }
 
 //导出设备清册
-func ExportDevInfos(c *gin.Context) {
+func ExportDevInfosGly(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
-		rkrqq    = c.Query("rkrqq")
-		rkrqz    = c.Query("rkrqz")
+		mobile   = c.Query("mobile")
 		sbbh     = c.Query("sbbh")
+		property = c.Query("property")
+		state    = c.Query("state")
+		devtype  = c.Query("type")
 		xlh      = c.Query("xlh")
-		syr      = c.Query("syr")
-		mc       = c.Query("mc")
 		jgdm     = c.Query("jgdm")
-		bz       = c.Query("bz")
-		pageNo   int
-		pageSize int
+		zcbh     = c.Query("zcbh")
+		scrq     = c.Query("scrq")
+		rkrq     = c.Query("rkrq")
+		depts    = make([]*models.Devdept, 0)
+		err      error
 	)
-	if rkrqq == "" {
-		rkrqq = "2000-01-01 00:00:00"
+	glydm := make([]string, 0)
+	if jgdm == "" {
+		if len(mobile) > 0 {
+			gly, err := models.GetUserdemoByMobile(mobile)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+					fmt.Sprintf("根据手机号[%s]获取管理员信息失败：%v", mobile, err))
+				return
+			}
+			depts, err = models.GetDevdeptsHasGlyByUserid(gly.UserID)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
+				return
+			}
+		} else {
+			depts, err = models.GetDevdeptsHasGly()
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
+				return
+			}
+		}
+		for _, dept := range depts {
+			glydm = append(glydm, dept.Jgdm)
+		}
+	} else {
+		glydm = strings.Split(jgdm, ",")
 	}
-	if rkrqz == "" {
-		rkrqz = "2099-01-01 00:00:00"
-	}
-	if syr != "" {
-		user, err := models.GetUserdemoByMobile(syr)
+	devs := make([]*models.DevinfoResp, 0)
+	for _, dm := range glydm {
+		con := map[string]string{
+			"sbbh":     sbbh,
+			"property": property,
+			"state":    state,
+			"type":     devtype,
+			"xlh":      xlh,
+			"jgdm":     dm,
+			"zcbh":     zcbh,
+			"scrq":     scrq,
+			"rkrq":     rkrq,
+		}
+		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
-			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
-				fmt.Sprintf("根据手机号[%s]获取使用人信息失败：%v", syr, err))
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 			return
 		}
-		syr = user.UserID
-	}
-	con := map[string]string{
-		"rkrqq": rkrqq,
-		"rkrqz": rkrqz,
-		"sbbh":  sbbh,
-		"xlh":   xlh,
-		"syr":   syr,
-		"mc":    mc,
-		"jgdm":  jgdm,
-	}
-	if c.Query("pageNo") == "" {
-		pageNo = 0
-	} else {
-		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
-	}
-	if c.Query("pageSize") == "" {
-		pageSize = 0
-	} else {
-		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
-	}
-	devs, err := models.GetDevinfos(con, pageNo, pageSize, bz)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
-		return
-	}
-	if len(devs) == 0 {
-		appG.Response(http.StatusOK, e.SUCCESS, nil)
-		return
+		devs = append(devs, ds...)
 	}
 	resps := make([]*Resp, 0)
 	for _, dev := range devs {
@@ -394,6 +388,7 @@ func ExportDevInfos(c *gin.Context) {
 			"使用人":    resp.SyrName,
 			"使用人手机号": resp.SyrMobile,
 			"设备管理机构": resp.Jgmc,
+			"设备所属机构": resp.Ksmc,
 			"存放位置":   resp.Cfwz,
 		})
 	}
@@ -441,8 +436,10 @@ func ExportDevInfos(c *gin.Context) {
 			sortedKeys[18] = field
 		case "设备管理机构":
 			sortedKeys[19] = field
-		case "存放位置":
+		case "设备所属机构":
 			sortedKeys[20] = field
+		case "存放位置":
+			sortedKeys[21] = field
 		}
 		//sorted_keys = append(sorted_keys, field)
 	}
@@ -466,6 +463,9 @@ func GetDevinfosGly(c *gin.Context) {
 		devtype  = c.Query("type")
 		xlh      = c.Query("xlh")
 		jgdm     = c.Query("jgdm")
+		zcbh     = c.Query("zcbh")
+		scrq     = c.Query("scrq")
+		rkrq     = c.Query("rkrq")
 		depts    = make([]*models.Devdept, 0)
 		err      error
 	)
@@ -505,6 +505,9 @@ func GetDevinfosGly(c *gin.Context) {
 			"type":     devtype,
 			"xlh":      xlh,
 			"jgdm":     dm,
+			"zcbh":     zcbh,
+			"scrq":     scrq,
+			"rkrq":     rkrq,
 		}
 		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
@@ -634,6 +637,9 @@ func GetDevinfosByUser(c *gin.Context) {
 		jgdm   = c.Query("jgdm")
 		bz     = c.Query("bz")
 		mc     = c.Query("mc")
+		sbbh   = c.Query("sbbh")
+		zcbh   = c.Query("zcbh")
+		xlh    = c.Query("xlh")
 		userid string
 	)
 	//使用人查看名下设备
@@ -654,6 +660,9 @@ func GetDevinfosByUser(c *gin.Context) {
 		"syr":   "",
 		"jgdm":  "",
 		"mc":    mc,
+		"sbbh":  sbbh,
+		"zcbh":  zcbh,
+		"xlh":   xlh,
 	}
 	resps := make([]*models.DevinfoResp, 0)
 	if jgdm != "" {
@@ -699,7 +708,7 @@ func GetDevinfosByUser(c *gin.Context) {
 func Issued(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form OpForm
+		form models.OpForm
 	)
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
@@ -712,18 +721,75 @@ func Issued(c *gin.Context) {
 			fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", form.Czr, err))
 		return
 	}
-	if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr.UserID, "2"); err != nil {
+	if err := models.DevIssued(form, czr.UserID, "2"); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-//设备分配(管理员入库)&借出&收回&交回&上交
+//设备机构变更申请
+func ChangeJgks(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form models.OpForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	czr := models.GetCommonGly(form.SrcJgksdm, form.DstJgksdm)
+	if err := models.ChangeJgks(form, czr); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//管理员处理设备机构变更申请&交回申请
+func GlyChangeJgks(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form models.OpForm
+		czr  string
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	if form.Czr != "" {
+		cuser, err := models.GetUserdemoByMobile(form.Czr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+				fmt.Sprintf("根据手机号[%s]获取操作人信息失败：%v", form.Czr, err))
+			return
+		}
+		czr = cuser.UserID
+	}
+	if form.CuserID != "" {
+		czr = form.CuserID
+	}
+	if form.Czlx == "8" { //交回入库
+		if err := models.AgreeDevReback(form, czr); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
+			return
+		}
+	} else if form.Czlx == "11" { //机构变更
+		if err := models.AgreeChangeJgks(form, czr); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
+			return
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//设备分配(管理员入库)&借出&收回&交回申请&上交
 func Allocate(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form OpForm
+		form models.OpForm
 		czr  string
 		syr  string
 	)
@@ -760,13 +826,18 @@ func Allocate(c *gin.Context) {
 	if form.SuserID != "" {
 		syr = form.SuserID
 	}
-	if form.Czlx == "10" { //上交
-		if err := models.DevIssued(form.Ids, form.SrcJgdm, form.DstJgdm, czr, form.Czlx); err != nil {
+	if form.Czlx == "8" { //交回申请
+		if err := models.DevReback(form, syr, form.Czr); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 			return
 		}
-	} else {
-		if err := models.DevAllocate(form.Ids, form.Dms, form.DstJgdm, syr, form.Cfwz, czr, form.Czlx, form.Lsh); err != nil {
+	} else if form.Czlx == "10" { //上交
+		if err := models.DevIssued(form, czr, form.Czlx); err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR, err)
+			return
+		}
+	} else { //设备分配(上交后管理员入库)&借出&收回
+		if err := models.DevAllocate(form, syr, czr); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 			return
 		}

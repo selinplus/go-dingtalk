@@ -12,7 +12,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/ydksrv"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -177,8 +176,8 @@ func DeviceDingding() {
 	}
 	for _, todo := range todos {
 		var tcmprJson string
-		if todo.Czlx == "8" { //交回,发送link
-			tcmprJson = dingtalk.DeviceDingding(todo.DevID, todo.Gly, strconv.Itoa(todo.Done))
+		if todo.Czlx == "8" || todo.Czlx == "11" { //交回,机构变更,发送link
+			tcmprJson = dingtalk.DeviceDingding(todo)
 		}
 		if todo.Czlx == "10" { //上交,发送text
 			dept, err := models.GetDevdept(todo.SrcJgdm)

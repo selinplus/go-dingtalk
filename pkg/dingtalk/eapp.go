@@ -9,6 +9,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/util"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -55,10 +56,18 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 		"msgtype": "text",
 		"text":    text,
 	}
-	user, _ := models.GetUserdemoByMobile(czr)
+	var useridList string
+	for _, c := range strings.Split(czr, ",") {
+		user, err := models.GetUserdemoByMobile(c)
+		if err != nil {
+			log.Printf("获取【%s】userid错误", czr)
+			continue
+		}
+		useridList += user.UserID + ","
+	}
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
-		"userid_list": user.UserID,
+		"userid_list": strings.TrimRight(useridList, ","),
 		"to_all_user": false,
 		"msg":         msgcontent,
 	}
@@ -102,14 +111,22 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 }
 
 //生成交回设备信息通知消息体
-func DeviceDingding(devid, gly, done string) string {
+func DeviceDingding(todo *models.DevtodoResp) string {
+	devid, gly, done := todo.DevID, todo.Gly, strconv.Itoa(todo.Done)
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	t := time.Now().Format("2006-01-02 15:04:05")
+	var title string
+	if todo.Czlx == "8" {
+		title = "设备交回"
+	}
+	if todo.Czlx == "11" {
+		title = "设备机构变更"
+	}
 	link := map[string]interface{}{
 		"messageUrl": fmt.Sprintf("eapp://pages/myreport/myreport?sbid=%s&done=%s", devid, done),
 		"picUrl":     "@lALOACZwe2Rk",
-		"title":      "交回设备待入库",
-		"text":       fmt.Sprintf("%s:请将交回设备入库", t),
+		"title":      fmt.Sprintf("%s申请", title),
+		"text":       fmt.Sprintf("%s:请审批%s申请", t, title),
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "link",
