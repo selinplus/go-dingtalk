@@ -121,6 +121,7 @@ func DeviceDingding(todo *models.DevtodoResp) string {
 	}
 	if todo.Czlx == "11" {
 		title = "设备机构变更"
+		gly = todo.Czr
 	}
 	link := map[string]interface{}{
 		"messageUrl": fmt.Sprintf("eapp://pages/myreport/myreport?sbid=%s&done=%s", devid, done),
@@ -205,7 +206,7 @@ func EappMessageCorpconversationAsyncsend(mpar string) *AsyncsendResponse {
 		return nil
 	} else {
 		err := json.Unmarshal([]byte(body), &asyncsendResponse)
-		log.Println("asyncsendResponse is", asyncsendResponse)
+		log.Println("eapp asyncsendResponse is", asyncsendResponse)
 		if err != nil {
 			log.Printf("unmarshall asyncsendResponse info error:%v", err)
 			return nil

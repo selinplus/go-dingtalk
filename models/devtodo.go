@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -23,12 +24,11 @@ type Devtodo struct {
 }
 
 type DevtodoResp struct {
-	*Devtodo
+	Devtodo
 	Gly     string `json:"gly"`
 	Zcbh    string `json:"zcbh"`
 	Mc      string `json:"mc"`
 	Zt      string `json:"zt"`
-	Czlx    string `json:"czlx"`
 	Num     int    `json:"num"`
 	SrcJgdm string `json:"src_jgdm"`
 	Jgmc    string `json:"jgmc"`     //调整前管理机构名称
@@ -37,27 +37,31 @@ type DevtodoResp struct {
 	DstKsmc string `json:"dst_ksmc"` //调整后所属科室名称
 }
 
-func GetDevTodosOrDones(done int) ([]*DevtodoResp, error) {
-	var dtos []*DevtodoResp
-	filed := `devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,a.gly,devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,
-			devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
-			devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz`
-	err := db.Table("devtodo").Select(filed).
-		Joins("left join devdept a on a.jgdm=devtodo.jgdm").
-		Joins("left join devdept b on b.jgdm=devtodo.dst_jgdm").
-		Joins("left join devdept c on c.jgdm=devtodo.src_jgksdm").
-		Joins("left join devdept d on d.jgdm=devtodo.dst_jgksdm").
-		Joins("left join devinfo on devinfo.id=devtodo.devid").
-		Joins("left join userdemo on userdemo.userid=devtodo.czr").
-		Where("devtodo.done=?", done).Order("devtodo.czrq desc").Scan(&dtos).Error
+func GetDevTodosOrDones(done int) ([]DevtodoResp, error) {
+	var dtos []DevtodoResp
+	sql := fmt.Sprintf(`
+select devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,a.gly,
+	devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
+	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
+	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
+	from devtodo
+	left join devdept a on a.jgdm=devtodo.jgdm
+	left join devdept b on b.jgdm=devtodo.dst_jgdm
+	left join devdept c on c.jgdm=devtodo.src_jgksdm
+	left join devdept d on d.jgdm=devtodo.dst_jgksdm
+	left join devinfo on devinfo.id=devtodo.devid
+	left join userdemo on userdemo.userid=devtodo.czr 
+	where devtodo.done=%d
+	order by devtodo.czrq desc`, done)
+	err := db.Raw(sql).Scan(&dtos).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	return dtos, nil
 }
 
-func GetUpDevTodosOrDones(done int) ([]*DevtodoResp, error) {
-	var dtos []*DevtodoResp
+func GetUpDevTodosOrDones(done int) ([]DevtodoResp, error) {
+	var dtos []DevtodoResp
 	err := db.Table("devtodo").
 		Select("devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").
 		Joins("left join userdemo on userdemo.userid=devtodo.czr").
@@ -72,11 +76,21 @@ func GetUpDevTodosOrDones(done int) ([]*DevtodoResp, error) {
 
 func GetDevFlag() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
-	if err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.devid,devtodo.done,devmod.czlx,devmod.num,devmod.jgdm as src_jgdm").
-		Joins("left join devdept on devdept.jgdm=devtodo.jgdm").
-		Joins("left join devmod on devmod.lsh=devtodo.lsh").
-		Where("devtodo.flag_notice=0").Scan(&dtos).Error; err != nil {
+	sql := fmt.Sprintf(`
+select devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,a.gly,
+	devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
+	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
+	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
+	from devtodo
+	left join devdept a on a.jgdm=devtodo.jgdm
+	left join devdept b on b.jgdm=devtodo.dst_jgdm
+	left join devdept c on c.jgdm=devtodo.src_jgksdm
+	left join devdept d on d.jgdm=devtodo.dst_jgksdm
+	left join devinfo on devinfo.id=devtodo.devid
+	left join userdemo on userdemo.userid=devtodo.czr 
+	where devtodo.flag_notice=0
+	order by devtodo.czrq desc`)
+	if err := db.Raw(sql).Scan(&dtos).Error; err != nil {
 		return nil, err
 	}
 	return dtos, nil

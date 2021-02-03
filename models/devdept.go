@@ -20,6 +20,10 @@ type Devdept struct {
 
 //获取共同上级gly
 func GetCommonGly(srcJgdm, dstJgdm string) (gly string) {
+	if srcJgdm == "00" || dstJgdm == "00" {
+		dept, _ := GetDevdept("00")
+		return dept.Gly
+	}
 	srcLen := len(srcJgdm)
 	dstLen := len(dstJgdm)
 	if srcLen == dstLen {

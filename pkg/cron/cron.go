@@ -176,10 +176,10 @@ func DeviceDingding() {
 	}
 	for _, todo := range todos {
 		var tcmprJson string
-		if todo.Czlx == "8" || todo.Czlx == "11" { //交回,机构变更,发送link
+		switch todo.Czlx {
+		case "8", "11": //交回,机构变更,发送link
 			tcmprJson = dingtalk.DeviceDingding(todo)
-		}
-		if todo.Czlx == "10" { //上交,发送text
+		case "10": //上交,发送text
 			dept, err := models.GetDevdept(todo.SrcJgdm)
 			if err != nil {
 				logging.Error(fmt.Sprintf("%v GetDevdept err:%v", todo.ID, err))
