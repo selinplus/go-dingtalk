@@ -129,12 +129,23 @@ func ImpDevinfos(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
+type CfwzForm struct {
+	Devid string `json:"devid"`
+	Cfwz  string `json:"cfwz"`
+}
+
 //更新设备存放位置
 func UpdateDevinfoCfwz(c *gin.Context) {
-	var appG = app.Gin{C: c}
-	if err := models.EditDevinfoByMap(map[string]interface{}{
-		"id": c.Query("devid"), "cfwz": c.Query("cfwz"),
-	}); err != nil {
+	var (
+		appG = app.Gin{C: c}
+		form CfwzForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	if err := models.EditDevinfoByMap(map[string]interface{}{"id": form.Devid, "cfwz": form.Cfwz}); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
 		return
 	}

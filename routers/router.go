@@ -180,7 +180,7 @@ func InitRouter() *gin.Engine {
 		//批量导入
 		apiv1.POST("/dev/imp", dev.ImpDevinfos)
 		//更新设备存放位置
-		apiv1.GET("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
+		apiv1.POST("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
 		//更新设备信息
 		apiv1.POST("/dev/update", dev.UpdateDevinfo)
 		//删除设备信息
@@ -454,7 +454,7 @@ func InitRouter() *gin.Engine {
 		//获取交回设备待入库列表
 		apiv3.GET("/dev/tobestored", dev.GetDevinfosToBeStored)
 		//更新设备存放位置
-		apiv3.GET("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
+		apiv3.POST("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dev.GetDevModList)
 		//设备机构变更申请
