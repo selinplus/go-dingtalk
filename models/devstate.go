@@ -13,3 +13,11 @@ func GetDevstate() ([]*Devstate, error) {
 	}
 	return ds, nil
 }
+
+func GetDevstateByDm(dm string) (*Devstate, error) {
+	var dt Devstate
+	if err := db.Where("dm=?", dm).First(&dt).Error; err != nil {
+		return nil, err
+	}
+	return &dt, nil
+}

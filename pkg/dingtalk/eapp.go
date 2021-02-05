@@ -112,19 +112,22 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 
 //生成交回设备信息通知消息体
 func DeviceDingding(todo *models.DevtodoResp) string {
+	log.Println(todo)
 	devid, gly, done := todo.DevID, todo.Gly, strconv.Itoa(todo.Done)
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	t := time.Now().Format("2006-01-02 15:04:05")
-	var title string
+	var title, url string
 	if todo.Czlx == "8" {
 		title = "设备交回"
+		url = fmt.Sprintf("eapp://pages/myreport/myreport?sbid=%s&done=%s", devid, done)
 	}
 	if todo.Czlx == "11" {
 		title = "设备机构变更"
 		gly = todo.Czr
+		url = fmt.Sprintf("eapp://pages/tbgz/tbgz?sbid=%s&done=%s&id=%d", devid, done, todo.ID)
 	}
 	link := map[string]interface{}{
-		"messageUrl": fmt.Sprintf("eapp://pages/myreport/myreport?sbid=%s&done=%s", devid, done),
+		"messageUrl": url,
 		"picUrl":     "@lALOACZwe2Rk",
 		"title":      fmt.Sprintf("%s申请", title),
 		"text":       fmt.Sprintf("%s:请审批%s申请", t, title),
@@ -141,7 +144,7 @@ func DeviceDingding(todo *models.DevtodoResp) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 

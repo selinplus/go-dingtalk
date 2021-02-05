@@ -179,6 +179,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/add", dev.AddDevinfo)
 		//批量导入
 		apiv1.POST("/dev/imp", dev.ImpDevinfos)
+		//更新设备存放位置
+		apiv1.GET("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
 		//更新设备信息
 		apiv1.POST("/dev/update", dev.UpdateDevinfo)
 		//删除设备信息
@@ -217,6 +219,8 @@ func InitRouter() *gin.Engine {
 		//导出盘点任务清册明细
 		apiv1.GET("/dev/ckdetail_export", dev.ExportDevCkDetail)
 
+		//根据id获取待办&已办详情
+		apiv1.GET("/dev/tododetail", dev.GetDevTodosOrDonesByTodoid)
 		//获取待办列表(交回设备)
 		apiv1.GET("/dev/todolist", dev.GetDevTodosOrDones)
 		//获取已办列表(交回设备)
@@ -449,6 +453,8 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/dev/detail", dev.GetDevinfoByID)
 		//获取交回设备待入库列表
 		apiv3.GET("/dev/tobestored", dev.GetDevinfosToBeStored)
+		//更新设备存放位置
+		apiv3.GET("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
 		//设备流水记录查询
 		apiv3.GET("/devmod/list", dev.GetDevModList)
 		//设备机构变更申请
@@ -467,6 +473,8 @@ func InitRouter() *gin.Engine {
 		apiv3.POST("/dev/issued", dev.Issued)
 		//获取设备列表(管理员查询||eapp使用人查询)
 		apiv3.GET("/dev/listbybz", dev.GetDevinfosByUser)
+		//根据id获取待办&已办详情
+		apiv3.GET("/dev/tododetail", dev.GetDevTodosOrDonesByTodoid)
 		//获取待办列表(交回设备)
 		apiv3.GET("/dev/todolist", dev.GetDevTodosOrDones)
 		//获取已办列表(交回设备)

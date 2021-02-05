@@ -13,3 +13,11 @@ func GetDevproperty() ([]*Devproperty, error) {
 	}
 	return ds, nil
 }
+
+func GetDevpropertyByDm(dm string) (*Devproperty, error) {
+	var dt Devproperty
+	if err := db.Where("dm=?", dm).First(&dt).Error; err != nil {
+		return nil, err
+	}
+	return &dt, nil
+}

@@ -129,6 +129,19 @@ func ImpDevinfos(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
+//更新设备存放位置
+func UpdateDevinfoCfwz(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	if err := models.EditDevinfoByMap(map[string]interface{}{
+		"id": c.Query("devid"), "cfwz": c.Query("cfwz"),
+	}); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+
+}
+
 //更新设备信息
 func UpdateDevinfo(c *gin.Context) {
 	var (
@@ -215,6 +228,8 @@ func GetDevinfos(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		rkrqq    = c.Query("rkrqq")
 		rkrqz    = c.Query("rkrqz")
+		scrqq    = c.Query("scrqq")
+		scrqz    = c.Query("scrqz")
 		sbbh     = c.Query("sbbh")
 		xlh      = c.Query("xlh")
 		syr      = c.Query("syr")
@@ -231,6 +246,12 @@ func GetDevinfos(c *gin.Context) {
 	if rkrqz == "" {
 		rkrqz = "2099-01-01 00:00:00"
 	}
+	if scrqq == "" {
+		scrqq = "2000-01-01 00:00:00"
+	}
+	if scrqz == "" {
+		scrqz = "2099-01-01 00:00:00"
+	}
 	if syr != "" {
 		user, err := models.GetUserdemoByMobile(syr)
 		if err != nil {
@@ -243,6 +264,8 @@ func GetDevinfos(c *gin.Context) {
 	con := map[string]string{
 		"rkrqq": rkrqq,
 		"rkrqz": rkrqz,
+		"scrqq": scrqq,
+		"scrqz": scrqz,
 		"sbbh":  sbbh,
 		"xlh":   xlh,
 		"syr":   syr,
@@ -300,6 +323,10 @@ func ExportDevInfosGly(c *gin.Context) {
 		zcbh     = c.Query("zcbh")
 		scrq     = c.Query("scrq")
 		rkrq     = c.Query("rkrq")
+		rkrqq    = c.Query("rkrqq")
+		rkrqz    = c.Query("rkrqz")
+		scrqq    = c.Query("scrqq")
+		scrqz    = c.Query("scrqz")
 		depts    = make([]*models.Devdept, 0)
 		err      error
 	)
@@ -342,6 +369,10 @@ func ExportDevInfosGly(c *gin.Context) {
 			"zcbh":     zcbh,
 			"scrq":     scrq,
 			"rkrq":     rkrq,
+			"rkrqq":    rkrqq,
+			"rkrqz":    rkrqz,
+			"scrqq":    scrqq,
+			"scrqz":    scrqz,
 		}
 		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
@@ -393,7 +424,7 @@ func ExportDevInfosGly(c *gin.Context) {
 		})
 	}
 	// sort map key
-	sortedKeys := make([]string, 21)
+	sortedKeys := make([]string, 22)
 	for field := range records[0] {
 		switch field {
 		case "设备编号":
@@ -456,6 +487,10 @@ func ExportDevInfosGly(c *gin.Context) {
 func GetDevinfosGly(c *gin.Context) {
 	var (
 		appG     = app.Gin{C: c}
+		rkrqq    = c.Query("rkrqq")
+		rkrqz    = c.Query("rkrqz")
+		scrqq    = c.Query("scrqq")
+		scrqz    = c.Query("scrqz")
 		mobile   = c.Query("mobile")
 		sbbh     = c.Query("sbbh")
 		property = c.Query("property")
@@ -508,6 +543,10 @@ func GetDevinfosGly(c *gin.Context) {
 			"zcbh":     zcbh,
 			"scrq":     scrq,
 			"rkrq":     rkrq,
+			"rkrqq":    rkrqq,
+			"rkrqz":    rkrqz,
+			"scrqq":    scrqq,
+			"scrqz":    scrqz,
 		}
 		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
@@ -657,6 +696,8 @@ func GetDevinfosByUser(c *gin.Context) {
 	con := map[string]string{
 		"rkrqq": "2000-01-01 00:00:00",
 		"rkrqz": "2099-01-01 00:00:00",
+		"scrqq": "2000-01-01 00:00:00",
+		"scrqz": "2099-01-01 00:00:00",
 		"syr":   "",
 		"jgdm":  "",
 		"mc":    mc,
@@ -827,7 +868,7 @@ func Allocate(c *gin.Context) {
 		syr = form.SuserID
 	}
 	if form.Czlx == "8" { //交回申请
-		if err := models.DevReback(form, syr, form.Czr); err != nil {
+		if err := models.DevReback(form, syr, czr); err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR, err)
 			return
 		}
@@ -843,6 +884,20 @@ func Allocate(c *gin.Context) {
 		}
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//根据id获取待办&已办详情
+func GetDevTodosOrDonesByTodoid(c *gin.Context) {
+	var appG = app.Gin{C: c}
+	id, _ := strconv.Atoi(c.Query("id"))
+	done, _ := strconv.Atoi(c.Query("done"))
+	data, err := models.GetDevTodosOrDonesByToid(uint(id), done)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USERBYMOBILE_FAIL,
+			fmt.Sprintf("获取待办详情失败：%v", err))
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 //获取待办&已办列表(交回设备)
@@ -888,6 +943,9 @@ func GetDevTodosOrDones(c *gin.Context) {
 	data := make([]interface{}, 0)
 	if len(donelist) > 0 {
 		for _, p := range donelist {
+			if p.Czlx == "11" { //机构变更时，应判断操作人是否为登录人
+				p.Gly = p.Czrid
+			}
 			if p.Gly == userid && len(p.DevID) > 0 {
 				data = append(data, p)
 			}

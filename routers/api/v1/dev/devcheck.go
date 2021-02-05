@@ -266,43 +266,97 @@ func ExportDevCkDetail(c *gin.Context) {
 				detail.SyrJgdm = devdept.Jgmc
 			}
 		}
+		var lx = detail.Lx
+		if detail.Lx != "" {
+			devtype, err := models.GetDevtypeByDm(detail.Lx)
+			if err != nil {
+				log.Println(fmt.Sprintf(
+					"清册id[%d]设备类型获取失败：%s", detail.ID, detail.SyrJgdm))
+			} else {
+				lx = devtype.Mc
+			}
+		}
+		var zt = detail.Zt
+		if detail.Zt != "" {
+			devstate, err := models.GetDevstateByDm(detail.Zt)
+			if err != nil {
+				log.Println(fmt.Sprintf(
+					"清册id[%d]设备状态获取失败：%s", detail.ID, detail.SyrJgdm))
+			} else {
+				lx = devstate.Mc
+			}
+		}
+		var sx = detail.Sx
+		if detail.Zt != "" {
+			devproperty, err := models.GetDevpropertyByDm(detail.Zt)
+			if err != nil {
+				log.Println(fmt.Sprintf(
+					"清册id[%d]设备状态获取失败：%s", detail.ID, detail.SyrJgdm))
+			} else {
+				lx = devproperty.Mc
+			}
+		}
+		var ckBz = "未盘点"
+		if detail.CkBz == 1 {
+			ckBz = "已盘点"
+		}
 		records = append(records, map[string]string{
-			"设备编号": detail.DevinfoID,
-			"设备名称": detail.Mc,
-			"生产商":  detail.Scs,
-			"设备型号": detail.Xh,
-			"序列号":  detail.Xlh,
-			"使用人":  detail.Syr,
-			"科室":   detail.SyrJgdm,
-			"房间号":  detail.Cfwz,
-			"盘点人":  detail.Pdr,
-			"盘点日期": detail.Cktime,
+			"设备编号":    detail.DevinfoID,
+			"设备名称":    detail.Mc,
+			"生产商":     detail.Scs,
+			"设备型号":    detail.Xh,
+			"序列号":     detail.Xlh,
+			"使用人":     detail.Syr,
+			"科室":      detail.SyrJgdm,
+			"房间号":     detail.Cfwz,
+			"盘点人":     detail.Pdr,
+			"盘点日期":    detail.Cktime,
+			"盘点状态":    ckBz,
+			"资产编号":    detail.Zcbh,
+			"设备类型":    lx,
+			"设备使用人":   detail.Syr,
+			"使用人所在机构": detail.SyrJgdm,
+			"设备状态":    zt,
+			"设备属性":    sx,
+			"供应商":     detail.Gys,
 		})
 	}
 	// sort map key
-	sortedKeys := make([]string, 10)
+	sortedKeys := make([]string, 16)
 	for field := range records[0] {
 		switch field {
-		case "设备编号":
+		case "盘点状态":
 			sortedKeys[0] = field
-		case "设备名称":
-			sortedKeys[1] = field
-		case "生产商":
-			sortedKeys[2] = field
-		case "设备型号":
-			sortedKeys[3] = field
-		case "序列号":
-			sortedKeys[4] = field
-		case "使用人":
-			sortedKeys[5] = field
-		case "科室":
-			sortedKeys[6] = field
-		case "房间号":
-			sortedKeys[7] = field
 		case "盘点人":
-			sortedKeys[8] = field
+			sortedKeys[1] = field
 		case "盘点日期":
+			sortedKeys[2] = field
+		case "设备名称":
+			sortedKeys[3] = field
+		case "设备型号":
+			sortedKeys[4] = field
+		case "设备编号":
+			sortedKeys[5] = field
+		case "资产编号":
+			sortedKeys[6] = field
+		case "设备类型":
+			sortedKeys[7] = field
+		case "序列号":
+			sortedKeys[8] = field
+		case "设备使用人":
 			sortedKeys[9] = field
+		case "使用人所在机构":
+			sortedKeys[10] = field
+		case "设备状态":
+			sortedKeys[11] = field
+		case "房间号":
+			sortedKeys[12] = field
+		case "设备属性":
+			sortedKeys[13] = field
+		case "生产商":
+			sortedKeys[14] = field
+		case "供应商":
+			sortedKeys[15] = field
 		}
 		//sorted_keys = append(sorted_keys, field)
 	}

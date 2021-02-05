@@ -277,7 +277,7 @@ func ChangeJgks(form OpForm, czr string) error {
 			Czr:       czr,
 			Czrq:      t,
 			Jgdm:      form.SrcJgdm,
-			DstJgdm:   form.DstJgdm,
+			DstJgdm:   GetSjjgdm(form.DstJgdm),
 			SrcJgksdm: form.SrcJgksdm,
 			DstJgksdm: form.DstJgksdm,
 			SrcCfwz:   form.SrcCfwz,
@@ -447,13 +447,14 @@ func DevReback(form OpForm, syr, czr string) error {
 			dev["jgdm"] = dms[i]
 		}
 		dto := &Devtodo{
-			Czlx:  czlx,
-			Czr:   czr,
-			Czrq:  t,
-			Lsh:   util.RandomString(4) + strconv.Itoa(int(time.Now().Unix())),
-			Jgdm:  dev["jgdm"],
-			DevID: id,
-			Bz:    "等待管理员审批交回申请",
+			Czlx:    czlx,
+			Czr:     czr,
+			Czrq:    t,
+			Lsh:     util.RandomString(4) + strconv.Itoa(int(time.Now().Unix())),
+			Jgdm:    dev["jgdm"],
+			DstJgdm: dev["jgdm"],
+			DevID:   id,
+			Bz:      "等待管理员审批交回申请",
 		}
 		if err := tx.Table("devtodo").Create(dto).Error; err != nil {
 			tx.Rollback()
@@ -769,6 +770,14 @@ func EditDevinfo(dev *Devinfo) error {
 	return nil
 }
 
+func EditDevinfoByMap(updMap map[string]interface{}) error {
+	if err := db.Table("devinfo").
+		Where("id=?", updMap["id"]).Update("cfwz", updMap["cfwz"]).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func DelDevinfo(id string) error {
 	if err := db.Where("id=?", id).Delete(Devinfo{}).Error; err != nil {
 		return err
@@ -1031,7 +1040,8 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			left join devdept a on a.jgdm=devinfo.jgdm 
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join devproperty on devproperty.dm=devinfo.sx 
-			where devinfo.mc like '%s' and devinfo.rkrq >= '%s' and devinfo.czrq <= '%s'
+			where devinfo.mc like '%s' and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'
+			and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'
 			and devinfo.xlh like '%s' and devinfo.syr like '%s' and devinfo.zcbh like '%s'
 			and devinfo.jgdm %s %s %s
 			order by devinfo.sbbh`
@@ -1058,7 +1068,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 	} else {
 		sbbhCon = "and devinfo.sbbh = '" + con["sbbh"] + "'"
 	}
-	squery := fmt.Sprintf(query, "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"],
+	squery := fmt.Sprintf(query, "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], con["scrqq"], con["scrqz"],
 		"%"+con["xlh"]+"%", "%"+con["syr"]+"%", "%"+con["zcbh"]+"%", jgdmCon, ztCon, sbbhCon)
 	if pageNo > 0 && pageSize > 0 {
 		offset := (pageNo - 1) * pageSize
@@ -1107,6 +1117,12 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	}
 	if con["xlh"] != "" {
 		squery += `and devinfo.xlh = '` + con["xlh"] + `' `
+	}
+	if con["rkrqq"] != "" && con["rkrqz"] != "" {
+		squery += fmt.Sprintf("and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
+	}
+	if con["scrqq"] != "" && con["scrqz"] != "" {
+		squery += fmt.Sprintf("and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
 	}
 	squery += ` order by devinfo.sbbh`
 	//log.Println(squery)
