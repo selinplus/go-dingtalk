@@ -33,7 +33,7 @@ func UpdateDevCkTaskFlag(id uint) error {
 
 func AddSendDevCkTasks(checkId uint, ckBz string) {
 	var jsrs = make([]string, 0)
-	if ckBz == "Y" { //自我盘点，同时所有使用人
+	if ckBz == "Y" { //自我盘点，通知所有使用人
 		sql1 := fmt.Sprintf(
 			`select DISTINCT syr from devckdetail where syr!='' and check_id=%d`, checkId)
 		syrs, err := QueryData(sql1)
@@ -44,7 +44,7 @@ func AddSendDevCkTasks(checkId uint, ckBz string) {
 		for _, syr := range syrs {
 			jsrs = append(jsrs, syr["syr"])
 		}
-	} else if ckBz == "N" { //非自我盘点，同时所有管理员
+	} else if ckBz == "N" { //非自我盘点，通知所有管理员
 		sql2 := `select DISTINCT gly from devdept where gly!=''`
 		glys, err := QueryData(sql2)
 		if err != nil {

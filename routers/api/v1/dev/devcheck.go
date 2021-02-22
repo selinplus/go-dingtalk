@@ -207,7 +207,7 @@ func ExportDevCkDetail(c *gin.Context) {
 		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
 	}
 	if c.Query("pageSize") == "" {
-		pageSize = 10
+		pageSize = 100000
 	} else {
 		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
 	}
