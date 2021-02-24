@@ -330,7 +330,6 @@ func AgreeChangeJgks(form OpForm, czr string) error {
 		return err
 	}
 	//同意后，增加出库&入库流水
-	ckLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
 	t := time.Now().Format("2006-01-02 15:04:05")
 	d, err := GetDevinfoByID(id)
 	if err != nil {
@@ -338,13 +337,14 @@ func AgreeChangeJgks(form OpForm, czr string) error {
 		return err
 	}
 	//增加使用人申请流水
+	ckLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
 	dm := &Devmod{
 		Lsh:  ckLsh,
 		Czrq: t,
 		Czlx: czlx,
 		Num:  1,
 		Czr:  d.Syr,
-		Jgdm: dstJgdm,
+		Jgdm: d.Jgdm,
 	}
 	if err := tx.Table("devmod").Create(dm).Error; err != nil {
 		tx.Rollback()
@@ -377,6 +377,7 @@ func AgreeChangeJgks(form OpForm, czr string) error {
 		DevID: d.ID,
 		Zcbh:  d.Zcbh,
 		Syr:   d.Syr,
+		Bz:    "申请变更",
 	}
 	if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
 		tx.Rollback()
@@ -384,7 +385,6 @@ func AgreeChangeJgks(form OpForm, czr string) error {
 	}
 	//增加操作人同意申请流水
 	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
-	//增加使用人申请流水
 	dmGly := &Devmod{
 		Lsh:    lsh,
 		PreLsh: ckLsh,
@@ -406,6 +406,7 @@ func AgreeChangeJgks(form OpForm, czr string) error {
 		DevID: d.ID,
 		Zcbh:  d.Zcbh,
 		Syr:   d.Syr,
+		Bz:    "同意变更",
 	}
 	if err := tx.Table("devmodetail").Create(dmdGly).Error; err != nil {
 		tx.Rollback()

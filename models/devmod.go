@@ -18,7 +18,7 @@ func GetDevMods(czr string) ([]*Devmod, error) {
 			left join devoperation on devoperation.dm=devmod.czlx 
 			left join devdept on devdept.jgdm=devmod.jgdm  
 			left join user on user.userid=devmod.czr  
-			where devmod.czr=? order by devmod.czrq desc`
+			where devmod.czr=? order by devmod.czrq`
 	if err := db.Raw(query, czr).Scan(&devs).Error; err != nil {
 		return nil, err
 	}

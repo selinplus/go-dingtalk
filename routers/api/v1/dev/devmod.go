@@ -71,6 +71,7 @@ func GetDevModetails(c *gin.Context) {
 	resps := make([]*LsResp, 0)
 	if len(devs) > 0 {
 		for i, dev := range devs {
+			dev.Idstr = models.ConvSbbhToIdstr(dev.Sbbh)
 			resp := &LsResp{dev, i}
 			resps = append(resps, resp)
 		}
@@ -83,8 +84,18 @@ func GetDevModetails(c *gin.Context) {
 
 //设备流水记录查询
 func GetDevModList(c *gin.Context) {
-	appG := app.Gin{C: c}
-	devid := strings.Split(c.Query("devid"), "$")[0]
+	var (
+		appG  = app.Gin{C: c}
+		devId = c.Query("devid")
+		devid string
+	)
+	if len(devId) > 10 {
+		devid = strings.Split(devId, "$")[0]
+	} else {
+		id, _ := strconv.Atoi(devId)
+		devinfo := models.GetDevinfoBySbbh(uint(id))
+		devid = devinfo.ID
+	}
 	devs, err := models.GetDevModsByDevid(devid)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
