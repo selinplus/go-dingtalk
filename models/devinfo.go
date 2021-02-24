@@ -1024,12 +1024,6 @@ type DevinfoResp struct {
 }
 
 func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*DevinfoResp, error) {
-	var (
-		devs    []*DevinfoResp
-		jgdmCon string
-		ztCon   string
-		sbbhCon string
-	)
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
 			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
@@ -1041,41 +1035,51 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			left join devdept a on a.jgdm=devinfo.jgdm 
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join devproperty on devproperty.dm=devinfo.sx 
-			where devinfo.mc like '%s' and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'
-			and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'
-			and devinfo.xlh like '%s' and devinfo.syr like '%s' and devinfo.zcbh like '%s'
-			and devinfo.jgdm %s %s %s
-			order by devinfo.sbbh`
-	if con["jgdm"] == "" {
-		jgdmCon = "like '00%'"
-	} else {
-		jgdmCon = "= '" + con["jgdm"] + "'"
+			where 1=1`
+	if con["jgdm"] != "" {
+		query += fmt.Sprintf(" and devinfo.jgdm = '%s'", con["jgdm"])
 	}
 	if len(bz) > 0 {
 		if bz == "0" {
-			ztCon = " and devinfo.zt = '1'"
+			query += " and devinfo.zt = '1'"
 		} else if bz == "3" {
-			ztCon = " and devinfo.zt = '2' and devinfo.sx = '3'"
+			query += " and devinfo.zt = '2' and devinfo.sx = '3'"
 		} else if bz == "4" {
-			ztCon = " and devinfo.zt = '2' and devinfo.sx = '4'"
+			query += " and devinfo.zt = '2' and devinfo.sx = '4'"
 		} else if bz == "6" {
-			ztCon = " and devinfo.zt = '3' and devinfo.sx = '4'"
+			query += " and devinfo.zt = '3' and devinfo.sx = '4'"
 		} else if bz == "10" {
-			ztCon = " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
+			query += " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
 		}
 	}
-	if con["sbbh"] == "" {
-		sbbhCon = ""
-	} else {
-		sbbhCon = "and devinfo.sbbh = '" + con["sbbh"] + "'"
+	if con["mc"] != "" {
+		query += fmt.Sprintf(" and devinfo.mc like '%s'", "%"+con["mc"]+"%")
 	}
-	squery := fmt.Sprintf(query, "%"+con["mc"]+"%", con["rkrqq"], con["rkrqz"], con["scrqq"], con["scrqz"],
-		"%"+con["xlh"]+"%", "%"+con["syr"]+"%", "%"+con["zcbh"]+"%", jgdmCon, ztCon, sbbhCon)
+	if con["xlh"] != "" {
+		query += fmt.Sprintf(" and devinfo.xlh like '%s'", "%"+con["xlh"]+"%")
+	}
+	if con["zcbh"] != "" {
+		query += fmt.Sprintf(" and devinfo.zcbh like '%s'", "%"+con["zcbh"]+"%")
+	}
+	if con["syr"] != "" {
+		query += fmt.Sprintf(" and devinfo.syr = '%s'", con["syr"])
+	}
+	if con["sbbh"] != "" {
+		query += fmt.Sprintf(" and devinfo.sbbh = '%s'", con["sbbh"])
+	}
+	if con["rkrqq"] != "" && con["rkrqz"] != "" {
+		query += fmt.Sprintf(" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
+	}
+	if con["scrqq"] != "" && con["scrqz"] != "" {
+		query += fmt.Sprintf(" and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
+	}
+	query += ` order by devinfo.sbbh`
 	if pageNo > 0 && pageSize > 0 {
 		offset := (pageNo - 1) * pageSize
-		squery += fmt.Sprintf(" LIMIT %d,%d", offset, pageSize)
+		query += fmt.Sprintf(" LIMIT %d,%d", offset, pageSize)
 	}
-	if err := db.Raw(squery).Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
+	var devs []*DevinfoResp
+	if err := db.Raw(query).Scan(&devs).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
 	return devs, nil
@@ -1096,34 +1100,34 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 			left join devproperty on devproperty.dm=devinfo.sx 
 			where devinfo.jgdm = '` + con["jgdm"] + `' `
 	if con["sbbh"] != "" {
-		squery += `and devinfo.sbbh = '` + con["sbbh"] + `' `
+		squery += ` and devinfo.sbbh = '` + con["sbbh"] + `' `
 	}
 	if con["property"] != "" {
-		squery += `and devinfo.sx = '` + con["property"] + `' `
+		squery += ` and devinfo.sx = '` + con["property"] + `' `
 	}
 	if con["state"] != "" {
-		squery += `and devinfo.zt = '` + con["state"] + `' `
+		squery += ` and devinfo.zt = '` + con["state"] + `' `
 	}
 	if con["type"] != "" {
-		squery += `and devinfo.lx like '` + con["type"] + `%' `
+		squery += ` and devinfo.lx like '` + con["type"] + `%' `
 	}
 	if con["zcbh"] != "" {
-		squery += `and devinfo.zcbh like '` + con["zcbh"] + `%' `
+		squery += ` and devinfo.zcbh like '` + con["zcbh"] + `%' `
 	}
 	if con["scrq"] != "" {
-		squery += `and devinfo.scrq like '` + con["scrq"] + `%' `
+		squery += ` and devinfo.scrq like '` + con["scrq"] + `%' `
 	}
 	if con["rkrq"] != "" {
-		squery += `and devinfo.rkrq like '` + con["rkrq"] + `%' `
+		squery += ` and devinfo.rkrq like '` + con["rkrq"] + `%' `
 	}
 	if con["xlh"] != "" {
-		squery += `and devinfo.xlh = '` + con["xlh"] + `' `
+		squery += ` and devinfo.xlh = '` + con["xlh"] + `' `
 	}
 	if con["rkrqq"] != "" && con["rkrqz"] != "" {
-		squery += fmt.Sprintf("and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
+		squery += fmt.Sprintf(" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
 	}
 	if con["scrqq"] != "" && con["scrqz"] != "" {
-		squery += fmt.Sprintf("and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
+		squery += fmt.Sprintf(" and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
 	}
 	squery += ` order by devinfo.sbbh`
 	//log.Println(squery)

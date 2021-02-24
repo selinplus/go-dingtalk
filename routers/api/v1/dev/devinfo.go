@@ -251,18 +251,6 @@ func GetDevinfos(c *gin.Context) {
 		pageNo   int
 		pageSize int
 	)
-	if rkrqq == "" {
-		rkrqq = "2000-01-01 00:00:00"
-	}
-	if rkrqz == "" {
-		rkrqz = "2099-01-01 00:00:00"
-	}
-	if scrqq == "" {
-		scrqq = "2000-01-01 00:00:00"
-	}
-	if scrqz == "" {
-		scrqz = "2099-01-01 00:00:00"
-	}
 	if syr != "" {
 		user, err := models.GetUserdemoByMobile(syr)
 		if err != nil {
@@ -705,10 +693,10 @@ func GetDevinfosByUser(c *gin.Context) {
 	}
 
 	con := map[string]string{
-		"rkrqq": "2000-01-01 00:00:00",
-		"rkrqz": "2099-01-01 00:00:00",
-		"scrqq": "2000-01-01 00:00:00",
-		"scrqz": "2099-01-01 00:00:00",
+		"rkrqq": "",
+		"rkrqz": "",
+		"scrqq": "",
+		"scrqz": "",
 		"syr":   "",
 		"jgdm":  "",
 		"mc":    mc,
