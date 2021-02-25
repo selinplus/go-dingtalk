@@ -287,24 +287,9 @@ func GetDevinfos(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
 		return
 	}
-	resps := make([]*Resp, 0)
-	for _, dev := range devs {
-		var syrName, syrMobile string
-		if dev.Syr != "" {
-			suser, err := models.GetUserdemoByUserid(dev.Syr)
-			if err != nil {
-				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
-				syrName, syrMobile = dev.Syr, dev.Syr
-			} else {
-				syrName, syrMobile = suser.Name, suser.Mobile
-			}
-		}
-		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
-		resps = append(resps, d)
-	}
 	data := make(map[string]interface{})
-	data["lists"] = resps
-	data["total"] = len(resps)
+	data["lists"] = devs
+	data["total"] = len(devs)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
@@ -380,23 +365,8 @@ func ExportDevInfosGly(c *gin.Context) {
 		}
 		devs = append(devs, ds...)
 	}
-	resps := make([]*Resp, 0)
-	for _, dev := range devs {
-		var syrName, syrMobile string
-		if dev.Syr != "" {
-			suser, err := models.GetUserdemoByUserid(dev.Syr)
-			if err != nil {
-				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
-				syrName, syrMobile = dev.Syr, dev.Syr
-			} else {
-				syrName, syrMobile = suser.Name, suser.Mobile
-			}
-		}
-		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
-		resps = append(resps, d)
-	}
 	records := make([]map[string]string, 0)
-	for _, resp := range resps {
+	for _, resp := range devs {
 		records = append(records, map[string]string{
 			"设备编号":   resp.Idstr,
 			"资产编号":   resp.Zcbh,
@@ -554,32 +524,14 @@ func GetDevinfosGly(c *gin.Context) {
 		}
 		devs = append(devs, ds...)
 	}
-	resps := make([]*Resp, 0)
-	for _, dev := range devs {
-		var syrName, syrMobile string
-		if dev.Syr != "" {
-			suser, err := models.GetUserdemoByUserid(dev.Syr)
-			if err != nil {
-				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
-				syrName, syrMobile = dev.Syr, dev.Syr
-			} else {
-				syrName, syrMobile = suser.Name, suser.Mobile
-			}
-		}
-		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
-		resps = append(resps, d)
-	}
 	data := make(map[string]interface{})
-	data["lists"] = resps
-	data["total"] = len(resps)
+	data["lists"] = devs
+	data["total"] = len(devs)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 
 type Resp struct {
 	*models.DevinfoResp
-	Idstr     string `json:"idstr"` //6位短编号
-	SyrName   string `json:"syr_name"`
-	SyrMobile string `json:"syr_mobile"`
 }
 
 //获取设备详情
@@ -592,18 +544,7 @@ func GetDevinfoByID(c *gin.Context) {
 		return
 	}
 	if len(dev.ID) > 0 {
-		var syrName, syrMobile string
-		if dev.Syr != "" {
-			suser, err := models.GetUserdemoByUserid(dev.Syr)
-			if err != nil {
-				log.Println(fmt.Sprintf("根据userid[%s],获取设备使用人失败：%v", dev.Syr, err))
-				syrName, syrMobile = dev.Syr, dev.Syr
-			} else {
-				syrName, syrMobile = suser.Name, suser.Mobile
-			}
-		}
-		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
-		appG.Response(http.StatusOK, e.SUCCESS, d)
+		appG.Response(http.StatusOK, e.SUCCESS, dev)
 	} else {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEV_FAIL, nil)
 	}
@@ -724,23 +665,9 @@ func GetDevinfosByUser(c *gin.Context) {
 		}
 		resps = append(resps, devs...)
 	}
-	devResps := make([]*Resp, 0)
 	data := make(map[string]interface{})
-	for _, dev := range resps {
-		var syrName, syrMobile string
-		if dev.Syr != "" {
-			suser, err := models.GetUserdemoByUserid(dev.Syr)
-			if err != nil {
-				log.Println(fmt.Sprintf("根据userid[%s]设备使用人失败：%v", dev.Syr, err))
-				syrName, syrMobile = dev.Syr, dev.Syr
-			}
-			syrName, syrMobile = suser.Name, suser.Mobile
-		}
-		d := &Resp{dev, models.ConvSbbhToIdstr(dev.Sbbh), syrName, syrMobile}
-		devResps = append(devResps, d)
-	}
-	data["lists"] = devResps
-	data["total"] = len(devResps)
+	data["lists"] = resps
+	data["total"] = len(resps)
 	appG.Response(http.StatusOK, e.SUCCESS, data)
 }
 

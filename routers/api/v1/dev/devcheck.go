@@ -271,7 +271,7 @@ func ExportDevCkDetail(c *gin.Context) {
 			devtype, err := models.GetDevtypeByDm(detail.Lx)
 			if err != nil {
 				log.Println(fmt.Sprintf(
-					"清册id[%d]设备类型获取失败：%s", detail.ID, detail.SyrJgdm))
+					"清册id[%d]设备类型获取失败：%s", detail.ID, detail.Lx))
 			} else {
 				lx = devtype.Mc
 			}
@@ -281,19 +281,19 @@ func ExportDevCkDetail(c *gin.Context) {
 			devstate, err := models.GetDevstateByDm(detail.Zt)
 			if err != nil {
 				log.Println(fmt.Sprintf(
-					"清册id[%d]设备状态获取失败：%s", detail.ID, detail.SyrJgdm))
+					"清册id[%d]设备状态获取失败：%s", detail.ID, detail.Zt))
 			} else {
-				lx = devstate.Mc
+				zt = devstate.Mc
 			}
 		}
 		var sx = detail.Sx
-		if detail.Zt != "" {
-			devproperty, err := models.GetDevpropertyByDm(detail.Zt)
+		if detail.Sx != "" {
+			devproperty, err := models.GetDevpropertyByDm(detail.Sx)
 			if err != nil {
 				log.Println(fmt.Sprintf(
-					"清册id[%d]设备状态获取失败：%s", detail.ID, detail.SyrJgdm))
+					"清册id[%d]设备属性获取失败：%s", detail.ID, detail.Sx))
 			} else {
-				lx = devproperty.Mc
+				sx = devproperty.Mc
 			}
 		}
 		var ckBz = "未盘点"
@@ -301,7 +301,7 @@ func ExportDevCkDetail(c *gin.Context) {
 			ckBz = "已盘点"
 		}
 		records = append(records, map[string]string{
-			"设备编号":    detail.DevinfoID,
+			"设备编号":    detail.Sbbh,
 			"设备名称":    detail.Mc,
 			"生产商":     detail.Scs,
 			"设备型号":    detail.Xh,

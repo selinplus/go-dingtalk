@@ -1019,22 +1019,28 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 
 type DevinfoResp struct {
 	*Devinfo
-	Jgmc string `json:"jgmc"`
-	Ksmc string `json:"ksmc"`
+	Jgmc      string `json:"jgmc"`
+	Ksmc      string `json:"ksmc"`
+	SyrName   string `json:"syr_name"`
+	SyrMobile string `json:"syr_mobile"`
+	Idstr     string `json:"idstr"` //6位短编号
 }
 
 func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*DevinfoResp, error) {
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
-			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.syr,devinfo.cfwz,devproperty.mc as sx
+			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
+			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
+			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
+       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
 			from devinfo 
-			left join userdemo on userdemo.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
+			left join devproperty on devproperty.dm=devinfo.sx 
 			left join devdept a on a.jgdm=devinfo.jgdm 
 			left join devdept b on b.jgdm=devinfo.jgksdm 
-			left join devproperty on devproperty.dm=devinfo.sx 
+			left join userdemo c on c.userid=devinfo.czr 
+			left join userdemo d on d.userid=devinfo.syr 
 			where 1=1`
 	if con["jgdm"] != "" {
 		query += fmt.Sprintf(" and devinfo.jgdm = '%s'", con["jgdm"])
@@ -1089,15 +1095,18 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	var devs []*DevinfoResp
 	squery := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
-			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.syr,devinfo.cfwz,devproperty.mc as sx
+			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
+			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
+			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
+       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
 			from devinfo 
-			left join userdemo on userdemo.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
+			left join devproperty on devproperty.dm=devinfo.sx 
 			left join devdept a on a.jgdm=devinfo.jgdm 
 			left join devdept b on b.jgdm=devinfo.jgksdm 
-			left join devproperty on devproperty.dm=devinfo.sx 
+			left join userdemo c on c.userid=devinfo.czr 
+			left join userdemo d on d.userid=devinfo.syr 
 			where devinfo.jgdm = '` + con["jgdm"] + `' `
 	if con["sbbh"] != "" {
 		squery += ` and devinfo.sbbh = '` + con["sbbh"] + `' `
@@ -1141,15 +1150,18 @@ func GetDevinfoRespByID(id string) (*DevinfoResp, error) {
 	var dev DevinfoResp
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
-			devinfo.czrq,userdemo.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
-			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.syr,devinfo.cfwz,devproperty.mc as sx
+			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
+			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
+			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
+       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
 			from devinfo 
-			left join devdept a on a.jgdm=devinfo.jgdm 
-			left join devdept b on b.jgdm=devinfo.jgksdm 
-			left join userdemo on userdemo.userid=devinfo.czr 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
 			left join devproperty on devproperty.dm=devinfo.sx 
+			left join devdept a on a.jgdm=devinfo.jgdm 
+			left join devdept b on b.jgdm=devinfo.jgksdm 
+			left join userdemo c on c.userid=devinfo.czr 
+			left join userdemo d on d.userid=devinfo.syr 
 			where devinfo.id = '%s'`
 	squery := fmt.Sprintf(query, id)
 	if err := db.Raw(squery).Scan(&dev).Error; err != nil {

@@ -27,7 +27,9 @@ func Setup() {
 		return setting.DatabaseSetting.TablePrefix + defaultTableName
 	}
 
-	//db.LogMode(true)
+	if setting.DatabaseSetting.LogMode == 1 {
+		db.LogMode(true)
+	}
 	db.SingularTable(true)
 	CheckTable()
 	db.DB().SetMaxIdleConns(10)
