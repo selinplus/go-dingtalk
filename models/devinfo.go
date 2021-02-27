@@ -40,6 +40,7 @@ type Devinfo struct {
 	Syr    string `json:"syr" gorm:"COMMENT:'设备使用人代码'"`
 	Cfwz   string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
 	Sx     string `json:"sx" gorm:"COMMENT:'设备属性'"`
+	Pnum   int    `json:"pnum" gorm:"default:0;COMMENT:'二维码打印次数'"`
 }
 
 //生成设备编号
@@ -771,9 +772,17 @@ func EditDevinfo(dev *Devinfo) error {
 	return nil
 }
 
-func EditDevinfoByMap(updMap map[string]interface{}) error {
+func EditDevinfoCfwz(updMap map[string]interface{}) error {
 	if err := db.Table("devinfo").
 		Where("id=?", updMap["id"]).Update("cfwz", updMap["cfwz"]).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func EditDevinfoPnum(id uint) error {
+	s := fmt.Sprintf("update devinfo set pnum=pnum+1 where sbbh = %d", id)
+	if err := db.Exec(s).Error; err != nil {
 		return err
 	}
 	return nil
@@ -1028,7 +1037,7 @@ type DevinfoResp struct {
 
 func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*DevinfoResp, error) {
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
-			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
+			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,devinfo.pnum,
 			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
 			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
@@ -1094,7 +1103,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	var devs []*DevinfoResp
 	squery := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
-			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
+			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,devinfo.pnum,
 			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
 			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
@@ -1149,7 +1158,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 func GetDevinfoRespByID(id string) (*DevinfoResp, error) {
 	var dev DevinfoResp
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
-			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,
+			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,devinfo.pnum,
 			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
 			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,

@@ -145,7 +145,7 @@ func UpdateDevinfoCfwz(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	if err := models.EditDevinfoByMap(map[string]interface{}{"id": form.Devid, "cfwz": form.Cfwz}); err != nil {
+	if err := models.EditDevinfoCfwz(map[string]interface{}{"id": form.Devid, "cfwz": form.Cfwz}); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
 		return
 	}
@@ -221,6 +221,30 @@ func UpdateDevinfo(c *gin.Context) {
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, "修改成功，请重新打印二维码！")
+}
+
+type DevinfoPnumForm struct {
+	Ids []uint `json:"ids"` //id数组
+}
+
+//更新设备二维码打印次数
+func UpdateDevinfoPnum(c *gin.Context) {
+	var (
+		appG   = app.Gin{C: c}
+		form   DevinfoPnumForm
+		errIds []uint
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	for _, id := range form.Ids {
+		if err := models.EditDevinfoPnum(id); err != nil {
+			errIds = append(errIds, id)
+		}
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, errIds)
 }
 
 //删除设备信息

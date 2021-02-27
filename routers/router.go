@@ -183,6 +183,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
 		//更新设备信息
 		apiv1.POST("/dev/update", dev.UpdateDevinfo)
+		//更新设备二维码打印次数
+		apiv1.POST("/dev/update_qrcode", dev.UpdateDevinfoPnum)
 		//删除设备信息
 		apiv1.GET("/dev/del", dev.DelDevinfo)
 		//查询设备详情
