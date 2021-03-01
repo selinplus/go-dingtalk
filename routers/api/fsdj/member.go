@@ -106,7 +106,18 @@ func AddGroupMember(c *gin.Context) {
 						fmt.Sprintf("增加学习小组成员错误,[%s]获取user失败：%v", userid, err))
 					return
 				}
-				if err := models.SaveUserdemo(&user); err != nil {
+				userdemo := &models.Userdemo{
+					UserID:     user.UserID,
+					Name:       user.Name,
+					Department: user.Department,
+					Mobile:     user.Mobile,
+					IsAdmin:    user.IsAdmin,
+					Active:     user.Active,
+					Avatar:     user.Avatar,
+					Remark:     user.Remark,
+					SyncTime:   user.SyncTime,
+				}
+				if err := models.SaveUserdemo(userdemo); err != nil {
 					appG.Response(http.StatusOK, e.ERROR_ADD_USER_FAIL,
 						fmt.Sprintf("增加学习小组成员userdemo错误：%v", err))
 					return

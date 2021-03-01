@@ -163,7 +163,18 @@ func GetCallbacks(c *gin.Context) {
 				if err := models.UserSync(user); err != nil {
 					logging.Error(fmt.Sprintf("sync userid:%v err:%v", userid, err))
 				} else {
-					if err := models.SaveUserdemo(user); err != nil {
+					userdemo := &models.Userdemo{
+						UserID:     user.UserID,
+						Name:       user.Name,
+						Department: user.Department,
+						Mobile:     user.Mobile,
+						IsAdmin:    user.IsAdmin,
+						Active:     user.Active,
+						Avatar:     user.Avatar,
+						Remark:     user.Remark,
+						SyncTime:   user.SyncTime,
+					}
+					if err := models.SaveUserdemo(userdemo); err != nil {
 						logging.Error(fmt.Sprintf("sync userdemo userid:%v err:%v", userid, err))
 					}
 				}

@@ -397,6 +397,21 @@ func DepartmentUserSync(wt, syncNum int) {
 									if flag := models.IsUserExist(user.UserID, t); !flag {
 										if err := models.UserSync(&user); err != nil {
 											log.Printf("UserSync err:%v", err)
+										} else {
+											userdemo := &models.Userdemo{
+												UserID:     user.UserID,
+												Name:       user.Name,
+												Department: user.Department,
+												Mobile:     user.Mobile,
+												IsAdmin:    user.IsAdmin,
+												Active:     user.Active,
+												Avatar:     user.Avatar,
+												Remark:     user.Remark,
+												SyncTime:   user.SyncTime,
+											}
+											if err := models.SaveUserdemo(userdemo); err != nil {
+												log.Printf("SaveUserdemo err:%v", err)
+											}
 										}
 									}
 								}
