@@ -5,6 +5,7 @@ type Devcheck struct {
 	Beg    string `json:"beg" gorm:"COMMENT:'时间起'"`
 	End    string `json:"end" gorm:"COMMENT:'时间止'"`
 	Fqr    string `json:"fqr" gorm:"COMMENT:'发起人代码'"`
+	Sbdl   int    `json:"sbdl" gorm:"default:1;COMMENT:'设备大类,1计算机类设备 2非计算类设备'"`
 	Ckself string `json:"ckself" gorm:"COMMENT:'是否自我盘点（Y,N）'"`
 }
 

@@ -161,6 +161,8 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/delgly", dev.DelDevdeptGly)
 		//获取当前机构管理员信息
 		apiv1.GET("/dev/deptgly", dev.GetDevdeptGly)
+		//获取当前机构保管人信息
+		apiv1.GET("/dev/deptbgr", dev.GetDevdeptBgr)
 		//获取当前用户为机构管理员的所有机构列表
 		apiv1.GET("/dev/gly", dev.GetDevGly)
 
@@ -485,6 +487,8 @@ func InitRouter() *gin.Engine {
 		apiv3.GET("/dev/cktasks", dev.GetDevCkTasks)
 		//获取盘点任务清册明细
 		apiv3.GET("/dev/ckdetail", dev.GetDevCkDetail)
+		//设备盘点拍照上传
+		apiv3.POST("/dev/check_img", dev.DevCheckImg)
 		//设备盘点
 		apiv3.GET("/dev/check", dev.GetDevCheck)
 

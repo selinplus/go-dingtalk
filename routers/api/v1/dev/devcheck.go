@@ -369,6 +369,33 @@ func ExportDevCkDetail(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, url)
 }
 
+type DevCheckImgForm struct {
+	DevId string `json:"devId"`
+	Img   string `json:"img"`
+}
+
+//设备盘点拍照上传
+func DevCheckImg(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form DevCheckImgForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	dev := &models.Devinfo{
+		ID:  form.DevId,
+		Img: form.Img,
+	}
+	if err := models.EditDevinfo(dev); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
 //设备盘点
 func GetDevCheck(c *gin.Context) {
 	var (

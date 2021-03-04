@@ -12,6 +12,7 @@ type Devdept struct {
 	Jgmc   string `json:"jgmc" gorm:"COMMENT:'设备管理机构名称'"`
 	Sjjgdm string `json:"sjjgdm" gorm:"COMMENT:'上级设备管理机构代码'"`
 	Gly    string `json:"gly" gorm:"COMMENT:'设备管理员代码'"`
+	Bgr    string `json:"bgr" gorm:"COMMENT:'设备保管人代码'"`
 	Lrr    string `json:"lrr" gorm:"COMMENT:'录入人代码'"`
 	Lrrq   string `json:"lrrq" gorm:"COMMENT:'录入日期'"`
 	Xgr    string `json:"xgr" gorm:"COMMENT:'修改人代码'"`

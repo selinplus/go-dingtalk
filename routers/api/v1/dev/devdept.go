@@ -17,6 +17,7 @@ type DevdeptForm struct {
 	Jgmc   string `json:"jgmc"`
 	Sjjgdm string `json:"sjjgdm"`
 	Gly    string `json:"gly"`
+	Bgr    string `json:"bgr"`
 	Mobile string `json:"mobile"`
 }
 
@@ -66,6 +67,7 @@ func AddDevdept(c *gin.Context) {
 		Jgmc:   form.Jgmc,
 		Sjjgdm: form.Sjjgdm,
 		Gly:    form.Gly,
+		Bgr:    form.Bgr,
 		Lrr:    userid,
 		Lrrq:   t,
 		Xgr:    userid,
@@ -113,6 +115,7 @@ func UpdateDevdept(c *gin.Context) {
 		Jgmc:   form.Jgmc,
 		Sjjgdm: form.Sjjgdm,
 		Gly:    form.Gly,
+		Bgr:    form.Bgr,
 		Xgr:    userid,
 		Xgrq:   t,
 	}
@@ -493,6 +496,36 @@ func GetDevdeptGly(c *gin.Context) {
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
 			fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
+		return
+	}
+	resp := &GlyResp{
+		UserID: user.UserID,
+		Name:   user.Name,
+		Mobile: user.Mobile,
+	}
+	resps = append(resps, resp)
+	appG.Response(http.StatusOK, e.SUCCESS, resps)
+}
+
+//获取当前机构保管人信息
+func GetDevdeptBgr(c *gin.Context) {
+	appG := app.Gin{C: c}
+	jgdm := c.Query("jgdm")
+	ddept, err := models.GetDevdept(jgdm)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("获取当前机构保管人信息错误：%v", err))
+		return
+	}
+	resps := make([]*GlyResp, 0)
+	if ddept.Bgr == "" {
+		appG.Response(http.StatusOK, e.SUCCESS, resps)
+		return
+	}
+	user, err := models.GetUserdemoByUserid(ddept.Bgr)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+			fmt.Sprintf("根据userid[%s],获取保管人失败：%v", ddept.Gly, err))
 		return
 	}
 	resp := &GlyResp{

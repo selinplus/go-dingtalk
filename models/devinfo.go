@@ -41,6 +41,9 @@ type Devinfo struct {
 	Cfwz   string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
 	Sx     string `json:"sx" gorm:"COMMENT:'设备属性'"`
 	Pnum   int    `json:"pnum" gorm:"default:0;COMMENT:'二维码打印次数'"`
+	Img    string `json:"img" gorm:"COMMENT:'设备照片URL'"`
+	Sbdl   int    `json:"sbdl" gorm:"default:1;COMMENT:'设备大类,1计算机类设备 2非计算类设备'"`
+	Zw     int    `json:"zw" gorm:"default:1;COMMENT:'账外标志,1为账内 2为账外'"`
 }
 
 //生成设备编号
