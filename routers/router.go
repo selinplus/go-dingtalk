@@ -145,6 +145,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/adddept", dev.AddDevdept)
 		//修改设备管理机构
 		apiv1.POST("/dev/upddept", dev.UpdateDevdept)
+		//导出人员&机构代码表
+		apiv1.GET("/dev/exp_info", dev.ExportDevdepUserInfo)
 		//获取设备管理机构信息
 		apiv1.GET("/dev/deptinfo", dev.GetDept)
 		//获取设备管理机构上级有管理员的机构信息
@@ -155,9 +157,11 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/dev/deptlist", dev.GetDevdeptBySjjgdm)
 		//获取设备管理机构列表(bz:0-管理员不可选;1-管理员可选)
 		apiv1.GET("/dev/deptglylist", dev.GetDevdeptGlyList)
+		//获取设备管理机构列表
+		apiv1.GET("/dev/deptbgrlist", dev.GetDevdeptBgrList)
 		//删除设备管理机构
 		apiv1.GET("/dev/deldept", dev.DeleteDevdept)
-		//删除当前机构管理员
+		//删除当前机构管理员&保管人
 		apiv1.GET("/dev/delgly", dev.DelDevdeptGly)
 		//获取当前机构管理员信息
 		apiv1.GET("/dev/deptgly", dev.GetDevdeptGly)

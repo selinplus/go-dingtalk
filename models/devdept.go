@@ -12,6 +12,7 @@ type Devdept struct {
 	Jgmc   string `json:"jgmc" gorm:"COMMENT:'设备管理机构名称'"`
 	Sjjgdm string `json:"sjjgdm" gorm:"COMMENT:'上级设备管理机构代码'"`
 	Gly    string `json:"gly" gorm:"COMMENT:'设备管理员代码'"`
+	Gly2   string `json:"gly2" gorm:"COMMENT:'设备管理员(非计算机类)代码'"`
 	Bgr    string `json:"bgr" gorm:"COMMENT:'设备保管人代码'"`
 	Lrr    string `json:"lrr" gorm:"COMMENT:'录入人代码'"`
 	Lrrq   string `json:"lrrq" gorm:"COMMENT:'录入日期'"`
@@ -87,6 +88,32 @@ func AddDevdept(data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+type DevdepUserInfo struct {
+	Jgdm string
+	Jgmc string
+	Syr  string
+	Name string
+}
+
+//获取人员&机构代码表
+func GegDevdepUserInfo() ([]*DevdepUserInfo, error) {
+	var infos []*DevdepUserInfo
+	query := `
+select u.jgdm, d.jgmc, u.syr, ud.name
+from devuser u
+         left join devdept d on u.jgdm = d.jgdm
+         left join userdemo ud on u.syr = ud.userid
+order by d.jgdm;`
+	err := db.Raw(query).Scan(&infos).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	}
+	return infos, nil
 }
 
 func UpdateDevdept(devd *Devdept) error {

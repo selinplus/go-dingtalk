@@ -523,7 +523,7 @@ func AgreeDevReback(form OpForm, czr string) error {
 		tx.Rollback()
 		return err
 	}
-	//置空所属机构代码，存放位置，使用人
+	//置空所属机构代码，存放位置，使用人，修改属性、状态
 	dev := map[string]string{
 		"id":     id,
 		"czrq":   t,
@@ -531,6 +531,8 @@ func AgreeDevReback(form OpForm, czr string) error {
 		"syr":    "",
 		"cfwz":   "",
 		"jgksdm": "",
+		"sx":     "1",
+		"zt":     "1",
 	}
 	if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 		tx.Rollback()
@@ -805,76 +807,278 @@ type DevinfoErr struct {
 }
 
 func ImpDevinfos(fileName io.Reader, czr string) ([]*DevinfoErr, int, int, error) {
-	devs, err := ReadDevinfoXmlToStructs(fileName, czr)
+	devs, flag, err := ReadDevinfoXmlToStructs(fileName, czr)
 	if err != nil {
 		log.Println(err)
 		return nil, 0, 0, err
 	}
-	errDev, success, failed := InsertDevinfoXml(devs, czr)
+	errDev, success, failed := InsertDevinfoXml(devs, czr, flag)
 	return errDev, success, failed, nil
 }
 
-func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) ([]*Devinfo, error) {
-	devs := make([]*Devinfo, 0)
+func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) (devs []*Devinfo, flag bool, err error) {
 	xlsx, err := excelize.OpenReader(fileName)
 	if err != nil {
 		logging.Error(err.Error())
-		return nil, err
+		return
 	}
 	//sheetName := xlsx.GetSheetName(0)
 	rows, err := xlsx.GetRows("设备基本信息表")
 	if err != nil {
 		logging.Error(err.Error())
-		return nil, err
+		return
 	}
 	//logging.Info(fmt.Sprintf("sheet name: %s", sheetName))
-	//遍历行读取
-	for k, row := range rows {
-		// 跳过标题行，遍历每行的列读取
-		if k == 0 {
-			continue
-		}
-		d := Devinfo{}
-		d.Czr = czr
-		for i, cell := range row {
-			if cell == "" {
+	if len(rows[0]) == 10 { //计算机类设备导入
+		//遍历行读取
+		for k, row := range rows {
+			// 跳过标题行，遍历每行的列读取
+			if k == 0 {
+				continue
+			}
+			d := Devinfo{}
+			d.Czr = czr
+			for i, cell := range row {
+				if cell == "" {
+					switch {
+					case i == 1, i == 2, i == 3, i == 4, i == 5, i == 7, i == 8, i == 9:
+						err = fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+						return
+					}
+				}
 				switch {
-				case i == 1, i == 2, i == 3, i == 4, i == 5, i == 7, i == 8, i == 9:
-					return nil, fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+				case i == 0:
+					d.Zcbh = cell
+				case i == 1:
+					d.Xlh = cell
+				case i == 2:
+					d.Lx = cell
+				case i == 3:
+					d.Mc = cell
+				case i == 4:
+					d.Grrq = cell
+				case i == 5:
+					d.Jg = cell
+				case i == 6:
+					d.Ly = cell
+				case i == 7:
+					d.Scrq = cell
+				case i == 8:
+					d.Scs = cell
+				case i == 9:
+					d.Xh = cell
+				case i == 10:
+					d.Gys = cell
 				}
 			}
-			switch {
-			case i == 0:
-				d.Zcbh = cell
-			case i == 1:
-				d.Xlh = cell
-			case i == 2:
-				d.Lx = cell
-			case i == 3:
-				d.Mc = cell
-			case i == 4:
-				d.Grrq = cell
-			case i == 5:
-				d.Jg = cell
-			case i == 6:
-				d.Ly = cell
-			case i == 7:
-				d.Scrq = cell
-			case i == 8:
-				d.Scs = cell
-			case i == 9:
-				d.Xh = cell
-			case i == 10:
-				d.Gys = cell
-			}
+			//logging.Debug(fmt.Sprintf("*: %+v", d))
+			devs = append(devs, &d)
 		}
-		//logging.Debug(fmt.Sprintf("*: %+v", d))
-		devs = append(devs, &d)
+	} else if len(rows[0]) == 5 { //非计算机类设备导入
+		//遍历行读取
+		for k, row := range rows {
+			// 跳过标题行，遍历每行的列读取
+			if k == 0 {
+				continue
+			}
+			d := Devinfo{}
+			d.Czr = czr
+			for i, cell := range row {
+				if cell == "" {
+					err = fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+					return
+				}
+				switch {
+				case i == 0:
+					d.Zcbh = cell
+				case i == 1:
+					d.Xlh = cell
+				case i == 2:
+					d.Lx = cell
+				case i == 3:
+					d.Mc = cell
+				case i == 4:
+					d.Grrq = cell
+				}
+			}
+			d.Sbdl = 2
+			//logging.Debug(fmt.Sprintf("*: %+v", d))
+			devs = append(devs, &d)
+		}
+	} else { //非计算机类设备初始化(带人员机构代码)
+		flag = true
+		//遍历行读取
+		for k, row := range rows {
+			// 跳过标题行，遍历每行的列读取
+			if k == 0 {
+				continue
+			}
+			d := Devinfo{}
+			d.Czr = czr
+			for i, cell := range row {
+				if cell == "" {
+					switch {
+					case i == 0, i == 1, i == 2, i == 3, i == 4, i == 5, i == 7:
+						err = fmt.Errorf("%s", "文件校验错误，存在未录入项！")
+						return
+					}
+				}
+				switch {
+				case i == 0:
+					d.Zcbh = cell
+				case i == 1:
+					d.Xlh = cell
+				case i == 2:
+					d.Lx = cell
+				case i == 3:
+					d.Mc = cell
+				case i == 4:
+					d.Grrq = cell
+				case i == 5:
+					d.Jgksdm = cell
+				case i == 7:
+					d.Syr = cell
+				}
+			}
+			d.Sbdl = 2
+			//logging.Debug(fmt.Sprintf("*: %+v", d))
+			devs = append(devs, &d)
+		}
 	}
-	return devs, nil
+	return
 }
 
-func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
+func InsertDevinfoXml(devs []*Devinfo, czr string, flag bool) ([]*DevinfoErr, int, int) {
+	var (
+		errDev  = make([]*DevinfoErr, 0)
+		devsNum = len(devs)
+	)
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
+	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	var jgdm, sx, zt, czlx = "", "1", "1", "1" //初始导入,设备在库&设备入库操作
+	// flag=true 非计算机类初始化
+	if flag { //分配到人,设备专有、在用&设备初始化操作
+		sx, zt, czlx = "4", "2", "12"
+	} else {
+		jgdm = "00"
+	}
+	for _, dev := range devs {
+		t := time.Now().Format("2006-01-02 15:04:05")
+		d := &Devinfo{
+			Zcbh:   dev.Zcbh,
+			Mc:     dev.Mc,
+			Xh:     dev.Xh,
+			Xlh:    dev.Xlh,
+			Ly:     dev.Ly,
+			Scs:    dev.Scs,
+			Scrq:   dev.Scrq,
+			Grrq:   dev.Grrq,
+			Bfnx:   dev.Bfnx,
+			Jg:     dev.Jg,
+			Gys:    dev.Gys,
+			Czr:    dev.Czr,
+			Rkrq:   t,
+			Czrq:   t,
+			Jgdm:   jgdm,
+			Zt:     zt,
+			Sx:     sx,
+			Jgksdm: dev.Jgksdm,
+			Syr:    dev.Syr,
+			Sbdl:   dev.Sbdl,
+		}
+		LxDm, err := GetDevtypeByMc(dev.Lx)
+		if err != nil {
+			errDev = append(errDev,
+				&DevinfoErr{
+					Devinfo: dev,
+					Msg:     "获取设备类型代码失败,设备类型名称错误！",
+				})
+		} else {
+			if IsDevXlhExist(dev.Xlh) {
+				//logging.Info(fmt.Sprintf("%s:序列号已存在!", dev.Xlh))
+				errDev = append(errDev,
+					&DevinfoErr{
+						Devinfo: dev,
+						Msg:     "序列号已存在！",
+					})
+			} else {
+				d.Lx = LxDm.Dm
+				d.ID = GenerateSbbh(d.Lx, d.Xlh)
+				//生成二维码
+				info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs + "]$设备型号[" + d.Xh + "]$生产日期[" + d.Scrq + "]$"
+				name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
+				if err != nil {
+					log.Println("GenerateQrWithLogo err:", err)
+				} else {
+					d.QrUrl = qrcode.GetQrCodeFullUrl(name)
+				}
+				if err := tx.Table("devinfo").Create(d).Error; err != nil {
+					log.Println(err)
+					tx.Rollback()
+					return nil, 0, 0
+				}
+				dmd := &Devmodetail{
+					Lsh:   lsh,
+					Czlx:  czlx,
+					Lx:    d.Lx,
+					DevID: d.ID,
+					Zcbh:  d.Zcbh,
+					Czrq:  time.Now().Format("2006-01-02 15:04:05"),
+				}
+				if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+					log.Println(err)
+					tx.Rollback()
+					return nil, 0, 0
+				}
+			}
+		}
+	}
+	dm := &Devmod{
+		Lsh:  lsh,
+		Czrq: time.Now().Format("2006-01-02 15:04:05"),
+		Czlx: czlx,
+		Num:  devsNum - len(errDev),
+		Czr:  czr,
+		Jgdm: "00",
+	}
+	if err := tx.Table("devmod").Create(dm).Error; err != nil {
+		log.Println(err)
+		tx.Rollback()
+		return nil, 0, 0
+	}
+	if devsNum == len(errDev) {
+		tx.Rollback()
+		return errDev, devsNum - len(errDev), len(errDev)
+	}
+	if flag { //根据所属机构代码，更新管理机构代码
+		sql := `
+update devinfo i
+set jgdm=(select v.jgdm
+          from v_devgljg v
+          where i.jgksdm = v.jgksdm)
+where jgdm is null
+   or jgdm = '';`
+		if err := tx.Exec(sql).Error; err != nil {
+			log.Println(err)
+			tx.Rollback()
+			return nil, 0, 0
+		}
+	}
+	tx.Commit()
+	if len(errDev) > 0 {
+		return errDev, devsNum - len(errDev), len(errDev)
+	}
+	return nil, devsNum, 0
+}
+
+//多协程插入
+func InsertDevinfoXmlGoroutine(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -939,23 +1143,26 @@ func InsertDevinfoXml(devs []*Devinfo, czr string) ([]*DevinfoErr, int, int) {
 					//}
 					t := time.Now().Format("2006-01-02 15:04:05")
 					d := &Devinfo{
-						Zcbh: dev.Zcbh,
-						Mc:   dev.Mc,
-						Xh:   dev.Xh,
-						Xlh:  dev.Xlh,
-						Ly:   dev.Ly,
-						Scs:  dev.Scs,
-						Scrq: dev.Scrq,
-						Grrq: dev.Grrq,
-						Bfnx: dev.Bfnx,
-						Jg:   dev.Jg,
-						Gys:  dev.Gys,
-						Rkrq: t,
-						Czrq: t,
-						Czr:  dev.Czr,
-						Zt:   "1",
-						Jgdm: "00",
-						Sx:   "1",
+						Zcbh:   dev.Zcbh,
+						Mc:     dev.Mc,
+						Xh:     dev.Xh,
+						Xlh:    dev.Xlh,
+						Ly:     dev.Ly,
+						Scs:    dev.Scs,
+						Scrq:   dev.Scrq,
+						Grrq:   dev.Grrq,
+						Bfnx:   dev.Bfnx,
+						Jg:     dev.Jg,
+						Gys:    dev.Gys,
+						Rkrq:   t,
+						Czrq:   t,
+						Czr:    dev.Czr,
+						Zt:     "1",
+						Jgdm:   "00",
+						Sx:     "1",
+						Jgksdm: dev.Jgksdm,
+						Syr:    dev.Syr,
+						Sbdl:   dev.Sbdl,
 					}
 					LxDm, err := GetDevtypeByMc(dev.Lx)
 					if err != nil {
@@ -1041,8 +1248,8 @@ type DevinfoResp struct {
 func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*DevinfoResp, error) {
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,devinfo.pnum,
-			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
-			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
+			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,devinfo.sbdl,
+			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,devinfo.img,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
        		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
 			from devinfo 
@@ -1053,7 +1260,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join userdemo c on c.userid=devinfo.czr 
 			left join userdemo d on d.userid=devinfo.syr 
-			where 1=1`
+			where zw=1`
 	if con["jgdm"] != "" {
 		query += fmt.Sprintf(" and devinfo.jgdm = '%s'", con["jgdm"])
 	}
@@ -1067,7 +1274,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 		} else if bz == "6" {
 			query += " and devinfo.zt = '3' and devinfo.sx = '4'"
 		} else if bz == "10" {
-			query += " and ((devinfo.zt = '2' and devinfo.sx = '3') or(devinfo.zt = '2' and devinfo.sx = '4')or(devinfo.zt = '3' and devinfo.sx = '4'))"
+			query += " and ((devinfo.zt = '2' and devinfo.sx = '3') or (devinfo.zt = '2' and devinfo.sx = '4') or (devinfo.zt = '3' and devinfo.sx = '4'))"
 		}
 	}
 	if con["mc"] != "" {
@@ -1084,6 +1291,14 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 	}
 	if con["sbbh"] != "" {
 		query += fmt.Sprintf(" and devinfo.sbbh = '%s'", con["sbbh"])
+	}
+	if con["sbdl"] != "" {
+		if con["sbdl"] == "1" {
+			query += ` and devinfo.sbdl = 1`
+		}
+		if con["sbdl"] == "2" {
+			query += ` and devinfo.sbdl = 2`
+		}
 	}
 	if con["rkrqq"] != "" && con["rkrqz"] != "" {
 		query += fmt.Sprintf(" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
@@ -1107,8 +1322,8 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	var devs []*DevinfoResp
 	squery := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,devinfo.pnum,
-			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
-			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
+			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,devinfo.sbdl,
+			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,devinfo.img,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
        		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
 			from devinfo 
@@ -1119,7 +1334,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join userdemo c on c.userid=devinfo.czr 
 			left join userdemo d on d.userid=devinfo.syr 
-			where devinfo.jgdm = '` + con["jgdm"] + `' `
+			where zw=1 and devinfo.jgdm = '` + con["jgdm"] + `' `
 	if con["sbbh"] != "" {
 		squery += ` and devinfo.sbbh = '` + con["sbbh"] + `' `
 	}
@@ -1144,6 +1359,14 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 	if con["xlh"] != "" {
 		squery += ` and devinfo.xlh = '` + con["xlh"] + `' `
 	}
+	if con["sbdl"] != "" {
+		if con["sbdl"] == "1" {
+			squery += ` and devinfo.sbdl = 1`
+		}
+		if con["sbdl"] == "2" {
+			squery += ` and devinfo.sbdl = 2`
+		}
+	}
 	if con["rkrqq"] != "" && con["rkrqz"] != "" {
 		squery += fmt.Sprintf(" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
 	}
@@ -1162,8 +1385,8 @@ func GetDevinfoRespByID(id string) (*DevinfoResp, error) {
 	var dev DevinfoResp
 	query := `select devinfo.sbbh,devinfo.id,devinfo.zcbh,devtype.mc as lx,devinfo.mc,devinfo.xh,devinfo.xlh,devinfo.ly,
 			devinfo.scs,devinfo.scrq,devinfo.grrq,devinfo.bfnx,devinfo.jg,devinfo.gys,devinfo.rkrq,devinfo.pnum,
-			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,
-			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,
+			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,devinfo.sbdl,
+			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,devinfo.img,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
        		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
 			from devinfo 
@@ -1232,6 +1455,18 @@ func GetDevinfosByJgdm(jgdm string) ([]*Devinfo, error) {
 	return nil, nil
 }
 
+//判断是否有共有设备
+func IsDevGyExist(jgksdm string) bool {
+	var dev Devinfo
+	err := db.Table("devinfo").Where("jgksdm=? and sx=3", jgksdm).First(&dev).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return false
+	}
+	if err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
+}
 func ConvSbbhToIdstr(sbbh uint) (idstr string) {
 	switch {
 	case sbbh < 10:

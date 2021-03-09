@@ -50,6 +50,7 @@ func GetDevCkTasks(c *gin.Context) {
 		appG = app.Gin{C: c}
 		//是否自我盘点:Y,N;普通人员只能查看自我盘点任务;管理员可查看全部,或选择性查看
 		flag     = c.Query("flag")
+		sbdl     = c.Query("sbdl")
 		pageSize int
 		pageNo   int
 	)
@@ -68,7 +69,14 @@ func GetDevCkTasks(c *gin.Context) {
 	if flag != "" {
 		cond = fmt.Sprintf("ckself = '%s'", c.Query("flag"))
 	}
-
+	if sbdl != "" {
+		if sbdl == "1" {
+			cond += ` and sbdl = 1`
+		}
+		if sbdl == "2" {
+			cond += ` and sbdl = 2`
+		}
+	}
 	ckTask, err := models.GetDevCheckTask(cond, pageNo, pageSize)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
@@ -172,6 +180,15 @@ func GetDevCkDetail(c *gin.Context) {
 					detail.Syr = u.Name
 				}
 			}
+			if detail.Jgdm != "" {
+				devdept, err := models.GetDevdept(detail.Jgdm)
+				if err != nil {
+					log.Println(fmt.Sprintf(
+						"清册id[%d]设备管理机构获取失败：%s", detail.ID, detail.Jgdm))
+				} else {
+					detail.Jgdm = devdept.Jgdm
+				}
+			}
 			if detail.SyrJgdm != "" {
 				devdept, err := models.GetDevdept(detail.SyrJgdm)
 				if err != nil {
@@ -257,6 +274,15 @@ func ExportDevCkDetail(c *gin.Context) {
 				detail.Syr = u.Name
 			}
 		}
+		if detail.Jgdm != "" {
+			devdept, err := models.GetDevdept(detail.Jgdm)
+			if err != nil {
+				log.Println(fmt.Sprintf(
+					"清册id[%d]设备管理机构获取失败：%s", detail.ID, detail.Jgdm))
+			} else {
+				detail.Jgdm = devdept.Jgdm
+			}
+		}
 		if detail.SyrJgdm != "" {
 			devdept, err := models.GetDevdept(detail.SyrJgdm)
 			if err != nil {
@@ -315,6 +341,7 @@ func ExportDevCkDetail(c *gin.Context) {
 			"资产编号":    detail.Zcbh,
 			"设备类型":    lx,
 			"设备使用人":   detail.Syr,
+			"设备管理机构":  detail.Jgdm,
 			"使用人所在机构": detail.SyrJgdm,
 			"设备状态":    zt,
 			"设备属性":    sx,
@@ -322,7 +349,7 @@ func ExportDevCkDetail(c *gin.Context) {
 		})
 	}
 	// sort map key
-	sortedKeys := make([]string, 16)
+	sortedKeys := make([]string, 17)
 	for field := range records[0] {
 		switch field {
 		case "盘点状态":
@@ -345,18 +372,20 @@ func ExportDevCkDetail(c *gin.Context) {
 			sortedKeys[8] = field
 		case "设备使用人":
 			sortedKeys[9] = field
-		case "使用人所在机构":
+		case "设备管理机构":
 			sortedKeys[10] = field
-		case "设备状态":
+		case "使用人所在机构":
 			sortedKeys[11] = field
-		case "房间号":
+		case "设备状态":
 			sortedKeys[12] = field
-		case "设备属性":
+		case "房间号":
 			sortedKeys[13] = field
-		case "生产商":
+		case "设备属性":
 			sortedKeys[14] = field
-		case "供应商":
+		case "生产商":
 			sortedKeys[15] = field
+		case "供应商":
+			sortedKeys[16] = field
 		}
 		//sorted_keys = append(sorted_keys, field)
 	}

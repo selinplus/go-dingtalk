@@ -275,6 +275,22 @@ func InitDb() {
 	if cnt == 0 {
 		initGrouproot()
 	}
+	var sql = `
+create or replace view v_devgljg as (
+    select t.jgdm                                                       jgksdm,
+           t.jgmc                                                       jgks,
+           if(t.gly is not null and t.gly <> '', t.jgdm,
+              if(b.gly is not null and b.gly <> '', b.jgdm, c.jgdm)) as jgdm,
+           if(t.gly is not null and t.gly <> '', t.jgmc,
+              if(b.gly is not null and b.gly <> '', b.jgmc, c.jgmc)) as jgmc
+    from devdept t
+             left join devdept b on t.sjjgdm = b.jgdm
+             left join devdept c on b.sjjgdm = c.jgdm);`
+	err = db.Exec(sql).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		logging.Error(fmt.Sprintf("init v_devgljg error: %v", err))
+		return
+	}
 }
 
 func AddType() {

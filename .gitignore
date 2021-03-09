@@ -7,5 +7,7 @@
 runtime/*
 !runtime/fonts
 !runtime/export/device.xlsx
+!runtime/export/device2.xlsx
+!runtime/export/device3.xlsx
 !runtime/bg.jpg
 !runtime/submit.xlsx

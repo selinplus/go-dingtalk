@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
+	"github.com/selinplus/go-dingtalk/pkg/export"
 	"log"
 	"net/http"
 	"strings"
@@ -17,13 +18,8 @@ type DevdeptForm struct {
 	Jgmc   string `json:"jgmc"`
 	Sjjgdm string `json:"sjjgdm"`
 	Gly    string `json:"gly"`
+	Gly2   string `json:"gly2"`
 	Bgr    string `json:"bgr"`
-	Mobile string `json:"mobile"`
-}
-
-type GlyResp struct {
-	UserID string `json:"userid"`
-	Name   string `json:"name"`
 	Mobile string `json:"mobile"`
 }
 
@@ -67,6 +63,7 @@ func AddDevdept(c *gin.Context) {
 		Jgmc:   form.Jgmc,
 		Sjjgdm: form.Sjjgdm,
 		Gly:    form.Gly,
+		Gly2:   form.Gly2,
 		Bgr:    form.Bgr,
 		Lrr:    userid,
 		Lrrq:   t,
@@ -115,6 +112,7 @@ func UpdateDevdept(c *gin.Context) {
 		Jgmc:   form.Jgmc,
 		Sjjgdm: form.Sjjgdm,
 		Gly:    form.Gly,
+		Gly2:   form.Gly2,
 		Bgr:    form.Bgr,
 		Xgr:    userid,
 		Xgrq:   t,
@@ -124,6 +122,50 @@ func UpdateDevdept(c *gin.Context) {
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+//导出人员&机构代码表
+func ExportDevdepUserInfo(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		err  error
+	)
+	ds, err := models.GegDevdepUserInfo()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEVLIST_FAIL, nil)
+		return
+	}
+	records := make([]map[string]string, 0)
+	for _, resp := range ds {
+		records = append(records, map[string]string{
+			"所属机构代码": resp.Jgdm,
+			"所属机构名称": resp.Jgmc,
+			"人员代码":   resp.Syr,
+			"人员姓名":   resp.Name,
+		})
+	}
+	// sort map key
+	sortedKeys := make([]string, 4)
+	for field := range records[0] {
+		switch field {
+		case "所属机构代码":
+			sortedKeys[0] = field
+		case "所属机构名称":
+			sortedKeys[1] = field
+		case "人员代码":
+			sortedKeys[2] = field
+		case "人员姓名":
+			sortedKeys[3] = field
+		}
+		//sorted_keys = append(sorted_keys, field)
+	}
+	fileName := "DevdepUserInfo" + time.Now().Format("150405")
+	url, err := export.WriteIntoExecel(fileName, sortedKeys, records)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{"name": "人员&机构代码表.xlsx", "url": url})
 }
 
 //获取设备管理机构信息
@@ -333,6 +375,124 @@ func GetDevdeptGlyList(c *gin.Context) {
 	}
 }
 
+//获取设备管理机构列表
+func GetDevdeptBgrList(c *gin.Context) {
+	var (
+		appG    = app.Gin{C: c}
+		flag    bool
+		bgrName string
+	)
+	parentDt, err := models.GetDevdept(c.Query("jgdm"))
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		return
+	}
+	var dts []interface{}
+	if parentDt.Bgr != "" {
+		bgr, err := models.GetUserdemoByUserid(parentDt.Bgr)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("根据userid[%s]获取保管人信息失败：%v", parentDt.Bgr, err))
+			return
+		}
+		flag = true
+		bgrName = bgr.Name
+	} else {
+		flag = false
+		bgrName = ""
+	}
+	data := map[string]interface{}{
+		"jgdm":        parentDt.Jgdm,
+		"sjjgdm":      parentDt.Sjjgdm,
+		"jgmc":        parentDt.Jgmc,
+		"bgr":         bgrName,
+		"children":    dts,
+		"scopedSlots": map[string]string{"title": "custom"},
+		"disabled":    flag,
+	}
+	departments, err := models.GetDevdeptBySjjgdm(parentDt.Jgdm)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
+		return
+	}
+	if len(departments) > 0 {
+		for _, department := range departments {
+			var ds []interface{}
+			leaf := models.IsLeafDevdept(department.Jgdm)
+			if !leaf {
+				departs, err := models.GetDevdeptBySjjgdm(department.Jgdm)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, department.Jgdm)
+					return
+				}
+				if len(departs) > 0 {
+					for _, depart := range departs {
+						if department.Gly != "" {
+							flag = false
+						} else {
+							if depart.Bgr != "" {
+								flag = true
+								bgr, err := models.GetUserdemoByUserid(depart.Bgr)
+								if err != nil {
+									log.Println(fmt.Sprintf(
+										"根据userid[%s]获取管理员信息失败：%v", depart.Bgr, err))
+									bgrName = depart.Bgr
+								} else {
+									bgrName = bgr.Name
+								}
+							} else {
+								flag = false
+								bgrName = ""
+							}
+						}
+						d := map[string]interface{}{
+							"jgdm":        depart.Jgdm,
+							"sjjgdm":      depart.Sjjgdm,
+							"jgmc":        depart.Jgmc,
+							"bgr":         bgrName,
+							"scopedSlots": map[string]string{"title": "custom"},
+							"children":    nil,
+							"disabled":    flag,
+						}
+						ds = append(ds, d)
+					}
+				}
+			}
+			if department.Bgr != "" {
+				if department.Gly != "" {
+					flag = false
+				} else {
+					flag = true
+					bgr, err := models.GetUserdemoByUserid(department.Bgr)
+					if err != nil {
+						log.Println(fmt.Sprintf(
+							"根据userid[%s]获取保管人信息失败：%v", department.Bgr, err))
+						bgrName = department.Bgr
+					} else {
+						bgrName = bgr.Name
+					}
+				}
+			} else {
+				flag = false
+			}
+			dt := map[string]interface{}{
+				"jgdm":        department.Jgdm,
+				"sjjgdm":      department.Sjjgdm,
+				"jgmc":        department.Jgmc,
+				"bgr":         bgrName,
+				"scopedSlots": map[string]string{"title": "custom"},
+				"children":    ds,
+				"disabled":    flag,
+			}
+			dts = append(dts, dt)
+		}
+		data["children"] = dts
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	} else {
+		appG.Response(http.StatusOK, e.SUCCESS, data)
+	}
+}
+
 //获取设备管理机构列表(循环遍历)
 func GetDevdeptBySjjgdm(c *gin.Context) {
 	var appG = app.Gin{C: c}
@@ -452,29 +612,50 @@ func DeleteDevdept(c *gin.Context) {
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
-//删除当前机构管理员
+//删除当前机构保管人&保管人
 func DelDevdeptGly(c *gin.Context) {
 	appG := app.Gin{C: c}
 	jgdm := c.Query("jgdm")
+	sbdl := c.Query("sbdl")
 	devdept := map[string]interface{}{
 		"jgdm": jgdm,
-		"gly":  "",
 		"xgrq": time.Now().Format("2006-01-02 15:04:05"),
 	}
-	devs, err := models.GetDevinfosByJgdm(jgdm)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
-		return
-	}
-	if len(devs) > 0 {
-		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
-		return
+	if sbdl == "3" { //删除保管人
+		devdept["bgr"] = ""
+		if models.IsDevGyExist(jgdm) {
+			appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+			return
+		}
+	} else { //删除管理员
+		if sbdl == "1" {
+			devdept["gly"] = ""
+		}
+		if sbdl == "2" {
+			devdept["gly2"] = ""
+		}
+		devs, err := models.GetDevinfosByJgdm(jgdm)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+			return
+		}
+		if len(devs) > 0 {
+			appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+			return
+		}
 	}
 	if err := models.DelDevdeptGly(devdept); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
+
+type GlyResp struct {
+	UserID string `json:"userid"`
+	Name   string `json:"name"`
+	Mobile string `json:"mobile"`
+	Sbdl   int    `json:"sbdl"`
 }
 
 //获取当前机构管理员信息
@@ -488,22 +669,36 @@ func GetDevdeptGly(c *gin.Context) {
 		return
 	}
 	resps := make([]*GlyResp, 0)
-	if ddept.Gly == "" {
-		appG.Response(http.StatusOK, e.SUCCESS, resps)
-		return
+	if ddept.Gly != "" {
+		user, err := models.GetUserdemoByUserid(ddept.Gly)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
+			return
+		}
+		resp := &GlyResp{
+			UserID: user.UserID,
+			Name:   user.Name,
+			Mobile: user.Mobile,
+			Sbdl:   1,
+		}
+		resps = append(resps, resp)
 	}
-	user, err := models.GetUserdemoByUserid(ddept.Gly)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-			fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
-		return
+	if ddept.Gly2 != "" {
+		user, err := models.GetUserdemoByUserid(ddept.Gly)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+				fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
+			return
+		}
+		resp := &GlyResp{
+			UserID: user.UserID,
+			Name:   user.Name,
+			Mobile: user.Mobile,
+			Sbdl:   2,
+		}
+		resps = append(resps, resp)
 	}
-	resp := &GlyResp{
-		UserID: user.UserID,
-		Name:   user.Name,
-		Mobile: user.Mobile,
-	}
-	resps = append(resps, resp)
 	appG.Response(http.StatusOK, e.SUCCESS, resps)
 }
 

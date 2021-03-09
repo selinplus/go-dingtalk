@@ -41,9 +41,10 @@ type DevtodoResp struct {
 func GetDevTodosOrDones(done int) ([]DevtodoResp, error) {
 	var dtos []DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,a.gly,
-	devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
+select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,
+	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
+	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
 	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
 	from devtodo
 	left join devdept a on a.jgdm=devtodo.jgdm
@@ -64,9 +65,10 @@ select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as
 func GetDevTodosOrDonesByToid(id uint, done int) (*DevtodoResp, error) {
 	var devtodoResp DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,a.gly,
-	devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
+select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,
+	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
+	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
 	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
 	from devtodo
 	left join devdept a on a.jgdm=devtodo.jgdm
@@ -101,9 +103,10 @@ func GetUpDevTodosOrDones(done int) ([]DevtodoResp, error) {
 func GetDevFlag() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr,devtodo.czrq,devtodo.jgdm,a.gly,
-	devtodo.src_cfwz,devtodo.dst_cfwz,a.gly,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
+select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr,devtodo.czrq,devtodo.jgdm,
+	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
+	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
 	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
 	from devtodo
 	left join devdept a on a.jgdm=devtodo.jgdm

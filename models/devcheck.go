@@ -24,7 +24,7 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 		return err
 	}
 	var devs []*Devinfo
-	if err := tx.Table("devinfo").Find(&devs).Error; err != nil {
+	if err := tx.Table("devinfo").Where("sbdl=?", ckTask.Sbdl).Find(&devs).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

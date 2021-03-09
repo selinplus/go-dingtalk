@@ -35,6 +35,7 @@ type DevinfoForm struct {
 	Jgdm string `json:"jgdm"`
 	Syr  string `json:"syr"`
 	Sx   string `json:"sx"`
+	Sbdl int    `json:"sbdl"`
 }
 
 //单项录入
@@ -76,6 +77,7 @@ func AddDevinfo(c *gin.Context) {
 		Zt:   "1",
 		Jgdm: "00",
 		Sx:   "1",
+		Sbdl: form.Sbdl,
 	}
 	if models.IsDevXlhExist(form.Xlh) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_XLHEXIST_FAIL, nil)
@@ -272,6 +274,7 @@ func GetDevinfos(c *gin.Context) {
 		jgdm     = c.Query("jgdm")
 		bz       = c.Query("bz")
 		zcbh     = c.Query("zcbh")
+		sbdl     = c.Query("sbdl")
 		pageNo   int
 		pageSize int
 	)
@@ -295,6 +298,7 @@ func GetDevinfos(c *gin.Context) {
 		"mc":    mc,
 		"jgdm":  jgdm,
 		"zcbh":  zcbh,
+		"sbdl":  sbdl,
 	}
 	if c.Query("pageNo") == "" {
 		pageNo = 0
@@ -335,6 +339,7 @@ func ExportDevInfosGly(c *gin.Context) {
 		rkrqz    = c.Query("rkrqz")
 		scrqq    = c.Query("scrqq")
 		scrqz    = c.Query("scrqz")
+		sbdl     = c.Query("sbdl")
 		depts    = make([]*models.Devdept, 0)
 		err      error
 	)
@@ -381,6 +386,7 @@ func ExportDevInfosGly(c *gin.Context) {
 			"rkrqz":    rkrqz,
 			"scrqq":    scrqq,
 			"scrqz":    scrqz,
+			"sbdl":     sbdl,
 		}
 		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
@@ -494,6 +500,7 @@ func GetDevinfosGly(c *gin.Context) {
 		zcbh     = c.Query("zcbh")
 		scrq     = c.Query("scrq")
 		rkrq     = c.Query("rkrq")
+		sbdl     = c.Query("sbdl")
 		depts    = make([]*models.Devdept, 0)
 		err      error
 	)
@@ -540,6 +547,7 @@ func GetDevinfosGly(c *gin.Context) {
 			"rkrqz":    rkrqz,
 			"scrqq":    scrqq,
 			"scrqz":    scrqz,
+			"sbdl":     sbdl,
 		}
 		ds, err := models.GetDevinfosGly(con)
 		if err != nil {
@@ -643,6 +651,7 @@ func GetDevinfosByUser(c *gin.Context) {
 		sbbh   = c.Query("sbbh")
 		zcbh   = c.Query("zcbh")
 		xlh    = c.Query("xlh")
+		sbdl   = c.Query("sbdl")
 		userid string
 	)
 	//使用人查看名下设备
@@ -668,6 +677,7 @@ func GetDevinfosByUser(c *gin.Context) {
 		"sbbh":  sbbh,
 		"zcbh":  zcbh,
 		"xlh":   xlh,
+		"sbdl":  sbdl,
 	}
 	resps := make([]*models.DevinfoResp, 0)
 	if jgdm != "" {
