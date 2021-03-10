@@ -536,6 +536,7 @@ func GetDevdeptBySjjgdm(c *gin.Context) {
 func GetDevdeptEppTree(c *gin.Context) {
 	var appG = app.Gin{C: c}
 	jgdm := c.Query("jgdm")
+	flag := c.Query("flag") //非空取有保管人的机构
 	var data []interface{}
 	departments, err := models.GetDevdeptBySjjgdm(jgdm)
 	if err != nil {
@@ -544,37 +545,51 @@ func GetDevdeptEppTree(c *gin.Context) {
 	}
 	if len(departments) > 0 {
 		for _, department := range departments {
-			if department.Gly == "" {
-				dt := map[string]interface{}{
-					"dm":     department.Jgdm,
-					"mc":     department.Jgmc,
-					"isDept": true,
+			if flag != "" {
+				if department.Gly == "" {
+					dt := map[string]interface{}{
+						"dm":     department.Jgdm,
+						"mc":     department.Jgmc,
+						"bgr":    department.Bgr,
+						"isDept": true,
+					}
+					data = append(data, dt)
 				}
-				data = append(data, dt)
+			} else {
+				if department.Gly == "" {
+					dt := map[string]interface{}{
+						"dm":     department.Jgdm,
+						"mc":     department.Jgmc,
+						"isDept": true,
+					}
+					data = append(data, dt)
+				}
 			}
 		}
 	}
-	dus, err := models.GetDevuser(jgdm)
-	if err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPT_USER_FAIL, err)
-		return
-	}
-	if len(dus) > 0 {
-		for _, du := range dus {
-			var name string
-			user, err := models.GetUserdemoByUserid(du.Syr)
-			if err != nil {
-				log.Println(err)
-				name = du.Syr
-			} else {
-				name = user.Name
+	if flag == "" {
+		dus, err := models.GetDevuser(jgdm)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPT_USER_FAIL, err)
+			return
+		}
+		if len(dus) > 0 {
+			for _, du := range dus {
+				var name string
+				user, err := models.GetUserdemoByUserid(du.Syr)
+				if err != nil {
+					log.Println(err)
+					name = du.Syr
+				} else {
+					name = user.Name
+				}
+				u := map[string]interface{}{
+					"dm":     du.Syr,
+					"mc":     name,
+					"isDept": false,
+				}
+				data = append(data, u)
 			}
-			u := map[string]interface{}{
-				"dm":     du.Syr,
-				"mc":     name,
-				"isDept": false,
-			}
-			data = append(data, u)
 		}
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, data)
@@ -662,18 +677,18 @@ type GlyResp struct {
 func GetDevdeptGly(c *gin.Context) {
 	appG := app.Gin{C: c}
 	jgdm := c.Query("jgdm")
-	ddept, err := models.GetDevdept(jgdm)
+	devdept, err := models.GetDevdept(jgdm)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
 			fmt.Sprintf("获取当前机构管理员信息错误：%v", err))
 		return
 	}
 	resps := make([]*GlyResp, 0)
-	if ddept.Gly != "" {
-		user, err := models.GetUserdemoByUserid(ddept.Gly)
+	if devdept.Gly != "" {
+		user, err := models.GetUserdemoByUserid(devdept.Gly)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-				fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
+				fmt.Sprintf("根据userid[%s],获取计算机类管理员失败：%v", devdept.Gly, err))
 			return
 		}
 		resp := &GlyResp{
@@ -684,11 +699,11 @@ func GetDevdeptGly(c *gin.Context) {
 		}
 		resps = append(resps, resp)
 	}
-	if ddept.Gly2 != "" {
-		user, err := models.GetUserdemoByUserid(ddept.Gly)
+	if devdept.Gly2 != "" {
+		user, err := models.GetUserdemoByUserid(devdept.Gly2)
 		if err != nil {
 			appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-				fmt.Sprintf("根据userid[%s],获取管理员失败：%v", ddept.Gly, err))
+				fmt.Sprintf("根据userid[%s],获取非计算机类管理员失败：%v", devdept.Gly2, err))
 			return
 		}
 		resp := &GlyResp{

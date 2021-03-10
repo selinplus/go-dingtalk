@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 type Devckdetail struct {
 	ID      uint   `gorm:"primary_key;AUTO_INCREMENT"`
 	CheckID uint   `json:"check_id" gorm:"COMMENT:'盘点任务编码'"`
@@ -30,6 +32,7 @@ type Devckdetail struct {
 	SyrJgdm   string `json:"syr_jgdm" gorm:"COMMENT:'使用人员所在设备管理机构代码'"`
 	Cfwz      string `json:"cfwz" gorm:"COMMENT:'存放位置'"`
 	Sx        string `json:"sx" gorm:"COMMENT:'设备属性'"`
+	Bgr       string `json:"bgr" gorm:"_"`
 }
 
 func DevCheck(checkId uint, devinfoId string, ck interface{}) error {
@@ -61,19 +64,36 @@ func CheckSyrSelf(CheckID uint, DevinfoID, syr string) bool {
 	return true
 }
 
-func GetDevckdetails(cond string, pageNo, pageSize int) ([]*Devckdetail, error) {
+func GetDevckdetails(checkId, ckBz, syr, jgdm string) ([]*Devckdetail, error) {
 	var devckdetails []*Devckdetail
-	if err := db.Table("devckdetail").Where(cond).
-		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&devckdetails).Error; err != nil {
+	sql := fmt.Sprintf(`
+SELECT devckdetail.id,check_id,cktime,c.name pdr,ck_bz,devinfo_id,f.name bgr,
+       zcbh,devtype.mc lx,devckdetail.mc,xh,xlh,ly,gys,jg,scs,scrq,grrq,bfnx,rkrq,d.name czr,
+       czrq,devstate.mc zt,a.jgmc jgdm,e.name syr,b.jgmc syr_jgdm,cfwz,devproperty.mc sx,sbbh
+       FROM
+       devckdetail
+           left join devdept a on a.jgdm = devckdetail.jgdm
+           left join devdept b on b.jgdm = devckdetail.syr_jgdm
+           left join userdemo c on c.userid = devckdetail.pdr
+           left join userdemo d on d.userid = devckdetail.czr
+           left join userdemo e on e.userid = devckdetail.syr
+           left join userdemo f on f.userid = b.bgr
+           left join devtype  on devtype.dm = devckdetail.lx
+           left join devproperty on devproperty.dm = devckdetail.sx
+           left join devstate on devstate.dm = devckdetail.zt
+    WHERE
+       check_id = %s`, checkId)
+	if ckBz != "" {
+		sql += fmt.Sprintf(" AND devckdetail.ck_bz = %s", ckBz)
+	}
+	if jgdm != "" {
+		sql += fmt.Sprintf(" AND devckdetail.jgdm = '%s'", jgdm)
+	}
+	if syr != "" {
+		sql += fmt.Sprintf(" AND devckdetail.syr = '%s'", jgdm)
+	}
+	if err := db.Raw(sql).Scan(&devckdetails).Error; err != nil {
 		return nil, err
 	}
 	return devckdetails, nil
-}
-
-func GetDevckdetailsCnt(cond string) (cnt int) {
-	err := db.Table("devckdetail").Where(cond).Count(&cnt).Error
-	if err != nil {
-		cnt = 0
-	}
-	return cnt
 }

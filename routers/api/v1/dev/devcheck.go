@@ -7,7 +7,6 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/export"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -107,23 +106,11 @@ func GetDevCkDetail(c *gin.Context) {
 		appG    = app.Gin{C: c}
 		checkId = c.Query("check_id")
 		//是否仅显示所属人设备:Y:只查看名下设备,仅Eapp可用;不传:显示全部
-		flag     = c.Query("flag")
-		ckBz     = c.Query("ck_bz")
-		jgdm     = c.Query("jgdm")
-		pageSize int
-		pageNo   int
+		flag = c.Query("flag")
+		ckBz = c.Query("ck_bz")
+		jgdm = c.Query("jgdm")
+		syr  = ""
 	)
-	if c.Query("pageNo") == "" {
-		pageNo = 1
-	} else {
-		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
-	}
-	if c.Query("pageSize") == "" {
-		pageSize = 10
-	} else {
-		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
-	}
-	cond := fmt.Sprintf("check_id = '%s'", checkId)
 	if flag != "" {
 		//使用人查看名下设备
 		var userid string
@@ -137,71 +124,17 @@ func GetDevCkDetail(c *gin.Context) {
 			ts := strings.Split(token, ".")
 			userid = ts[3]
 		}
-		cond += fmt.Sprintf(" and syr = '%s'", userid)
+		syr = userid
 	}
-	if ckBz != "" {
-		cond += fmt.Sprintf(" and ck_bz = %s", ckBz)
-	}
-	if jgdm != "" {
-		cond += fmt.Sprintf(" and jgdm = '%s'", jgdm)
-	}
-
-	devckdetails, err := models.GetDevckdetails(cond, pageNo, pageSize)
+	devckdetails, err := models.GetDevckdetails(checkId, ckBz, syr, jgdm)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
 	if len(devckdetails) > 0 {
-		for _, detail := range devckdetails {
-			if detail.Pdr != "" {
-				u, err := models.GetUserdemoByUserid(detail.Pdr)
-				if err != nil {
-					log.Println(fmt.Sprintf(
-						"清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
-				} else {
-					detail.Pdr = u.Name
-				}
-			}
-			if detail.Czr != "" {
-				u, err := models.GetUserdemoByUserid(detail.Czr)
-				if err != nil {
-					log.Println(fmt.Sprintf(
-						"清册id[%d]操作人获取失败：%s", detail.ID, detail.Czr))
-				} else {
-					detail.Czr = u.Name
-				}
-			}
-			if detail.Syr != "" {
-				u, err := models.GetUserdemoByUserid(detail.Syr)
-				if err != nil {
-					log.Println(fmt.Sprintf(
-						"清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
-				} else {
-					detail.Syr = u.Name
-				}
-			}
-			if detail.Jgdm != "" {
-				devdept, err := models.GetDevdept(detail.Jgdm)
-				if err != nil {
-					log.Println(fmt.Sprintf(
-						"清册id[%d]设备管理机构获取失败：%s", detail.ID, detail.Jgdm))
-				} else {
-					detail.Jgdm = devdept.Jgdm
-				}
-			}
-			if detail.SyrJgdm != "" {
-				devdept, err := models.GetDevdept(detail.SyrJgdm)
-				if err != nil {
-					log.Println(fmt.Sprintf(
-						"清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
-				} else {
-					detail.SyrJgdm = devdept.Jgmc
-				}
-			}
-		}
 		appG.Response(http.StatusOK, e.SUCCESS, map[string]interface{}{
 			"list": devckdetails,
-			"cnt":  models.GetDevckdetailsCnt(cond),
+			"cnt":  len(devckdetails),
 		})
 		return
 	}
@@ -211,32 +144,13 @@ func GetDevCkDetail(c *gin.Context) {
 //导出盘点任务清册明细
 func ExportDevCkDetail(c *gin.Context) {
 	var (
-		appG     = app.Gin{C: c}
-		checkId  = c.Query("check_id")
-		ckBz     = c.Query("ck_bz")
-		jgdm     = c.Query("jgdm")
-		pageSize int
-		pageNo   int
+		appG    = app.Gin{C: c}
+		checkId = c.Query("check_id")
+		ckBz    = c.Query("ck_bz")
+		jgdm    = c.Query("jgdm")
+		syr     = ""
 	)
-	if c.Query("pageNo") == "" {
-		pageNo = 1
-	} else {
-		pageNo, _ = strconv.Atoi(c.Query("pageNo"))
-	}
-	if c.Query("pageSize") == "" {
-		pageSize = 100000
-	} else {
-		pageSize, _ = strconv.Atoi(c.Query("pageSize"))
-	}
-	cond := fmt.Sprintf("check_id = '%s'", checkId)
-	if ckBz != "" {
-		cond += fmt.Sprintf(" and ck_bz = %s", ckBz)
-	}
-	if jgdm != "" {
-		cond += fmt.Sprintf(" and jgdm = '%s'", jgdm)
-	}
-
-	devckdetails, err := models.GetDevckdetails(cond, pageNo, pageSize)
+	devckdetails, err := models.GetDevckdetails(checkId, ckBz, syr, jgdm)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
@@ -247,81 +161,6 @@ func ExportDevCkDetail(c *gin.Context) {
 	}
 	records := make([]map[string]string, 0)
 	for _, detail := range devckdetails {
-		if detail.Pdr != "" {
-			u, err := models.GetUserdemoByUserid(detail.Pdr)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]盘点人获取失败：%s", detail.ID, detail.Pdr))
-			} else {
-				detail.Pdr = u.Name
-			}
-		}
-		if detail.Czr != "" {
-			u, err := models.GetUserdemoByUserid(detail.Czr)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]操作人获取失败：%s", detail.ID, detail.Czr))
-			} else {
-				detail.Czr = u.Name
-			}
-		}
-		if detail.Syr != "" {
-			u, err := models.GetUserdemoByUserid(detail.Syr)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]使用人获取失败：%s", detail.ID, detail.Syr))
-			} else {
-				detail.Syr = u.Name
-			}
-		}
-		if detail.Jgdm != "" {
-			devdept, err := models.GetDevdept(detail.Jgdm)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]设备管理机构获取失败：%s", detail.ID, detail.Jgdm))
-			} else {
-				detail.Jgdm = devdept.Jgdm
-			}
-		}
-		if detail.SyrJgdm != "" {
-			devdept, err := models.GetDevdept(detail.SyrJgdm)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]使用人部门获取失败：%s", detail.ID, detail.SyrJgdm))
-			} else {
-				detail.SyrJgdm = devdept.Jgmc
-			}
-		}
-		var lx = detail.Lx
-		if detail.Lx != "" {
-			devtype, err := models.GetDevtypeByDm(detail.Lx)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]设备类型获取失败：%s", detail.ID, detail.Lx))
-			} else {
-				lx = devtype.Mc
-			}
-		}
-		var zt = detail.Zt
-		if detail.Zt != "" {
-			devstate, err := models.GetDevstateByDm(detail.Zt)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]设备状态获取失败：%s", detail.ID, detail.Zt))
-			} else {
-				zt = devstate.Mc
-			}
-		}
-		var sx = detail.Sx
-		if detail.Sx != "" {
-			devproperty, err := models.GetDevpropertyByDm(detail.Sx)
-			if err != nil {
-				log.Println(fmt.Sprintf(
-					"清册id[%d]设备属性获取失败：%s", detail.ID, detail.Sx))
-			} else {
-				sx = devproperty.Mc
-			}
-		}
 		var ckBz = "未盘点"
 		if detail.CkBz == 1 {
 			ckBz = "已盘点"
@@ -339,17 +178,18 @@ func ExportDevCkDetail(c *gin.Context) {
 			"盘点日期":    detail.Cktime,
 			"盘点状态":    ckBz,
 			"资产编号":    detail.Zcbh,
-			"设备类型":    lx,
+			"设备类型":    detail.Lx,
 			"设备使用人":   detail.Syr,
 			"设备管理机构":  detail.Jgdm,
 			"使用人所在机构": detail.SyrJgdm,
-			"设备状态":    zt,
-			"设备属性":    sx,
+			"设备状态":    detail.Zt,
+			"设备属性":    detail.Sx,
 			"供应商":     detail.Gys,
+			"保管人":     detail.Bgr,
 		})
 	}
 	// sort map key
-	sortedKeys := make([]string, 17)
+	sortedKeys := make([]string, 18)
 	for field := range records[0] {
 		switch field {
 		case "盘点状态":
@@ -386,6 +226,8 @@ func ExportDevCkDetail(c *gin.Context) {
 			sortedKeys[15] = field
 		case "供应商":
 			sortedKeys[16] = field
+		case "保管人":
+			sortedKeys[17] = field
 		}
 		//sorted_keys = append(sorted_keys, field)
 	}

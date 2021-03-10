@@ -27,6 +27,7 @@ type DevtodoResp struct {
 	Devtodo
 	Czrid   string `json:"czrid"`
 	Gly     string `json:"gly"`
+	Bgr     string `json:"bgr"`
 	Zcbh    string `json:"zcbh"`
 	Mc      string `json:"mc"`
 	Zt      string `json:"zt"`
@@ -41,7 +42,7 @@ type DevtodoResp struct {
 func GetDevTodosOrDones(done int) ([]DevtodoResp, error) {
 	var dtos []DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,
+select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,
 	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
 	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
@@ -65,7 +66,7 @@ select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as
 func GetDevTodosOrDonesByToid(id uint, done int) (*DevtodoResp, error) {
 	var devtodoResp DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,
+select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,
 	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
 	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
@@ -86,15 +87,34 @@ select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as
 	return &devtodoResp, nil
 }
 
-func GetUpDevTodosOrDones(done int) ([]DevtodoResp, error) {
+func GetUpDevTodosOrDones(done int, userid string) ([]DevtodoResp, error) {
 	var dtos []DevtodoResp
-	err := db.Table("devtodo").
-		Select("devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,devtodo.czrq,devtodo.jgdm,devdept.gly,devtodo.done,devmod.jgdm as src_jgdm,devdept.jgmc,devmod.num").
-		Joins("left join userdemo on userdemo.userid=devtodo.czr").
-		Joins("left join devmod on devmod.lsh=devtodo.lsh").
-		Joins("left join devdept on devdept.jgdm=devmod.jgdm").
-		Where("devtodo.done=?", done).Order("devtodo.czrq desc").Scan(&dtos).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	sql := fmt.Sprintf(`
+select devtodo.id,
+       devtodo.czlx,
+       devtodo.lsh,
+       userdemo.name as                                                  czr,
+       devtodo.czrq,
+       devtodo.jgdm,
+       case when devinfo.sbdl = 1 then devdept.gly else devdept.gly2 end gly,
+       devtodo.done,
+       devmod.jgdm   as                                                  src_jgdm,
+       devdept.jgmc,
+       devmod.num,
+       devinfo.sbdl,
+       devinfo.id
+    from
+       devtodo
+           left join devinfo on devinfo.id = devtodo.devid
+           left join userdemo on userdemo.userid = devtodo.czr
+           left join devmod on devmod.lsh = devtodo.lsh
+           left join devdept on devdept.jgdm = devmod.jgdm
+    where
+       devtodo.done = %d
+           and gly = '%s'
+    order by
+       devtodo.czrq desc`, done, userid)
+	if err := db.Raw(sql).Scan(&dtos).Error; err != nil {
 		return nil, err
 	}
 	return dtos, nil
@@ -103,7 +123,7 @@ func GetUpDevTodosOrDones(done int) ([]DevtodoResp, error) {
 func GetDevFlag() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr,devtodo.czrq,devtodo.jgdm,
+select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr,devtodo.czrq,
 	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
 	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,

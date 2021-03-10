@@ -167,19 +167,7 @@ func DevIssued(form OpForm, czr, czlx string) error {
 		tx.Rollback()
 		return err
 	}
-	zt, sx := getState(czlx)
 	for _, id := range ids {
-		dev := &Devinfo{
-			ID:   id,
-			Czrq: t,
-			Czr:  czr,
-			Zt:   zt,
-			Sx:   sx,
-		}
-		if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
-			tx.Rollback()
-			return err
-		}
 		d, err := GetDevinfoByID(id)
 		if err != nil {
 			tx.Rollback()
@@ -199,17 +187,20 @@ func DevIssued(form OpForm, czr, czlx string) error {
 		}
 	}
 	if czlx == "10" { //设备上交,创建待办任务并发送消息给设备机构管理员
-		dto := &Devtodo{
-			Czlx: czlx,
-			Lsh:  ckLsh,
-			Czr:  czr,
-			Czrq: t,
-			Jgdm: dstJgdm,
-			Bz:   "等待管理员做上交入库操作",
-		}
-		if err := tx.Table("devtodo").Create(dto).Error; err != nil {
-			tx.Rollback()
-			return err
+		for _, id := range ids {
+			dto := &Devtodo{
+				Czlx:  czlx,
+				DevID: id,
+				Lsh:   ckLsh,
+				Czr:   czr,
+				Czrq:  t,
+				Jgdm:  dstJgdm,
+				Bz:    "等待管理员做上交入库操作",
+			}
+			if err := tx.Table("devtodo").Create(dto).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	} else { //设备下发,同时创建入库
 		rkLsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
@@ -226,7 +217,7 @@ func DevIssued(form OpForm, czr, czlx string) error {
 			tx.Rollback()
 			return err
 		}
-		zt, sx = getState("1")
+		zt, sx := getState("1")
 		for _, id := range ids {
 			dev := &Devinfo{
 				ID:   id,
@@ -829,7 +820,7 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) (devs []*Devinfo, f
 		return
 	}
 	//logging.Info(fmt.Sprintf("sheet name: %s", sheetName))
-	if len(rows[0]) == 10 { //计算机类设备导入
+	if len(rows[0]) == 11 { //计算机类设备导入
 		//遍历行读取
 		for k, row := range rows {
 			// 跳过标题行，遍历每行的列读取
@@ -972,24 +963,26 @@ func InsertDevinfoXml(devs []*Devinfo, czr string, flag bool) ([]*DevinfoErr, in
 		t := time.Now().Format("2006-01-02 15:04:05")
 		d := &Devinfo{
 			Zcbh:   dev.Zcbh,
+			Lx:     dev.Lx,
 			Mc:     dev.Mc,
 			Xh:     dev.Xh,
 			Xlh:    dev.Xlh,
 			Ly:     dev.Ly,
+			Gys:    dev.Gys,
+			Jg:     dev.Jg,
 			Scs:    dev.Scs,
 			Scrq:   dev.Scrq,
 			Grrq:   dev.Grrq,
 			Bfnx:   dev.Bfnx,
-			Jg:     dev.Jg,
-			Gys:    dev.Gys,
-			Czr:    dev.Czr,
 			Rkrq:   t,
+			Czr:    dev.Czr,
 			Czrq:   t,
-			Jgdm:   jgdm,
 			Zt:     zt,
-			Sx:     sx,
+			Jgdm:   jgdm,
 			Jgksdm: dev.Jgksdm,
 			Syr:    dev.Syr,
+			Cfwz:   dev.Cfwz,
+			Sx:     sx,
 			Sbdl:   dev.Sbdl,
 		}
 		LxDm, err := GetDevtypeByMc(dev.Lx)
@@ -1238,6 +1231,7 @@ func InsertDevinfoXmlGoroutine(devs []*Devinfo, czr string) ([]*DevinfoErr, int,
 
 type DevinfoResp struct {
 	*Devinfo
+	Bgr       string `json:"bgr"`
 	Jgmc      string `json:"jgmc"`
 	Ksmc      string `json:"ksmc"`
 	SyrName   string `json:"syr_name"`
@@ -1251,7 +1245,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,devinfo.sbdl,
 			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,devinfo.img,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
-       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
+       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr,e.name bgr
 			from devinfo 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
@@ -1260,6 +1254,7 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join userdemo c on c.userid=devinfo.czr 
 			left join userdemo d on d.userid=devinfo.syr 
+            left join userdemo e on e.userid=b.bgr
 			where zw=1`
 	if con["jgdm"] != "" {
 		query += fmt.Sprintf(" and devinfo.jgdm = '%s'", con["jgdm"])
@@ -1325,7 +1320,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,devinfo.sbdl,
 			b.jgdm as jgksdm,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,devinfo.img,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
-       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
+       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr,e.name bgr
 			from devinfo 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
@@ -1334,6 +1329,7 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join userdemo c on c.userid=devinfo.czr 
 			left join userdemo d on d.userid=devinfo.syr 
+            left join userdemo e on e.userid=b.bgr
 			where zw=1 and devinfo.jgdm = '` + con["jgdm"] + `' `
 	if con["sbbh"] != "" {
 		squery += ` and devinfo.sbbh = '` + con["sbbh"] + `' `
@@ -1388,7 +1384,7 @@ func GetDevinfoRespByID(id string) (*DevinfoResp, error) {
 			devinfo.czrq,c.name as czr,devinfo.qrurl,devstate.mc as zt,a.jgdm as jgdm,a.jgmc as jgmc,devinfo.sbdl,
 			b.jgdm as jgksdm ,b.jgmc as ksmc,devinfo.cfwz,devproperty.mc as sx,devinfo.syr,devinfo.img,
 			(case when (d.name ='' OR d.name is null) then devinfo.syr else d.name end) as syr_name,d.mobile as syr_mobile,
-       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr
+       		concat(repeat('0',6-length(devinfo.sbbh)),devinfo.sbbh) as idstr,e.name bgr
 			from devinfo 
 			left join devtype on devtype.dm=devinfo.lx 
 			left join devstate on devstate.dm=devinfo.zt 
@@ -1396,7 +1392,8 @@ func GetDevinfoRespByID(id string) (*DevinfoResp, error) {
 			left join devdept a on a.jgdm=devinfo.jgdm 
 			left join devdept b on b.jgdm=devinfo.jgksdm 
 			left join userdemo c on c.userid=devinfo.czr 
-			left join userdemo d on d.userid=devinfo.syr 
+			left join userdemo d on d.userid=devinfo.syr
+            left join userdemo e on e.userid=b.bgr 
 			where devinfo.id = '%s'`
 	squery := fmt.Sprintf(query, id)
 	if err := db.Raw(squery).Scan(&dev).Error; err != nil {

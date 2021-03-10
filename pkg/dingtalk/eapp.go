@@ -144,7 +144,7 @@ func DeviceDingding(todo *models.DevtodoResp) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	log.Println("tcmprJson is", tcmprJson)
+	//log.Println("tcmprJson is", tcmprJson)
 	return tcmprJson
 }
 

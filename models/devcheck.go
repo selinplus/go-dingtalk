@@ -51,7 +51,7 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 			Zt:        dev.Zt,
 			Jgdm:      dev.Jgdm,
 			Syr:       dev.Syr,
-			SyrJgdm:   GetJgdmtBySyrUserid(dev.Syr),
+			SyrJgdm:   dev.Jgksdm,
 			Cfwz:      dev.Cfwz,
 			Sx:        dev.Sx,
 		}

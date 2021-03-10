@@ -132,13 +132,18 @@ func GetDevuserList(c *gin.Context) {
 //删除设备使用人员
 func DeleteDevuser(c *gin.Context) {
 	appG := app.Gin{C: c}
+	userid := c.Query("userid")
 	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
-	if models.IsUserDevExist(c.Query("userid")) {
+	if models.IsUserDevExist(userid) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
+		return
+	}
+	if models.IsUserDevBgrByJgdm(userid, c.Query("jgdm")) {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEVBGR_FAIL, nil)
 		return
 	}
 	if err := models.DeleteDevuser(uint(id)); err != nil {
@@ -154,7 +159,7 @@ func LoginInfo(c *gin.Context) {
 		appG     = app.Gin{C: c}
 		syrDepts = make([]map[string]string, 0)
 		glyDepts = make([]map[string]string, 0)
-		sfbz     = "3" //0:syr;1:gly;2:super;3:undefined
+		sfbz     = "3" //0:syr;1:gly;2:super;3:undefined;4是非计算机类市局管理员
 		userid   string
 	)
 	if c.Query("mobile") != "" {
@@ -208,8 +213,23 @@ func LoginInfo(c *gin.Context) {
 			glyDepts = append(glyDepts, glyDept)
 		}
 	}
+	if sfbz != "2" {
+		dept, err := models.GetDevdept("00")
+		if err != nil {
+			appG.Response(http.StatusOK, e.ERROR, err)
+			return
+		}
+		if dept.Gly2 == userid {
+			sfbz = "4"
+		}
+	}
+	var bgbz = false
+	if models.IsUserDevBgr(userid) {
+		bgbz = true
+	}
 	data := map[string]interface{}{
 		"sfbz":      sfbz,
+		"bgbz":      bgbz,
 		"syr_depts": syrDepts,
 		"gly_depts": glyDepts,
 	}

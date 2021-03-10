@@ -90,6 +90,22 @@ func AddDevdept(data interface{}) error {
 	return nil
 }
 
+func IsUserDevBgrByJgdm(userid, jgdm string) bool {
+	var d Devdept
+	if err := db.Where("bgr=? and jgdm=?", userid, jgdm).First(&d).Error; err != nil {
+		return false
+	}
+	return true
+}
+
+func IsUserDevBgr(userid string) bool {
+	var d Devdept
+	if err := db.Where("bgr=?", userid).First(&d).Error; err != nil {
+		return false
+	}
+	return true
+}
+
 type DevdepUserInfo struct {
 	Jgdm string
 	Jgmc string

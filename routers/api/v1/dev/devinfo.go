@@ -936,16 +936,10 @@ func GetUpDevTodosOrDones(c *gin.Context) {
 	if strings.Contains(url, "dev/updonelist") {
 		done = 1
 	}
-	todolist, err := models.GetUpDevTodosOrDones(done)
+	todolist, err := models.GetUpDevTodosOrDones(done, user.UserID)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
 		return
 	}
-	data := make([]interface{}, 0)
-	for _, p := range todolist {
-		if p.Gly == user.UserID && len(p.DevID) == 0 {
-			data = append(data, p)
-		}
-	}
-	appG.Response(http.StatusOK, e.SUCCESS, data)
+	appG.Response(http.StatusOK, e.SUCCESS, todolist)
 }
