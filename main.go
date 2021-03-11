@@ -22,10 +22,6 @@ func init() {
 	models.Setup()
 	logging.Setup()
 	util.Setup()
-	//todo: Dmz
-	cron.DmzSetup()
-	//todo: App
-	cron.AppSetup()
 }
 
 func main() {
@@ -57,10 +53,13 @@ func main() {
 	log.Printf("[info] start http server listening %s", endPoint)
 
 	//todo: Dmz
+	cron.DmzSetup()
 	go func() {
 		time.Sleep(time.Second * 10)
 		dingtalk.RegCallbackInit()
 	}()
+	//todo: App
+	cron.AppSetup()
 
 	err = server.ListenAndServe()
 	if err != nil {

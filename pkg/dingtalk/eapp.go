@@ -73,7 +73,7 @@ func ProcessMseesageToDingding(p *models.ProcResponse, czr string) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	//log.Println("流程提报待办通知消息体:", tcmprJson)
 	return tcmprJson
 }
 
@@ -106,13 +106,12 @@ func ProcessBcmsMseesageToDingding(p *models.ProcResponse) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	//log.Println("流程提报补充描述通知消息体:", tcmprJson)
 	return tcmprJson
 }
 
-//生成交回设备信息通知消息体
+//生成设备机构变更&交回信息通知消息体
 func DeviceDingding(todo *models.DevtodoResp) string {
-	log.Println(todo)
 	devid, gly, done := todo.DevID, todo.Gly, strconv.Itoa(todo.Done)
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	t := time.Now().Format("2006-01-02 15:04:05")
@@ -144,7 +143,7 @@ func DeviceDingding(todo *models.DevtodoResp) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	//log.Println("设备机构变更&交回信息通知消息体:", tcmprJson)
 	return tcmprJson
 }
 
@@ -153,13 +152,14 @@ func UpDeviceDingding(num int, jgmc, gly string) string {
 	agentID, _ := strconv.Atoi(setting.EAppSetting.AgentID)
 	t := time.Now().Format("2006-01-02 15:04:05")
 	text := map[string]interface{}{
-		"content": fmt.Sprintf("%s:%s上交了%d台设备，请在内网管理平台确认入库！",
-			t, jgmc, num),
+		"content": fmt.Sprintf(
+			"%s:%s上交了%d台设备，请在内网管理平台确认入库！", t, jgmc, num),
 	}
 	msgcontent := map[string]interface{}{
 		"msgtype": "text",
 		"text":    text,
 	}
+	//msg, _ := util.ToJson(msgcontent)
 	tcmpr := map[string]interface{}{
 		"agent_id":    agentID,
 		"userid_list": gly,
@@ -168,7 +168,7 @@ func UpDeviceDingding(num int, jgmc, gly string) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	//log.Println("上交设备信息通知消息体:", tcmprJson)
 	return tcmprJson
 }
 
@@ -194,7 +194,7 @@ func DevCkTaskDingding(devcktodd *models.Devcktodd) string {
 	}
 	tcmprBytes, _ := json.Marshal(&tcmpr)
 	tcmprJson := string(tcmprBytes)
-	//log.Println("tcmprJson is", tcmprJson)
+	//log.Println("设备自我盘点任务信息通知消息体:", tcmprJson)
 	return tcmprJson
 }
 

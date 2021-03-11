@@ -13,9 +13,9 @@ type Devtodo struct {
 	Czrq       string `json:"czrq" gorm:"COMMENT:'操作日期'"`
 	Jgdm       string `json:"jgdm" gorm:"COMMENT:'设备管理机构代码'"`
 	DstJgdm    string `json:"dst_jgdm" gorm:"COMMENT:'更改后设备管理机构代码'"`
-	SrcJgksdm  string `json:"src_jgksdm" gorm:"COMMENT:'更改后设备所属机构代码'"`
+	SrcJgksdm  string `json:"src_jgksdm" gorm:"COMMENT:'设备所属机构代码'"`
 	DstJgksdm  string `json:"dst_jgksdm" gorm:"COMMENT:'更改后设备所属机构代码'"`
-	SrcCfwz    string `json:"src_cfwz" gorm:"COMMENT:'更改后存放位置'"`
+	SrcCfwz    string `json:"src_cfwz" gorm:"COMMENT:'存放位置'"`
 	DstCfwz    string `json:"dst_cfwz" gorm:"COMMENT:'更改后存放位置'"`
 	Bz         string `json:"bz" gorm:"COMMENT:'待办备注'"`
 	DevID      string `json:"devid" gorm:"COMMENT:'设备编号';column:devid"` //devinfo ID
@@ -45,7 +45,7 @@ func GetDevTodosOrDones(done int) ([]DevtodoResp, error) {
 select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,
 	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
-	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
+	case when devtodo.dst_jgdm='00' and devinfo.sbdl=2 then b.gly2 else b.gly end gly,
 	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
 	from devtodo
 	left join devdept a on a.jgdm=devtodo.jgdm
@@ -69,7 +69,7 @@ func GetDevTodosOrDonesByToid(id uint, done int) (*DevtodoResp, error) {
 select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as czr,devtodo.czrq,
 	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
 	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
-	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
+	case when devtodo.dst_jgdm='00' and devinfo.sbdl=2 then b.gly2 else b.gly end gly,
 	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
 	from devtodo
 	left join devdept a on a.jgdm=devtodo.jgdm
@@ -90,30 +90,21 @@ select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr as czrid,userdemo.name as
 func GetUpDevTodosOrDones(done int, userid string) ([]DevtodoResp, error) {
 	var dtos []DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,
-       devtodo.czlx,
-       devtodo.lsh,
-       userdemo.name as                                                  czr,
-       devtodo.czrq,
-       devtodo.jgdm,
-       case when devinfo.sbdl = 1 then devdept.gly else devdept.gly2 end gly,
-       devtodo.done,
-       devmod.jgdm   as                                                  src_jgdm,
-       devdept.jgmc,
-       devmod.num,
-       devinfo.sbdl,
-       devinfo.id
-    from
-       devtodo
-           left join devinfo on devinfo.id = devtodo.devid
-           left join userdemo on userdemo.userid = devtodo.czr
-           left join devmod on devmod.lsh = devtodo.lsh
-           left join devdept on devdept.jgdm = devmod.jgdm
-    where
-       devtodo.done = %d
-           and gly = '%s'
-    order by
-       devtodo.czrq desc`, done, userid)
+select * from (
+    select devtodo.id,devtodo.czlx,devtodo.lsh,userdemo.name as czr,
+           devtodo.czrq,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,
+           case when devtodo.dst_jgdm='00' and devinfo.sbdl=2 then b.gly2
+                else b.gly end gly,
+           devtodo.done,devmod.num,devinfo.sbdl
+        from
+           devtodo
+               left join devinfo on devinfo.id = devtodo.devid
+               left join userdemo on userdemo.userid = devtodo.czr
+               left join devmod on devmod.lsh = devtodo.lsh
+               left join devdept a on a.jgdm = devtodo.jgdm
+               left join devdept b on b.jgdm = devtodo.dst_jgdm
+        where devtodo.done = %d
+) t where gly = '%s' order by czrq desc`, done, userid)
 	if err := db.Raw(sql).Scan(&dtos).Error; err != nil {
 		return nil, err
 	}
@@ -123,19 +114,21 @@ select devtodo.id,
 func GetDevFlag() ([]*DevtodoResp, error) {
 	var dtos []*DevtodoResp
 	sql := fmt.Sprintf(`
-select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr,devtodo.czrq,
-	devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
-	devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,
-	case when devinfo.sbdl=1 then a.gly else a.gly2 end gly,
-	devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
-	from devtodo
-	left join devdept a on a.jgdm=devtodo.jgdm
-	left join devdept b on b.jgdm=devtodo.dst_jgdm
-	left join devdept c on c.jgdm=devtodo.src_jgksdm
-	left join devdept d on d.jgdm=devtodo.dst_jgksdm
-	left join devinfo on devinfo.id=devtodo.devid
-	where devtodo.flag_notice=0
-	order by devtodo.czrq desc`)
+    select devtodo.id,devtodo.czlx,devtodo.lsh,devtodo.czr,devtodo.czrq,
+           devtodo.src_cfwz,devtodo.dst_cfwz,devtodo.jgdm,a.jgmc,devtodo.dst_jgdm,b.jgmc as dst_jgmc,
+           devtodo.src_jgksdm,c.jgmc as src_ksmc,devtodo.dst_jgksdm,d.jgmc as dst_ksmc,devmod.num,
+           case when devtodo.dst_jgdm='00' and devinfo.sbdl=2 then b.gly2
+                else b.gly end gly,
+           devtodo.devid,devinfo.zcbh,devinfo.mc,devinfo.zt,devtodo.done,devtodo.bz
+        from devtodo
+               left join devdept a on a.jgdm=devtodo.jgdm
+               left join devdept b on b.jgdm=devtodo.dst_jgdm
+               left join devdept c on c.jgdm=devtodo.src_jgksdm
+               left join devdept d on d.jgdm=devtodo.dst_jgksdm
+               left join devinfo on devinfo.id=devtodo.devid
+               left join devmod on devmod.lsh = devtodo.lsh
+        where devtodo.flag_notice=0
+        order by devtodo.czrq desc`)
 	if err := db.Raw(sql).Scan(&dtos).Error; err != nil {
 		return nil, err
 	}

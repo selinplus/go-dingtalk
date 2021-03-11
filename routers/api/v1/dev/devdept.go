@@ -761,6 +761,16 @@ func GetDevGly(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
 		return
 	}
+	if c.Query("flag") != "" { //判断是否为 市局非计算机类管理员
+		dept, err := models.GetDevdept("00")
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, e.ERROR_GET_DEPARTMENT_FAIL, err)
+			return
+		}
+		if dept.Gly2 == gly.UserID {
+			depts = append(depts, dept)
+		}
+	}
 	data := make(map[string]interface{})
 	data["lists"] = depts
 	data["total"] = len(depts)

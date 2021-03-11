@@ -180,9 +180,10 @@ func DeviceDingding() {
 		case "8", "11": //交回,机构变更,发送link
 			tcmprJson = dingtalk.DeviceDingding(todo)
 		case "10": //上交,发送text
-			dept, err := models.GetDevdept(todo.SrcJgdm)
+			dept, err := models.GetDevdept(todo.Jgdm)
 			if err != nil {
-				logging.Error(fmt.Sprintf("%v GetDevdept err:%v", todo.ID, err))
+				log.Printf("%v GetDevdept err:%v", todo.ID, err)
+				continue
 			}
 			tcmprJson = dingtalk.UpDeviceDingding(todo.Num, dept.Jgmc, todo.Gly)
 		}
@@ -190,7 +191,7 @@ func DeviceDingding() {
 		//log.Printf("asyncsendResponse is :%v", asyncsendResponse)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateDevtodoFlag(todo.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update dev_flag err:%v", todo.ID, err))
+				log.Printf("%v update dev_flag err:%v", todo.ID, err)
 			}
 		}
 	}

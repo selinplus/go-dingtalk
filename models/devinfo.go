@@ -189,13 +189,14 @@ func DevIssued(form OpForm, czr, czlx string) error {
 	if czlx == "10" { //设备上交,创建待办任务并发送消息给设备机构管理员
 		for _, id := range ids {
 			dto := &Devtodo{
-				Czlx:  czlx,
-				DevID: id,
-				Lsh:   ckLsh,
-				Czr:   czr,
-				Czrq:  t,
-				Jgdm:  dstJgdm,
-				Bz:    "等待管理员做上交入库操作",
+				Czlx:    czlx,
+				Lsh:     ckLsh,
+				Czr:     czr,
+				Czrq:    t,
+				Jgdm:    srcJgdm,
+				DstJgdm: dstJgdm,
+				Bz:      "等待管理员做上交入库操作",
+				DevID:   id,
 			}
 			if err := tx.Table("devtodo").Create(dto).Error; err != nil {
 				tx.Rollback()
