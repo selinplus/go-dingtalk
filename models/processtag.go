@@ -15,16 +15,18 @@ func AddProcessBcms(data interface{}) error {
 
 func UpdateProcessBcmsFlag(id uint) error {
 	if err := db.Table("process_tag").
-		Where("id = ? and flag_notice = 0", id).Update("flag_notice", 1).Error; err != nil {
+		Where("id = ? and flag_notice = 0", id).
+		Update("flag_notice", 1).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func GetProcessBcmsFlag() ([]*ProcessTag, error) {
-	var msgs []*ProcessTag
-	if err := db.Table("process_tag").Where("flag_notice=0").Scan(&msgs).Error; err != nil {
+	var tags []*ProcessTag
+	if err := db.Table("process_tag").
+		Where("flag_notice=0").Find(&tags).Error; err != nil {
 		return nil, err
 	}
-	return msgs, nil
+	return tags, nil
 }

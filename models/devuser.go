@@ -14,7 +14,8 @@ func AddDevuser(data interface{}) error {
 }
 
 func UpdateDevuser(devu *Devuser) error {
-	if err := db.Table("devuser").Where("id=?", devu.ID).Updates(devu).Error; err != nil {
+	if err := db.Table("devuser").
+		Where("id=?", devu.ID).Updates(devu).Error; err != nil {
 		return err
 	}
 	return nil
@@ -29,7 +30,7 @@ func GetDevuser(jgdm string) ([]*Devuser, error) {
 }
 
 func DeleteDevuser(id uint) error {
-	if err := db.Where("id=?", id).Delete(Devuser{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&Devuser{}).Error; err != nil {
 		return err
 	}
 	return nil

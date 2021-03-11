@@ -32,7 +32,7 @@ func AddNetdiskFile(data interface{}) error {
 }
 
 func DeleteNetdiskFile(id int) error {
-	if err := db.Where("id=?", id).Delete(Netdisk{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&Netdisk{}).Error; err != nil {
 		return err
 	}
 	return nil

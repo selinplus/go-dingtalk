@@ -131,18 +131,21 @@ func GetDevuserList(c *gin.Context) {
 
 //删除设备使用人员
 func DeleteDevuser(c *gin.Context) {
-	appG := app.Gin{C: c}
-	userid := c.Query("userid")
+	var (
+		appG   = app.Gin{C: c}
+		userid = c.Query("userid")
+		jgdm   = c.Query("jgdm")
+	)
 	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR, err)
 		return
 	}
-	if models.IsUserDevExist(userid) {
+	if models.IsUserDevExist(userid, jgdm) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEV_FAIL, nil)
 		return
 	}
-	if models.IsUserDevBgrByJgdm(userid, c.Query("jgdm")) {
+	if models.IsUserDevBgrByJgdm(userid, jgdm) {
 		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEVBGR_FAIL, nil)
 		return
 	}

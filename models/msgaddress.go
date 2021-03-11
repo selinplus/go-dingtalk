@@ -19,7 +19,7 @@ func AddAddressbook(data interface{}) error {
 
 func DeleteAddressbook(id uint, userID string) error {
 	if err := db.Where("id=? and userid=?", id, userID).
-		Delete(MsgAddressbook{}).Error; err != nil {
+		Delete(&MsgAddressbook{}).Error; err != nil {
 		return err
 	}
 	return nil

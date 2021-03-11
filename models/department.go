@@ -27,7 +27,8 @@ func CountDepartmentSyncNum(t string) (int, error) {
 
 func GetDepartmentByParentID(ParentID int) ([]*Department, error) {
 	var departments []*Department
-	err := db.Table("department").Where("parentid=?", ParentID).Find(&departments).Error
+	err := db.Table("department").
+		Where("parentid=?", ParentID).Find(&departments).Error
 	if err != nil {
 		return nil, err
 	}
@@ -71,14 +72,14 @@ func IsDeptExist(deptId int, t string) bool {
 }
 
 func DeleteDepartment(deptId int) error {
-	if err := db.Where("id=?", deptId).Delete(Department{}).Error; err != nil {
+	if err := db.Where("id=?", deptId).Delete(&Department{}).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func CleanUpDepartment() error {
-	err := db.Where("DATEDIFF(NOW(),sync_time)>7").Delete(Department{}).Error
+	err := db.Where("DATEDIFF(NOW(),sync_time)>7").Delete(&Department{}).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}

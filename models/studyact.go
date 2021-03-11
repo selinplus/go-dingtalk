@@ -40,7 +40,7 @@ func UpdStudyAct(activity *StudyAct) error {
 }
 
 func DelStudyAct(id string) error {
-	if err := db.Where("id=?", id).Delete(StudyAct{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&StudyAct{}).Error; err != nil {
 		return err
 	}
 	return nil

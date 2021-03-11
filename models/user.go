@@ -71,7 +71,7 @@ func IsUserExist(userid string, t string) bool {
 }
 
 func DeleteUser(userid string) error {
-	if err := db.Where("userid=?", userid).Delete(User{}).Error; err != nil {
+	if err := db.Where("userid=?", userid).Delete(&User{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -91,7 +91,7 @@ func GetUserByMc(mc string) ([]*User, error) {
 	err := db.Table("user").
 		Select("user.userid,user.name,department.name as deptId,user.mobile").
 		Joins("join department on user.deptId=department.id").
-		Where("user.name like ? ", "%"+mc+"%").Scan(&us).Error
+		Where("user.name like ? ", "%"+mc+"%").Find(&us).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func GetFsdjUserByMc(mc string) ([]*User, error) {
 }
 
 func CleanUpUser() error {
-	err := db.Where("DATEDIFF(NOW(),sync_time)>7").Delete(User{}).Error
+	err := db.Where("DATEDIFF(NOW(),sync_time)>7").Delete(&User{}).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}

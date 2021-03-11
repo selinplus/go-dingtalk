@@ -39,14 +39,15 @@ func AddProc(data interface{}) error {
 }
 
 func UpdateProc(proc *Process) error {
-	if err := db.Table("process").Where("id=?", proc.ID).Updates(proc).Error; err != nil {
+	if err := db.Table("process").
+		Where("id=?", proc.ID).Updates(proc).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func DeleteProc(procid uint) error {
-	if err := db.Where("id=?", procid).Delete(Process{}).Error; err != nil {
+	if err := db.Where("id=?", procid).Delete(&Process{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -76,8 +77,8 @@ type ProcResponse struct {
 func GetProcDetail(procid uint) (*ProcResponse, error) {
 	var pr ProcResponse
 	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.title,
-       			   process.xq,process.bcms,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
-			       process.syr_name,process.syr,process.cfwz
+       			   process.xq,process.bcms,process.zp,process.tbsj,procmodify.id as modifyid,
+			       procmodify.node,user.name as czr,process.syr_name,process.syr,process.cfwz
 			from process
          	left join procmodify on process.id = procmodify.procid
          	left join proctype on process.dm = proctype.dm
@@ -92,8 +93,8 @@ func GetProcDetail(procid uint) (*ProcResponse, error) {
 func GetProcTodoList(czr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
 	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.title,
-       			   process.xq,process.bcms,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
-				   process.syr_name,process.syr,process.cfwz
+       			   process.xq,process.bcms,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,
+				   user.name as czr,process.syr_name,process.syr,process.cfwz
 			from process
          	left join procmodify on process.id = procmodify.procid
          	left join proctype on process.dm = proctype.dm
@@ -113,8 +114,8 @@ func GetProcTodoList(czr string) ([]*ProcResponse, error) {
 func GetProcSaveList(tbr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
 	sql := `select process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,process.title,
-       			   process.xq,process.bcms,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,user.name as czr,
-				   process.syr_name,process.syr,process.cfwz
+       			   process.xq,process.bcms,process.zp,process.tbsj,procmodify.id as modifyid,procmodify.node,
+				   user.name as czr,process.syr_name,process.syr,process.cfwz
 			from process
          	left join procmodify on process.id = procmodify.procid
          	left join proctype on process.dm = proctype.dm
@@ -134,7 +135,8 @@ func GetProcSaveList(tbr string) ([]*ProcResponse, error) {
 func GetProcDoneList(czr string) ([]*ProcResponse, error) {
 	var pr []*ProcResponse
 	sql := `select distinct process.id,process.dm,proctype.mc as dmmc,process.tbr,process.mobile,process.devid,
-			       process.title,process.xq,process.bcms,process.xq,process.zp,process.tbsj,process.syr_name,process.syr,process.cfwz
+			       process.title,process.xq,process.bcms,process.xq,process.zp,process.tbsj,process.syr_name,
+				   process.syr,process.cfwz
 		  	from process
           	left join procmodify on process.id = procmodify.procid
           	left join proctype on process.dm = proctype.dm

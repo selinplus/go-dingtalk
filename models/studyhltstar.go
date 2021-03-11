@@ -29,7 +29,7 @@ func IsHltStar(star *StudyHltStar) bool {
 
 func CancelStudyHltStar(hltId uint, userid string) error {
 	if err := db.Where("study_hlt_id=? and userid=?", hltId, userid).
-		Delete(StudyHltStar{}).Error; err != nil {
+		Delete(&StudyHltStar{}).Error; err != nil {
 		return err
 	}
 	return nil

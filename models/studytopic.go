@@ -31,7 +31,7 @@ func UpdStudyTopic(topic *StudyTopic) error {
 }
 
 func DelStudyTopic(id string) error {
-	if err := db.Where("id=?", id).Delete(StudyTopic{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&StudyTopic{}).Error; err != nil {
 		return err
 	}
 	return nil

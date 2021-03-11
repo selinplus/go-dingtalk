@@ -75,7 +75,7 @@ func IsStudySjjg(dm string) bool {
 }
 
 func DelStudyGroup(dm string) error {
-	if err := db.Where("dm=?", dm).Delete(StudyGroup{}).Error; err != nil {
+	if err := db.Where("dm=?", dm).Delete(&StudyGroup{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -132,7 +132,8 @@ func GetStudyGroupTree(dm string) ([]StudyGroupTree, error) {
 //递归获取子节点
 func getStudyGroupTreeNode(sjdm string, tree *StudyGroupTree) error {
 	var perms []*StudyGroup
-	err := db.Where("sjdm=?", sjdm).Find(&perms).Error //根据父结点Id查询数据表，获取相应的子结点信息
+	err := db.Where("sjdm=?", sjdm).
+		Find(&perms).Error //根据父结点Id查询数据表，获取相应的子结点信息
 	if err != nil {
 		return err
 	}

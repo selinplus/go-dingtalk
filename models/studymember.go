@@ -57,7 +57,7 @@ func GetStudyMembers(dm string) ([]*StudyMember, error) {
 }
 
 func DelStudyMember(id uint) error {
-	if err := db.Where("id=?", id).Delete(StudyMember{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&StudyMember{}).Error; err != nil {
 		return err
 	}
 	return nil

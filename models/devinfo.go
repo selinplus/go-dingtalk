@@ -66,9 +66,9 @@ func IsDevXlhExist(xlh string) bool {
 	return true
 }
 
-func IsUserDevExist(userid string) bool {
+func IsUserDevExist(userid, jgdm string) bool {
 	var d Devinfo
-	if err := db.Where("syr=?", userid).First(&d).Error; err != nil {
+	if err := db.Where("syr=? and jgksdm = ?", userid, jgdm).First(&d).Error; err != nil {
 		return false
 	}
 	return true
@@ -228,7 +228,8 @@ func DevIssued(form OpForm, czr, czlx string) error {
 				Zt:   zt,
 				Sx:   sx,
 			}
-			if err := tx.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+			if err := tx.Table("devinfo").
+				Where("id=?", dev.ID).Updates(dev).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -361,7 +362,8 @@ func AgreeChangeJgks(form OpForm, czr string) error {
 	if dstCfwz != "" {
 		dev["cfwz"] = dstCfwz
 	}
-	if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
+	if err := tx.Table("devinfo").
+		Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -526,7 +528,8 @@ func AgreeDevReback(form OpForm, czr string) error {
 		"sx":     "1",
 		"zt":     "1",
 	}
-	if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
+	if err := tx.Table("devinfo").
+		Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -615,7 +618,8 @@ func DevAllocate(form OpForm, syr, czr string) error {
 		cfwz = ""
 	}
 	if len(todoLsh) > 0 { // todoLsh:上交入库,根据todoLsh修改待办标志为已办
-		if err := tx.Table("devtodo").Where("done = 0 and lsh = ? ", todoLsh).
+		if err := tx.Table("devtodo").
+			Where("done = 0 and lsh = ? ", todoLsh).
 			Updates(map[string]interface{}{"done": 1, "bz": "已完成上交入库"}).Error; err != nil {
 			tx.Rollback()
 			return err
@@ -640,7 +644,8 @@ func DevAllocate(form OpForm, syr, czr string) error {
 		if jgksdm != "" {
 			dev["jgksdm"] = jgksdm
 		}
-		if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
+		if err := tx.Table("devinfo").
+			Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -662,13 +667,6 @@ func DevAllocate(form OpForm, syr, czr string) error {
 			tx.Rollback()
 			return err
 		}
-		/*if czlx == "1" && len(todoLsh) == 0 { //交回设备入库,修改待办标志为已办
-			if err := tx.Table("devtodo").Where("done = 0 and devid = ? ", id).
-				Update("done", 1).Error; err != nil {
-				tx.Rollback()
-				return err
-			}
-		}*/
 	}
 	if czlx == "7" { //设备收回时,同步进行入库操作
 		czlx = "1"
@@ -711,7 +709,8 @@ func DevAllocate(form OpForm, syr, czr string) error {
 			if jgksdm != "" {
 				dev["jgksdm"] = jgksdm
 			}
-			if err := tx.Table("devinfo").Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
+			if err := tx.Table("devinfo").
+				Where("id=?", dev["id"]).Updates(dev).Error; err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -763,15 +762,16 @@ func getState(czlx string) (zt, sx string) {
 }
 
 func EditDevinfo(dev *Devinfo) error {
-	if err := db.Table("devinfo").Where("id=?", dev.ID).Updates(dev).Error; err != nil {
+	if err := db.Table("devinfo").
+		Where("id=?", dev.ID).Updates(dev).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func EditDevinfoCfwz(updMap map[string]interface{}) error {
-	if err := db.Table("devinfo").
-		Where("id=?", updMap["id"]).Update("cfwz", updMap["cfwz"]).Error; err != nil {
+	if err := db.Table("devinfo").Where("id=?", updMap["id"]).
+		Update("cfwz", updMap["cfwz"]).Error; err != nil {
 		return err
 	}
 	return nil
@@ -786,7 +786,7 @@ func EditDevinfoPnum(id uint) error {
 }
 
 func DelDevinfo(id string) error {
-	if err := db.Where("id=?", id).Delete(Devinfo{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&Devinfo{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -951,7 +951,7 @@ func InsertDevinfoXml(devs []*Devinfo, czr string, flag bool) ([]*DevinfoErr, in
 			tx.Rollback()
 		}
 	}()
-	logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
+	//logging.Debug(fmt.Sprintf("------------------%d------", len(devs)))
 	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
 	var jgdm, sx, zt, czlx = "", "1", "1", "1" //初始导入,设备在库&设备入库操作
 	// flag=true 非计算机类初始化
@@ -1005,7 +1005,8 @@ func InsertDevinfoXml(devs []*Devinfo, czr string, flag bool) ([]*DevinfoErr, in
 				d.Lx = LxDm.Dm
 				d.ID = GenerateSbbh(d.Lx, d.Xlh)
 				//生成二维码
-				info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs + "]$设备型号[" + d.Xh + "]$生产日期[" + d.Scrq + "]$"
+				info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs +
+					"]$设备型号[" + d.Xh + "]$生产日期[" + d.Scrq + "]$"
 				name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 				if err != nil {
 					log.Println("GenerateQrWithLogo err:", err)
@@ -1177,7 +1178,8 @@ func InsertDevinfoXmlGoroutine(devs []*Devinfo, czr string) ([]*DevinfoErr, int,
 							d.Lx = LxDm.Dm
 							d.ID = GenerateSbbh(d.Lx, d.Xlh)
 							//生成二维码
-							info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs + "]$设备型号[" + d.Xh + "]$生产日期[" + d.Scrq + "]$"
+							info := d.ID + "$序列号[" + d.Xlh + "]$生产商[" + d.Scs +
+								"]$设备型号[" + d.Xh + "]$生产日期[" + d.Scrq + "]$"
 							name, _, err := qrcode.GenerateQrWithLogo(info, qrcode.GetQrCodeFullPath())
 							if err != nil {
 								log.Println(err)
@@ -1297,10 +1299,12 @@ func GetDevinfos(con map[string]string, pageNo, pageSize int, bz string) ([]*Dev
 		}
 	}
 	if con["rkrqq"] != "" && con["rkrqz"] != "" {
-		query += fmt.Sprintf(" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
+		query += fmt.Sprintf(
+			" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
 	}
 	if con["scrqq"] != "" && con["scrqz"] != "" {
-		query += fmt.Sprintf(" and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
+		query += fmt.Sprintf(
+			" and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
 	}
 	query += ` order by devinfo.sbbh`
 	if pageNo > 0 && pageSize > 0 {
@@ -1365,10 +1369,12 @@ func GetDevinfosGly(con map[string]string) ([]*DevinfoResp, error) {
 		}
 	}
 	if con["rkrqq"] != "" && con["rkrqz"] != "" {
-		squery += fmt.Sprintf(" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
+		squery += fmt.Sprintf(
+			" and devinfo.rkrq >= '%s' and devinfo.rkrq <= '%s'", con["rkrqq"], con["rkrqz"])
 	}
 	if con["scrqq"] != "" && con["scrqz"] != "" {
-		squery += fmt.Sprintf(" and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
+		squery += fmt.Sprintf(
+			" and devinfo.scrq >= '%s' and devinfo.scrq <= '%s'", con["scrqq"], con["scrqz"])
 	}
 	squery += ` order by devinfo.sbbh`
 	//log.Println(squery)
@@ -1420,7 +1426,7 @@ func GetDevinfoByID(id string) (*Devinfo, error) {
 func GetDevinfosToBeStored() ([]*Devinfo, error) {
 	var devs []*Devinfo
 	if err := db.Table("devinfo").
-		Where("zt=4").Scan(&devs).Error; err != nil {
+		Where("zt=4").Find(&devs).Error; err != nil {
 		return nil, err
 	}
 	return devs, nil
@@ -1456,7 +1462,8 @@ func GetDevinfosByJgdm(jgdm string) ([]*Devinfo, error) {
 //判断是否有共有设备
 func IsDevGyExist(jgksdm string) bool {
 	var dev Devinfo
-	err := db.Table("devinfo").Where("jgksdm=? and sx=3", jgksdm).First(&dev).Error
+	err := db.Table("devinfo").
+		Where("jgksdm=? and sx=3", jgksdm).First(&dev).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false
 	}

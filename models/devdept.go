@@ -165,7 +165,7 @@ func IsDevdeptGylExist(jgdm string) bool {
 }
 
 func DeleteDevdept(jgdm string) error {
-	if err := db.Where("jgdm=?", jgdm).Delete(Devdept{}).Error; err != nil {
+	if err := db.Where("jgdm=?", jgdm).Delete(&Devdept{}).Error; err != nil {
 		return err
 	}
 	return nil
@@ -264,7 +264,8 @@ func GetDevdeptTree(jgdm, bz string) ([]DevdeptTree, error) {
 //递归获取子节点
 func getDevdeptTreeNode(sjjgdm, bz string, tree *DevdeptTree) error {
 	var perms []*Devdept
-	err := db.Where("sjjgdm=?", sjjgdm).Find(&perms).Error //根据父结点Id查询数据表，获取相应的子结点信息
+	//根据父结点Id查询数据表，获取相应的子结点信息
+	err := db.Where("sjjgdm=?", sjjgdm).Find(&perms).Error
 	if err != nil {
 		return err
 	}

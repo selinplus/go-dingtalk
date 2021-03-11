@@ -41,7 +41,7 @@ func UpdStudyHlt(hlt *StudyHlt) error {
 }
 
 func DelStudyHlt(id string) error {
-	if err := db.Where("id=?", id).Delete(StudyHlt{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&StudyHlt{}).Error; err != nil {
 		return err
 	}
 	return nil

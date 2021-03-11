@@ -17,7 +17,8 @@ func AddOnduty(data interface{}) error {
 
 func UpdateOndutyFlag(id uint) error {
 	if err := db.Table("onduty").
-		Where("id = ? and flag_notice = 1", id).Update("flag_notice", 2).Error; err != nil {
+		Where("id = ? and flag_notice = 1", id).
+		Update("flag_notice", 2).Error; err != nil {
 		return err
 	}
 	return nil
@@ -25,7 +26,8 @@ func UpdateOndutyFlag(id uint) error {
 
 func GetOndutyFlag() ([]*Onduty, error) {
 	var ods []*Onduty
-	if err := db.Table("onduty").Where("flag_notice=1").Scan(&ods).Error; err != nil {
+	if err := db.Table("onduty").Where("flag_notice=1").
+		Find(&ods).Error; err != nil {
 		return nil, err
 	}
 	return ods, nil

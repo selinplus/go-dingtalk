@@ -36,8 +36,13 @@ func UpdateMsgFlag(msgID uint) error {
 
 func GetMsgs(userID string, tag uint, pageNum, pageSize int) ([]*Msg, error) {
 	var msg []*Msg
-	err := db.Raw("SELECT msg.* FROM msg LEFT JOIN msg_tag ON msg.id = msg_tag.msg_id WHERE msg_tag.owner_id = ? AND msg_tag.tag = ? ORDER BY msg.time DESC LIMIT ?,?", userID, tag, pageNum, pageSize).
-		Scan(&msg).Error
+	sql := `
+SELECT msg.* FROM msg
+    LEFT JOIN msg_tag ON msg.id = msg_tag.msg_id
+    WHERE msg_tag.owner_id = ? AND msg_tag.tag = ?
+    ORDER BY msg.time DESC
+    LIMIT ? , ?`
+	err := db.Raw(sql, userID, tag, pageNum, pageSize).Scan(&msg).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
 	}
@@ -60,7 +65,7 @@ func GetMsgByID(id, tag uint, userID string) (*Msg, error) {
 
 func GetMsgFlag() ([]*Msg, error) {
 	var msgs []*Msg
-	if err := db.Table("msg").Where("flag_notice=0").Scan(&msgs).Error; err != nil {
+	if err := db.Table("msg").Where("flag_notice=0").Find(&msgs).Error; err != nil {
 		return nil, err
 	}
 	return msgs, nil

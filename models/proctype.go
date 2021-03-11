@@ -19,7 +19,8 @@ func GetProctypeAll() ([]*Proctype, error) {
 //返回除手工提报类型外记录
 func GetProctype() ([]*Proctype, error) {
 	var pt []*Proctype
-	if err := db.Table("proctype").Not("dm", "0").Find(&pt).Error; err != nil {
+	if err := db.Table("proctype").
+		Not("dm", "0").Find(&pt).Error; err != nil {
 		return nil, err
 	}
 	return pt, nil

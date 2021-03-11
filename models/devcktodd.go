@@ -17,7 +17,8 @@ type Devcktodd struct {
 func GetDevCkTaskFlag() ([]*Devcktodd, error) {
 	var devcktodds []*Devcktodd
 	if err := db.Table("devcktodd").
-		Preload("Devcheck").Where("flag_notice=0").Find(&devcktodds).Error; err != nil {
+		Preload("Devcheck").
+		Where("flag_notice=0").Find(&devcktodds).Error; err != nil {
 		return nil, err
 	}
 	return devcktodds, nil
@@ -25,7 +26,8 @@ func GetDevCkTaskFlag() ([]*Devcktodd, error) {
 
 func UpdateDevCkTaskFlag(id uint) error {
 	if err := db.Table("devcktodd").
-		Where("id = ? and flag_notice = 0", id).Update("flag_notice", 1).Error; err != nil {
+		Where("id = ? and flag_notice = 0", id).
+		Update("flag_notice", 1).Error; err != nil {
 		return err
 	}
 	return nil

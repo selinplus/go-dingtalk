@@ -24,7 +24,8 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 		return err
 	}
 	var devs []*Devinfo
-	if err := tx.Table("devinfo").Where("sbdl=?", ckTask.Sbdl).Find(&devs).Error; err != nil {
+	if err := tx.Table("devinfo").
+		Where("sbdl=?", ckTask.Sbdl).Find(&devs).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -66,7 +67,8 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 func GetDevCheckTask(cond string, pageNo, pageSize int) ([]*Devcheck, error) {
 	var devchecks []*Devcheck
 	if err := db.Table("devcheck").Where(cond).
-		Limit(pageSize).Offset(pageSize * (pageNo - 1)).Find(&devchecks).Error; err != nil {
+		Limit(pageSize).Offset(pageSize * (pageNo - 1)).
+		Find(&devchecks).Error; err != nil {
 		return nil, err
 	}
 	return devchecks, nil

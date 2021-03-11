@@ -6,6 +6,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/tealeg/xlsx"
+	"log"
 )
 
 func CheckTable() {
@@ -533,7 +534,7 @@ func readXmlToMapProcType() []map[string]string {
 
 func InsertType(devType []map[string]string) {
 	er := make([]Devtype, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(devType)))
+	log.Printf("Devtype------------------%d------", len(devType))
 	if len(devType) > 0 {
 		for _, d := range devType {
 			dev := Devtype{
@@ -556,7 +557,7 @@ func InsertType(devType []map[string]string) {
 
 func InsertState(devState []map[string]string) {
 	er := make([]Devstate, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(devState)))
+	log.Printf("Devstate------------------%d------", len(devState))
 	if len(devState) > 0 {
 		for _, d := range devState {
 			dev := Devstate{
@@ -578,7 +579,7 @@ func InsertState(devState []map[string]string) {
 
 func InsertOpera(devOpera []map[string]string) {
 	er := make([]Devoperation, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(devOpera)))
+	log.Printf("Devoperation------------------%d------", len(devOpera))
 	if len(devOpera) > 0 {
 		for _, d := range devOpera {
 			dev := Devoperation{
@@ -600,7 +601,7 @@ func InsertOpera(devOpera []map[string]string) {
 
 func InsertProperty(devProperty []map[string]string) {
 	er := make([]Devproperty, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(devProperty)))
+	log.Printf("Devproperty------------------%d------", len(devProperty))
 	if len(devProperty) > 0 {
 		for _, d := range devProperty {
 			dev := Devproperty{
@@ -622,7 +623,7 @@ func InsertProperty(devProperty []map[string]string) {
 
 func InsertNode(pns []*Procnode) {
 	er := make([]*Procnode, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(pns)))
+	log.Printf("Procnode------------------%d------", len(pns))
 	if len(pns) > 0 {
 		for _, pnx := range pns {
 			pn := Procnode{
@@ -649,7 +650,7 @@ func InsertNode(pns []*Procnode) {
 
 func InsertProcType(procType []map[string]string) {
 	er := make([]Proctype, 0)
-	logging.Debug(fmt.Sprintf("------------------%d------", len(procType)))
+	log.Printf("Proctype------------------%d------", len(procType))
 	if len(procType) > 0 {
 		for _, d := range procType {
 			pt := Proctype{

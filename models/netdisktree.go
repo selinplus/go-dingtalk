@@ -16,7 +16,8 @@ func AddNetdiskDir(data interface{}) error {
 
 func IsDirExist(userid string, id int) bool {
 	var nt NetdiskTree
-	if err := db.Where("userid =? and id=?", userid, id).First(&nt).Error; err != nil {
+	if err := db.Where("userid =? and id=?", userid, id).
+		First(&nt).Error; err != nil {
 		return false
 	}
 	return true
@@ -24,21 +25,24 @@ func IsDirExist(userid string, id int) bool {
 
 func IsParentDir(userid string, id int) bool {
 	var nt NetdiskTree
-	if err := db.Where("userid =? and pid=?", userid, id).First(&nt).Error; err != nil {
+	if err := db.Where("userid =? and pid=?", userid, id).
+		First(&nt).Error; err != nil {
 		return false
 	}
 	return true
 }
 
 func DeleteNetdiskDir(userid string, id int) error {
-	if err := db.Where("userid=? and id=?", userid, id).Delete(NetdiskTree{}).Error; err != nil {
+	if err := db.Where("userid=? and id=?", userid, id).
+		Delete(&NetdiskTree{}).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func UpdateNetdiskDir(netdisk *NetdiskTree) error {
-	if err := db.Table("netdisk_tree").Where("id=?", netdisk.ID).Updates(netdisk).Error; err != nil {
+	if err := db.Table("netdisk_tree").
+		Where("id=?", netdisk.ID).Updates(netdisk).Error; err != nil {
 		return err
 	}
 	return nil
@@ -71,7 +75,8 @@ func GetNetdiskTree(userID string) ([]Tree, error) {
 //递归获取子节点
 func getTreeNode(pId int, userID string, tree *Tree) error {
 	var perms []*NetdiskTree
-	err := db.Where("pId=? and userid=?", pId, userID).Find(&perms).Error //根据父结点Id查询数据表，获取相应的子结点信息
+	err := db.Where("pId=? and userid=?", pId, userID).
+		Find(&perms).Error //根据父结点Id查询数据表，获取相应的子结点信息
 	if err != nil {
 		return err
 	}

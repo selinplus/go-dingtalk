@@ -21,7 +21,8 @@ func AddProcMod(data interface{}) error {
 
 func UpdateProcMod(pm *Procmodify) error {
 	//log.Println(pm)
-	if err := db.Table("procmodify").Where("id=?", pm.ID).Updates(&pm).Error; err != nil {
+	if err := db.Table("procmodify").
+		Where("id=?", pm.ID).Updates(&pm).Error; err != nil {
 		return err
 	}
 	return nil
@@ -45,8 +46,23 @@ func GetProcMod(id uint) (*Procmodify, error) {
 
 func GetProcMods(procid uint) ([]*Procmodify, error) {
 	var pms []*Procmodify
-	if err := db.Raw("select procmodify.id,procmodify.procid,proctype.mc as dm,procmodify.node,user.name as tsr,procmodify.czr,procmodify.spyj,procmodify.czrq from procmodify left join proctype on procmodify.dm=proctype.dm left join user on user.mobile=procmodify.tsr where procmodify.procid=?", procid).
-		Order("procmodify.id desc").Find(&pms).Error; err != nil {
+	query := `
+select procmodify.id,
+       procmodify.procid,
+       proctype.mc as dm,
+       procmodify.node,
+       user.name   as tsr,
+       procmodify.czr,
+       procmodify.spyj,
+       procmodify.czrq
+    from
+       procmodify
+           left join proctype on procmodify.dm = proctype.dm
+           left join user on user.mobile = procmodify.tsr
+    where
+       procmodify.procid = ?
+	order by procmodify.id desc`
+	if err := db.Raw(query, procid).Scan(&pms).Error; err != nil {
 		return nil, err
 	}
 	return pms, nil
@@ -54,23 +70,26 @@ func GetProcMods(procid uint) ([]*Procmodify, error) {
 
 func IsProcManualDone(procid uint) bool {
 	var p Procmodify
-	if err := db.Where("procid=? and (czrq = '' or czrq is null)", procid).First(&p).Error; err != nil {
+	if err := db.Where("procid=? and (czrq = '' or czrq is null)", procid).
+		First(&p).Error; err != nil {
 		return false
 	}
 	return true
 }
 
 func GetProcessFlag() ([]*Procmodify, error) {
-	var ps []*Procmodify
-	if err := db.Table("procmodify").Where("flag_notice=0").Scan(&ps).Error; err != nil {
+	var procmodifies []*Procmodify
+	if err := db.Table("procmodify").
+		Where("flag_notice=0").Find(&procmodifies).Error; err != nil {
 		return nil, err
 	}
-	return ps, nil
+	return procmodifies, nil
 }
 
 func UpdateProcessFlag(ID uint) error {
 	if err := db.Table("procmodify").
-		Where("id = ? and flag_notice = 0", ID).Update("flag_notice", 1).Error; err != nil {
+		Where("id = ? and flag_notice = 0", ID).
+		Update("flag_notice", 1).Error; err != nil {
 		return err
 	}
 	return nil

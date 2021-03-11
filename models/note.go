@@ -13,7 +13,8 @@ type Note struct {
 
 func IsSameTitle(userid, title string) bool {
 	var note Note
-	if err := db.Where("userid =? and title=?", userid, title).First(&note).Error; err != nil {
+	if err := db.Where("userid =? and title=?", userid, title).
+		First(&note).Error; err != nil {
 		return false
 	}
 	return true
@@ -36,14 +37,15 @@ func AddNote(data interface{}) error {
 }
 
 func DeleteNote(id uint) error {
-	if err := db.Where("id=?", id).Delete(Note{}).Error; err != nil {
+	if err := db.Where("id=?", id).Delete(&Note{}).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func UpdateNote(note *Note) error {
-	if err := db.Table("note").Where("id=?", note.ID).Updates(note).Error; err != nil {
+	if err := db.Table("note").
+		Where("id=?", note.ID).Updates(note).Error; err != nil {
 		return err
 	}
 	return nil
@@ -84,7 +86,8 @@ func GetNoteDetail(id uint) (*NoteResp, error) {
 
 func UpdateNoteFlag(id uint) error {
 	if err := db.Table("note").
-		Where("id = ? and flag_notice = 1", id).Update("flag_notice", 2).Error; err != nil {
+		Where("id = ? and flag_notice = 1", id).
+		Update("flag_notice", 2).Error; err != nil {
 		return err
 	}
 	return nil
@@ -92,7 +95,8 @@ func UpdateNoteFlag(id uint) error {
 
 func GetNoteFlag() ([]*Note, error) {
 	var notes []*Note
-	if err := db.Table("note").Where("flag_notice=1").Scan(&notes).Error; err != nil {
+	if err := db.Table("note").Where("flag_notice=1").
+		Find(&notes).Error; err != nil {
 		return nil, err
 	}
 	return notes, nil

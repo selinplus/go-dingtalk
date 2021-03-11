@@ -20,14 +20,15 @@ func AddContacter(data interface{}) error {
 
 func DeleteContacter(userid string, bookid uint) error {
 	if err := db.Where("userid=? and bookid=?", userid, bookid).
-		Delete(MsgContacter{}).Error; err != nil {
+		Delete(&MsgContacter{}).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
 func DeleteContacters(bookid uint) error {
-	if err := db.Where("bookid=?", bookid).Delete(MsgContacter{}).Error; err != nil {
+	if err := db.Where("bookid=?", bookid).
+		Delete(&MsgContacter{}).Error; err != nil {
 		return err
 	}
 	return nil
