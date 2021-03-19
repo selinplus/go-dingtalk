@@ -78,7 +78,7 @@ SELECT devckdetail.id,check_id,cktime,c.name pdr,ck_bz,devinfo_id,f.name bgr,
            left join userdemo d on d.userid = devckdetail.czr
            left join userdemo e on e.userid = devckdetail.syr
            left join userdemo f on f.userid = b.bgr
-           left join devtype  on devtype.dm = devckdetail.lx
+           left join devtype on devtype.dm = devckdetail.lx
            left join devproperty on devproperty.dm = devckdetail.sx
            left join devstate on devstate.dm = devckdetail.zt
     WHERE

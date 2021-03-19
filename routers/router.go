@@ -69,7 +69,7 @@ func InitRouter() *gin.Engine {
 		apiv1.GET("/syncnum", dingtalk.DepartmentUserSyncNum)
 		//获取部门详情
 		apiv1.GET("/department/detail", dingtalk.GetDepartmentByID)
-		//获取用户部门详情（内网）
+		//获取用户部门详情(内网)
 		apiv1.GET("/department/mobile", dingtalk.GetDepartmentByUserMobile)
 		//获取部门列表
 		apiv1.GET("/department/list", dingtalk.GetDepartmentByParentID)

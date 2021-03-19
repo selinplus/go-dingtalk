@@ -13,9 +13,10 @@ import (
 )
 
 type DevuserForm struct {
-	ID   uint
-	Jgdm string `json:"jgdm"`
-	Syr  string `json:"syr"`
+	ID      uint   `json:"id"`
+	SrcJgdm string `json:"src_jgdm"`
+	Jgdm    string `json:"jgdm"`
+	Syr     string `json:"syr"`
 }
 
 type DevuserResp struct {
@@ -83,6 +84,10 @@ func UpdateDevuser(c *gin.Context) {
 	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	if models.IsUserDevBgrByJgdm(form.Syr, form.SrcJgdm) {
+		appG.Response(http.StatusInternalServerError, e.ERROR_DELETE_USERDEVBGR_FAIL, nil)
 		return
 	}
 	devuser := models.Devuser{
