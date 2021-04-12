@@ -109,7 +109,7 @@ func CleanUpExportFiles() {
 		return
 	}
 	for _, fileInfo := range files {
-		if strings.Contains(fileInfo.Name(), "device.xlsx") {
+		if strings.Contains(fileInfo.Name(), "device") {
 			continue
 		}
 		err = os.Remove(dirpath + fileInfo.Name())
@@ -122,10 +122,10 @@ func CleanUpExportFiles() {
 //清理同步时间超过7天的部门用户记录
 func CleanUpDepartmentUser() {
 	if err := models.CleanUpDepartment(); err != nil {
-		logging.Error(fmt.Sprintf("CleanUp Department err:%v", err))
+		log.Printf("CleanUp Department err:%v", err)
 	}
 	if err := models.CleanUpUser(); err != nil {
-		logging.Error(fmt.Sprintf("CleanUp User err:%v", err))
+		log.Printf("CleanUp User err:%v", err)
 	}
 }
 
@@ -133,16 +133,16 @@ func CleanUpDepartmentUser() {
 func CleanUpNetdiskFile() {
 	files, err := models.GetTrashFiles()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get trash files err:%v", err))
+		log.Printf("get trash files err:%v", err)
 		return
 	}
 	for _, fileInfo := range files {
 		dirUrl := upload.GetImageFullPath() + fileInfo.FileUrl
 		if err = os.Remove(dirUrl); err != nil {
-			logging.Error(fmt.Sprintf("delete trash files err:%v", err))
+			log.Printf("delete trash files err:%v", err)
 		} else { //delete table column
 			if err = models.DeleteNetdiskFile(fileInfo.ID); err != nil {
-				logging.Error(fmt.Sprintf("delete column err:%v", err))
+				log.Printf("delete column err:%v", err)
 			}
 		}
 	}
@@ -152,7 +152,7 @@ func CleanUpNetdiskFile() {
 func MessageDingding() {
 	msgs, err := models.GetMsgFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get msg_flag err:%v", err))
+		log.Printf("get msg_flag err:%v", err)
 		return
 	}
 	for _, msg := range msgs {
@@ -161,7 +161,7 @@ func MessageDingding() {
 		//log.Printf("asyncsendResponse is :%v", asyncsendResponse)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateMsgFlag(msg.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update msg_flag err:%v", msg.ID, err))
+				log.Printf("%v update msg_flag err:%v", msg.ID, err)
 			}
 		}
 	}
@@ -171,7 +171,7 @@ func MessageDingding() {
 func DeviceDingding() {
 	todos, err := models.GetDevFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get dev_flag err:%v", err))
+		log.Printf("get dev_flag err:%v", err)
 		return
 	}
 	for _, todo := range todos {
@@ -201,7 +201,7 @@ func DeviceDingding() {
 func DeviceCheckDingding() {
 	devcktodds, err := models.GetDevCkTaskFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get dev_check_flag err:%v", err))
+		log.Printf("get dev_check_flag err:%v", err)
 		return
 	}
 	for _, devcktodd := range devcktodds {
@@ -211,7 +211,7 @@ func DeviceCheckDingding() {
 		//log.Printf("asyncsendResponse is :%v", asyncsendResponse)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateDevCkTaskFlag(devcktodd.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update dev_check_flag err:%v", devcktodd.ID, err))
+				log.Printf("%v update dev_check_flag err:%v", devcktodd.ID, err)
 			}
 		}
 	}
@@ -221,7 +221,7 @@ func DeviceCheckDingding() {
 func NoteMessageDingding() {
 	notes, err := models.GetNoteFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get note_flag err:%v", err))
+		log.Printf("get note_flag err:%v", err)
 		return
 	}
 	for _, note := range notes {
@@ -229,7 +229,7 @@ func NoteMessageDingding() {
 		asyncsendResponse := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateNoteFlag(note.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update note_flag err:%v", note.ID, err))
+				log.Printf("%v update note_flag err:%v", note.ID, err)
 			}
 		}
 	}
@@ -239,7 +239,7 @@ func NoteMessageDingding() {
 func OndutyMessageDingding() {
 	ods, err := models.GetOndutyFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get onduty_flag err:%v", err))
+		log.Printf("get onduty_flag err:%v", err)
 		return
 	}
 	for _, od := range ods {
@@ -247,7 +247,7 @@ func OndutyMessageDingding() {
 		asyncsendResponse := dingtalk.MessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateOndutyFlag(od.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update onduty_flag err:%v", od.ID, err))
+				log.Printf("%v update onduty_flag err:%v", od.ID, err)
 			}
 		}
 	}
@@ -257,19 +257,19 @@ func OndutyMessageDingding() {
 func ProcessMessageDingding() {
 	procs, err := models.GetProcessFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get process_flag err:%v", err))
+		log.Printf("get process_flag err:%v", err)
 		return
 	}
 	for _, proc := range procs {
 		p, err := models.GetProcDetail(proc.ProcID)
 		if err != nil {
-			logging.Error(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ID, err))
+			log.Printf("get process detail [id:%v] err:%v", proc.ID, err)
 		}
 		tcmprJson := dingtalk.ProcessMseesageToDingding(p, proc.Czr)
 		asyncsendResponse := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateProcessFlag(proc.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
+				log.Printf("%v update process_flag err:%v", proc.ID, err)
 			}
 		}
 	}
@@ -279,19 +279,19 @@ func ProcessMessageDingding() {
 func ProcessBcmsMessageDingding() {
 	procs, err := models.GetProcessBcmsFlag()
 	if err != nil {
-		logging.Error(fmt.Sprintf("get process_flag err:%v", err))
+		log.Printf("get process_flag err:%v", err)
 		return
 	}
 	for _, proc := range procs {
 		p, err := models.GetProcDetail(proc.ProcID)
 		if err != nil {
-			logging.Error(fmt.Sprintf("get process detail [id:%v] err:%v", proc.ProcID, err))
+			log.Printf("get process detail [id:%v] err:%v", proc.ProcID, err)
 		}
 		tcmprJson := dingtalk.ProcessBcmsMseesageToDingding(p)
 		asyncsendResponse := dingtalk.EappMessageCorpconversationAsyncsend(tcmprJson)
 		if asyncsendResponse != nil && asyncsendResponse.ErrCode == 0 {
 			if err := models.UpdateProcessBcmsFlag(proc.ID); err != nil {
-				logging.Error(fmt.Sprintf("%v update process_flag err:%v", proc.ID, err))
+				log.Printf("%v update process_flag err:%v", proc.ID, err)
 			}
 		}
 	}

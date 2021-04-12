@@ -90,7 +90,7 @@ SELECT devckdetail.id,check_id,cktime,c.name pdr,ck_bz,devinfo_id,f.name bgr,
 		sql += fmt.Sprintf(" AND devckdetail.jgdm = '%s'", jgdm)
 	}
 	if syr != "" {
-		sql += fmt.Sprintf(" AND devckdetail.syr = '%s'", jgdm)
+		sql += fmt.Sprintf(" AND devckdetail.syr = '%s'", syr)
 	}
 	if err := db.Raw(sql).Scan(&devckdetails).Error; err != nil {
 		return nil, err

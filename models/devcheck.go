@@ -56,6 +56,19 @@ func AddDevCheckTask(ckTask *Devcheck) error {
 			Cfwz:      dev.Cfwz,
 			Sx:        dev.Sx,
 		}
+		if dev.Syr == "" {
+			switch dev.Sx {
+			case "1": //在库设备
+				devdept, _ := GetDevdept(dev.Jgdm)
+				ck.Syr = devdept.Gly
+				if dev.Jgdm == "00" && dev.Sbdl == 2 {
+					ck.Syr = devdept.Gly2
+				}
+			case "3": //共用设备
+				devdept, _ := GetDevdept(dev.Jgksdm)
+				ck.Syr = devdept.Bgr
+			}
+		}
 		if err := tx.Table("devckdetail").Create(ck).Error; err != nil {
 			tx.Rollback()
 			return err

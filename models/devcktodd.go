@@ -40,7 +40,6 @@ func AddSendDevCkTasks(checkId uint, ckBz string) {
 			`select DISTINCT syr from devckdetail where syr!='' and check_id=%d`, checkId)
 		syrs, err := QueryData(sql1)
 		if err != nil {
-			log.Println(err, "=====", sql1)
 			return
 		}
 		for _, syr := range syrs {
@@ -50,7 +49,6 @@ func AddSendDevCkTasks(checkId uint, ckBz string) {
 		sql2 := `select DISTINCT gly from devdept where gly!=''`
 		glys, err := QueryData(sql2)
 		if err != nil {
-			log.Println(err, "=====", sql2)
 			return
 		}
 		for _, gly := range glys {

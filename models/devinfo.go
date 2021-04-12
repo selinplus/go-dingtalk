@@ -642,6 +642,9 @@ func DevAllocate(form OpForm, syr, czr string) error {
 			dev["jgdm"] = dms[i]
 		}
 		if jgksdm != "" {
+			if jgksdm == " " {
+				jgksdm = ""
+			}
 			dev["jgksdm"] = jgksdm
 		}
 		if err := tx.Table("devinfo").
@@ -707,6 +710,9 @@ func DevAllocate(form OpForm, syr, czr string) error {
 				dev["jgdm"] = dms[i]
 			}
 			if jgksdm != "" {
+				if jgksdm == " " {
+					jgksdm = ""
+				}
 				dev["jgksdm"] = jgksdm
 			}
 			if err := tx.Table("devinfo").
