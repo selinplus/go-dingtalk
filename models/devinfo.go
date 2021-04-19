@@ -936,6 +936,8 @@ func ReadDevinfoXmlToStructs(fileName io.Reader, czr string) (devs []*Devinfo, f
 					d.Jgksdm = cell
 				case i == 7:
 					d.Syr = cell
+				case i == 9:
+					d.Cfwz = cell
 				}
 			}
 			d.Sbdl = 2
