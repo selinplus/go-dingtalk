@@ -188,6 +188,7 @@ func LoginInfo(c *gin.Context) {
 		userid = ts[3]
 	}
 
+	//获取登陆人是使用人的部门列表
 	sDepts, err := models.GetSyrDepts(userid)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err)
@@ -203,6 +204,7 @@ func LoginInfo(c *gin.Context) {
 			syrDepts = append(syrDepts, syrDept)
 		}
 	}
+	//获取登陆人是管理员的部门列表
 	gDepts, err := models.GetGlyDepts(userid)
 	if err != nil {
 		appG.Response(http.StatusOK, e.ERROR, err)
@@ -211,6 +213,7 @@ func LoginInfo(c *gin.Context) {
 	if len(gDepts) > 0 {
 		sfbz = "1"
 		for _, gDept := range gDepts {
+			//如果管理部门包括00,则身份标志为super
 			if gDept.Jgdm == "00" {
 				sfbz = "2"
 			}
@@ -221,6 +224,7 @@ func LoginInfo(c *gin.Context) {
 			glyDepts = append(glyDepts, glyDept)
 		}
 	}
+	//如果不是计算机类管理员,判断其是否为非计算机管理员
 	if sfbz != "2" {
 		dept, err := models.GetDevdept("00")
 		if err != nil {
@@ -229,8 +233,14 @@ func LoginInfo(c *gin.Context) {
 		}
 		if dept.Gly2 == userid {
 			sfbz = "4"
+			glyDept := map[string]string{
+				"jgdm": dept.Jgdm,
+				"jgmc": dept.Jgmc,
+			}
+			glyDepts = append(glyDepts, glyDept)
 		}
 	}
+	//是否为保管人
 	var bgbz = false
 	if models.IsUserDevBgr(userid) {
 		bgbz = true
