@@ -20,7 +20,7 @@ type Devoperation struct {
 10	设备上交 --- 库->库
 11	机构变更
 12  设备初始化
-
+13	管理员变更
 */
 func GetDevOp() ([]*Devoperation, error) {
 	var ds []*Devoperation

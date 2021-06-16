@@ -187,6 +187,8 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/dev/imp", dev.ImpDevinfos)
 		//更新设备存放位置
 		apiv1.POST("/dev/update_cfwz", dev.UpdateDevinfoCfwz)
+		//更新设备管理机构、使用人、所属机构、所属位置
+		apiv1.POST("/dev/update_admin", dev.UpdateDevinfoByAdmin)
 		//更新设备信息
 		apiv1.POST("/dev/update", dev.UpdateDevinfo)
 		//更新设备二维码打印次数

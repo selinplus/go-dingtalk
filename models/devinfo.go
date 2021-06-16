@@ -783,6 +783,55 @@ func EditDevinfoCfwz(updMap map[string]interface{}) error {
 	return nil
 }
 
+//管理员修改设备信息
+func EditDevinfoByAdmin(updMap map[string]interface{}) error {
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	if tx.Error != nil {
+		return tx.Error
+	}
+	if err := tx.Table("devinfo").Where("id=?", updMap["id"]).
+		Updates(updMap).Error; err != nil {
+		return err
+	}
+	var dev Devinfo
+	if err := tx.Table("devinfo").Where("id=?", updMap["id"]).
+		First(&dev).Error; err != nil {
+		return err
+	}
+	lsh := util.RandomString(4) + strconv.Itoa(int(time.Now().Unix()))
+	t := time.Now().Format("2006-01-02 15:04:05")
+	dm := &Devmod{
+		Lsh:  lsh,
+		Czrq: t,
+		Czlx: "13",
+		Num:  1,
+		Czr:  dev.Czr,
+		Jgdm: dev.Jgdm,
+	}
+	if err := tx.Table("devmod").Create(dm).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	dmd := &Devmodetail{
+		Lsh:   lsh,
+		Czlx:  "13",
+		Czrq:  t,
+		Lx:    dev.Lx,
+		DevID: dev.ID,
+		Zcbh:  dev.Zcbh,
+	}
+	if err := tx.Table("devmodetail").Create(dmd).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit().Error
+}
+
 func EditDevinfoPnum(id uint) error {
 	s := fmt.Sprintf("update devinfo set pnum=pnum+1 where sbbh = %d", id)
 	if err := db.Exec(s).Error; err != nil {

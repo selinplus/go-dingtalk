@@ -147,12 +147,52 @@ func UpdateDevinfoCfwz(c *gin.Context) {
 		appG.Response(httpCode, errCode, nil)
 		return
 	}
-	if err := models.EditDevinfoCfwz(map[string]interface{}{"id": form.Devid, "cfwz": form.Cfwz}); err != nil {
+	updMap := map[string]interface{}{
+		"id":   form.Devid,
+		"cfwz": form.Cfwz,
+	}
+	if err := models.EditDevinfoCfwz(updMap); err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
 		return
 	}
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
+}
 
+type UpdByAdminForm struct {
+	Devid     string `json:"devid"`
+	Czrmobile string `json:"mobile"` //操作人手机号
+	Jgdm      string `json:"jgdm"`   //设备管理机构代码
+	Jgksdm    string `json:"jgksdm"` //设备所属机构代码
+	Syr       string `json:"syr"`    //设备使用人代码
+	Cfwz      string `json:"cfwz"`   //存放位置
+}
+
+//更新设备管理机构、使用人、所属机构、所属位置
+func UpdateDevinfoByAdmin(c *gin.Context) {
+	var (
+		appG = app.Gin{C: c}
+		form UpdByAdminForm
+	)
+	httpCode, errCode := app.BindAndValid(c, &form)
+	if errCode != e.SUCCESS {
+		appG.Response(httpCode, errCode, nil)
+		return
+	}
+	czr, _ := models.GetUserdemoByMobile(form.Czrmobile)
+	updMap := map[string]interface{}{
+		"id":     form.Devid,
+		"jgdm":   form.Jgdm,
+		"jgksdm": form.Jgksdm,
+		"syr":    form.Syr,
+		"cfwz":   form.Cfwz,
+		"czr":    czr.UserID,
+		"czrq":   time.Now().Format("2006-01-02 15:04:05"),
+	}
+	if err := models.EditDevinfoByAdmin(updMap); err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_UPDATE_DEV_FAIL, err)
+		return
+	}
+	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
 //更新设备信息

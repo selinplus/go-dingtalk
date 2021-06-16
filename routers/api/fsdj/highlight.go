@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/fsdjsrv"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -277,6 +278,26 @@ func GetStudyHlts(c *gin.Context) {
 	var data []*HltResp
 	if len(hlts) > 0 {
 		for _, hlt := range hlts {
+			user, err := models.GetUserdemoByUserid(hlt.UserID)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
+				return
+			}
+			member, err := models.GetStudyMember(user.UserID)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR, err)
+				return
+			}
+			if member == nil {
+				log.Printf("[%s]用户不在党小组中，请联系管理员添加", user.UserID)
+				continue
+			}
+			group, err := models.GetStudyGroup(member.Dm)
+			if err != nil {
+				appG.Response(http.StatusInternalServerError, e.ERROR, err)
+				return
+			}
 			if strings.Contains(url, "v1") {
 				urls := make([]string, 0)
 				if hlt.HltUrl != "" {
@@ -330,26 +351,6 @@ func GetStudyHlts(c *gin.Context) {
 						Mobile:       user.Mobile,
 					})
 				}
-			}
-			user, err := models.GetUserdemoByUserid(hlt.UserID)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-					fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", hlt.UserID, err))
-				return
-			}
-			member, err := models.GetStudyMember(user.UserID)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR, err)
-				return
-			}
-			if member == nil {
-				appG.Response(http.StatusOK, e.ERROR, "用户不在党小组中，请联系管理员添加")
-				return
-			}
-			group, err := models.GetStudyGroup(member.Dm)
-			if err != nil {
-				appG.Response(http.StatusInternalServerError, e.ERROR, err)
-				return
 			}
 			data = append(data, &HltResp{
 				StudyHlt:      hlt,
