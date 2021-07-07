@@ -163,7 +163,7 @@ func GetProcCustomizeList(c *gin.Context) {
 	users, err := models.GetUserByDepartmentID("29464263")
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
-			fmt.Sprintf("获取部门id 70280083 的人员信息错误:%v", err))
+			fmt.Sprintf("获取部门id 29464263 的人员信息错误:%v", err))
 		return
 	}
 	for _, user := range users {

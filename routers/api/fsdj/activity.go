@@ -7,6 +7,7 @@ import (
 	"github.com/selinplus/go-dingtalk/pkg/app"
 	"github.com/selinplus/go-dingtalk/pkg/e"
 	"github.com/selinplus/go-dingtalk/pkg/fsdjsrv"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -224,18 +225,60 @@ func GetStudyAct(c *gin.Context) {
 								hlt.Content, "fsdj/dj_image", "api/fsdj/dj_image")
 						}
 					}
+
+					token := c.GetHeader("Authorization")
+					auth := c.Query("token")
+					if len(auth) > 0 {
+						token = auth
+					}
+					ts := strings.Split(token, ".")
+					hlt.Star = models.IsStudyHltStar(hlt.ID, ts[3])
 				}
 				hlt.StarNum = len(hlt.StudyHltStars)
+				stars := make([]*HltStarResp, 0)
+				if len(hlt.StudyHltStars) > 0 {
+					for _, star := range hlt.StudyHltStars {
+						user, err := models.GetUserdemoByUserid(star.UserID)
+						if err != nil {
+							appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
+								fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", star.UserID, err))
+							return
+						}
+						stars = append(stars, &HltStarResp{
+							StudyHltStar: &star,
+							Avatar:       user.Avatar,
+							Name:         user.Name,
+							Mobile:       user.Mobile,
+						})
+					}
+				}
 				user, err := models.GetUserdemoByUserid(hlt.UserID)
 				if err != nil {
 					appG.Response(http.StatusInternalServerError, e.ERROR_GET_USER_FAIL,
 						fmt.Sprintf("根据userid：%s 获取人员信息错误：%v", userid, err))
 					return
 				}
+				member, err := models.GetStudyMember(user.UserID)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR, err)
+					return
+				}
+				if member == nil {
+					log.Printf("[%s]用户不在党小组中，请联系管理员添加", user.UserID)
+					continue
+				}
+				group, err := models.GetStudyGroup(member.Dm)
+				if err != nil {
+					appG.Response(http.StatusInternalServerError, e.ERROR, err)
+					return
+				}
 				hltResps = append(hltResps, &HltResp{
-					StudyHlt: &hlt,
-					Name:     user.Name,
-					Mobile:   user.Mobile,
+					StudyHlt:      &hlt,
+					Name:          user.Name,
+					Mobile:        user.Mobile,
+					GroupDm:       group.Dm,
+					GroupName:     group.Mc,
+					StudyHltStars: stars,
 				})
 			}
 		}

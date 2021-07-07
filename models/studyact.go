@@ -57,6 +57,9 @@ func GetStudyAct(id string) (*StudyAct, error) {
 			return db.Where("study_hlt.status='1'").
 				Order("study_hlt.fbrq")
 		}).
+		Preload("StudyHlts.StudyHltStars", func(db *gorm.DB) *gorm.DB {
+			return db.Order("study_hlt_star.stime")
+		}).
 		Where("id=?", id).First(&activity).Error; err != nil {
 		return nil, err
 	}

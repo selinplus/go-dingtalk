@@ -109,7 +109,8 @@ func CleanUpExportFiles() {
 		return
 	}
 	for _, fileInfo := range files {
-		if strings.Contains(fileInfo.Name(), "device") {
+		if strings.Contains(fileInfo.Name(), "device") ||
+			strings.Contains(fileInfo.Name(), "sys_") {
 			continue
 		}
 		err = os.Remove(dirpath + fileInfo.Name())
