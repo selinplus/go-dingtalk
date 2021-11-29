@@ -369,8 +369,6 @@ func InitRouter() *gin.Engine {
 		apiv2.GET("/callback/failed", dingtalk.GetFailedCallbacks)
 		//获取回调的结果
 		apiv2.POST("/callback/detail", dingtalk.GetCallbacks)
-		//todo:获取回调的结果
-		//apiv2.POST("/callback/detail", dingtalk.GetCallbacks)
 
 		//同步一次部门用户信息
 		apiv2.GET("/sync", dingtalk.DepartmentUserSync)

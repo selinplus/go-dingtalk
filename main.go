@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/selinplus/go-dingtalk/models"
 	"github.com/selinplus/go-dingtalk/pkg/cron"
-	"github.com/selinplus/go-dingtalk/pkg/dingtalk"
 	"github.com/selinplus/go-dingtalk/pkg/logging"
 	"github.com/selinplus/go-dingtalk/pkg/setting"
 	"github.com/selinplus/go-dingtalk/pkg/util"
@@ -14,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 func init() {
@@ -53,11 +51,11 @@ func main() {
 	log.Printf("[info] start http server listening %s", endPoint)
 
 	//todo: Dmz
-	cron.DmzSetup()
-	go func() {
-		time.Sleep(time.Second * 10)
-		dingtalk.RegCallbackInit()
-	}()
+	/*	cron.DmzSetup()
+		go func() {
+			time.Sleep(time.Second * 10)
+			dingtalk.RegCallbackInit()
+		}()*/
 	//todo: App
 	cron.AppSetup()
 

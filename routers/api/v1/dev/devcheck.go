@@ -32,14 +32,13 @@ func GetDevCkTask(c *gin.Context) {
 	}
 	form.Fqr = u.UserID
 	if err := models.AddDevCheckTask(&form); err != nil {
-		appG.Response(http.StatusInternalServerError, e.ERROR, nil)
+		appG.Response(http.StatusInternalServerError, e.ERROR, err.Error())
 		return
 	}
 	// 通知所有人员进行盘点任务
 	go func(id uint, ckself string) {
 		models.AddSendDevCkTasks(id, ckself)
 	}(form.ID, form.Ckself)
-
 	appG.Response(http.StatusOK, e.SUCCESS, nil)
 }
 
